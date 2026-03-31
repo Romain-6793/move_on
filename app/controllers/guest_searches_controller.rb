@@ -1,0 +1,2 @@
+class GuestSearchesController < ApplicationController
+end

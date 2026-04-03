@@ -29,9 +29,24 @@ def get_rows():
     return [dict(zip(headers, row)) for row in rows[1:] if any(row)]
 
 # ── GitHub Issues ─────────────────────────────────────────────────────────────
-def get_existing_titles(repo):
-    """Récupère les titres des issues existantes pour éviter les doublons."""
-    return {i.title for i in repo.get_issues(state="all")}
+def delete_all_issues(repo):
+    """Supprime définitivement toutes les issues existantes."""
+    issues = list(repo.get_issues(state="open")) + list(repo.get_issues(state="closed"))
+    print(f"🗑️  Suppression de {len(issues)} issues existantes...")
+    for issue in issues:
+        requests.post(
+            "https://api.github.com/graphql",
+            json={"query": """
+                mutation($id: ID!) {
+                  deleteIssue(input: {issueId: $id}) {
+                    repository { name }
+                  }
+                }
+            """, "variables": {"id": issue.node_id}},
+            headers={"Authorization": f"Bearer {GH_TOKEN}"}
+        )
+        print(f"  🗑️  Supprimée : {issue.title}")
+    print("✅ Toutes les issues supprimées")
 
 def create_issue(repo, row):
     kwargs = {"title": row.get("title", "").strip()}
@@ -82,8 +97,7 @@ def main():
     repo = gh.get_repo(REPO_NAME)
     owner, _ = REPO_NAME.split("/")
 
-    existing = get_existing_titles(repo)
-    print(f"ℹ️  {len(existing)} issues déjà présentes")
+    delete_all_issues(repo)
 
     # Détecte si owner est une org ou un user
     try:
@@ -105,19 +119,14 @@ def main():
         title = row.get("title", "").strip()
         if not title:
             continue
-        if title in existing:
-            print(f"  ⏭  Déjà existante : {title}")
-            skipped += 1
-            continue
         issue = create_issue(repo, row)
         if issue:
             print(f"  ✅ Créée : {title}")
-            existing.add(title)
             created += 1
             if project_id:
                 add_issue_to_project(project_id, issue.node_id)
 
-    print(f"\n🎉 Terminé — {created} créée(s), {skipped} ignorée(s)")
+    print(f"\n🎉 Terminé — {created} créée(s)")
 
 if __name__ == "__main__":
     main()

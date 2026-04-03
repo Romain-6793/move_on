@@ -1,2 +1,115 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<%# Homepage Move On – rendue par PagesController#home (route root). %>
+<%# Sections : hero → comment ça marche → critères → CTA. %>
+<%# Le footer et la navbar sont rendus dans le layout application.html.erb. %>
+
+<%# ── HERO ──────────────────────────────────────────────────────────────── %>
+<%# Première impression : gradient coloré, titre accrocheur et 2 CTA principaux %>
+<section class="hero">
+  <h1>Trouvez la ville<br><span>qui vous correspond</span></h1>
+  <p>
+    Move On vous guide dans le choix de votre prochaine destination de vie,
+    selon vos critères personnels et professionnels.
+  </p>
+  <div class="hero-btns">
+    <%# CTA primaire : lance directement une recherche sans inscription %>
+    <%= link_to new_guest_search_path, class: "btn-hero-primary" do %>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Recherche rapide
+    <% end %>
+    <%# CTA secondaire : invite à créer un compte pour sauvegarder ses recherches %>
+    <%= link_to "Je m'inscris", new_user_registration_path, class: "btn-hero-secondary" %>
+  </div>
+</section>
+
+<%# ── COMMENT ÇA MARCHE ─────────────────────────────────────────────────── %>
+<%# 3 étapes illustrées par des emojis dans un cercle vert doux %>
+<section class="section section-center">
+  <h2>Comment ça marche&nbsp;?</h2>
+  <p class="section-sub">En 3 étapes simples, trouvez votre ville idéale</p>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-icon">📋</div>
+      <h3>1. Définissez vos critères</h3>
+      <p>
+        Sélectionnez et pondérez les critères qui comptent pour vous :
+        emploi, immobilier, transports, loisirs…
+      </p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-icon">📊</div>
+      <h3>2. Comparez les résultats</h3>
+      <p>
+        Découvrez les villes qui correspondent le mieux à vos attentes
+        avec un score personnalisé.
+      </p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-icon">🗺️</div>
+      <h3>3. Explorez et décidez</h3>
+      <p>
+        Trouvez les résultats de votre recherche sur notre carte.
+        Explorez le marché immobilier de ces villes. Exportez votre recherche.
+      </p>
+    </div>
+  </div>
+</section>
+
+<%# ── CRITÈRES DE RECHERCHE ─────────────────────────────────────────────── %>
+<%# Présente les données disponibles pour rassurer l'utilisateur sur la qualité %>
+<section class="criteria-section section-center">
+  <h2>Nos critères de recherche</h2>
+  <p class="section-sub">Des données fiables pour un choix éclairé</p>
+
+  <div class="criteria-grid">
+    <div class="criteria-card">
+      <div class="criteria-card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        Critères essentiels
+      </div>
+      <ul>
+        <li><span class="dot"></span>Prix moyen de l'immobilier (location/achat)</li>
+        <li><span class="dot"></span>Proximité d'une grande ville</li>
+        <li><span class="dot"></span>Marché de l'emploi dans la région</li>
+        <li><span class="dot"></span>Accessibilité et transports</li>
+      </ul>
+    </div>
+
+    <div class="criteria-card">
+      <div class="criteria-card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Critères personnalisés
+      </div>
+      <ul>
+        <li><span class="dot"></span>Activités pratiquées (sports, loisirs)</li>
+        <li><span class="dot"></span>Potentiel de divertissement</li>
+        <li><span class="dot"></span>Qualité de l'air, espaces verts</li>
+        <li><span class="dot"></span>Indicateurs culturels et familiaux</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<%# ── BANDE CTA ──────────────────────────────────────────────────────────── %>
+<%# Dernier appel à l'action avant le footer : gradient inversé pour la symétrie %>
+<section class="cta-band">
+  <h2>Prêt à trouver votre ville idéale&nbsp;?</h2>
+  <p>
+    Rejoignez les milliers d'utilisateurs qui ont trouvé leur nouveau chez-soi
+    grâce à Move On.
+  </p>
+  <%= link_to "Lancer ma recherche", new_guest_search_path, class: "btn-cta-white" %>
+</section>

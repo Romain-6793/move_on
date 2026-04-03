@@ -1,0 +1,56 @@
+// Section hero – premier élément visible de la homepage.
+// Gradient diagonal bleu → vert pour évoquer ciel et nature.
+// La vague blanche en bas est un pseudo-élément ::after avec clip-path,
+// ce qui crée une transition douce vers la section suivante sans image.
+
+.hero {
+  background: linear-gradient(135deg, #4FC3F7 0%, #7CB342 55%, #558B2F 100%);
+  padding: 96px 24px 110px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  // Vague elliptique blanche découpant le bas du hero
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: var(--white-soft);
+    // ellipse(largeur hauteur at position-x position-y)
+    clip-path: ellipse(55% 100% at 50% 100%);
+  }
+
+  h1 {
+    // clamp(min, préféré, max) → taille fluide selon la largeur de l'écran
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 8px;
+
+    // Accent bleu clair pour la deuxième ligne du titre
+    span { color: var(--yellow-accent); }
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 1.05rem;
+    max-width: 520px;
+    margin: 0 auto 36px;
+    line-height: 1.65;
+  }
+
+  // Groupe de boutons CTA, centré et passant en colonne sur mobile
+  .hero-btns {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    // S'assure que les boutons restent au-dessus de la vague ::after
+    position: relative;
+    z-index: 1;
+  }
+}

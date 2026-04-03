@@ -1,9 +1,14 @@
-// Import Google fonts
-@import url('https://fonts.googleapis.com/css?family=Nunito:400,700|Work+Sans:400,700&display=swap');
+// Import Google fonts – 3 familles utilisées par le design Move On :
+//   Inter    → texte courant (lisibilité optimale sur écran)
+//   Poppins  → titres et en-têtes (style moderne, geometrique)
+//   Nunito   → logo et marque (arrondi, expressif)
+// Fredoka ajoutée pour le titre de marque dans le footer :
+// police arrondie et bold qui s'approche visuellement du tracé du logo SVG.
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@700;800;900&family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
 
-// Define fonts for body and headers
-$body-font: "Work Sans", "Helvetica", "sans-serif";
-$headers-font: "Nunito", "Helvetica", "sans-serif";
+// Variables de polices consommées par bootstrap_variables.scss
+$body-font:    "Inter", "Helvetica", sans-serif;
+$headers-font: "Poppins", "Helvetica", sans-serif;
 
 // To use a font file (.woff) uncomment following lines
 // @font-face {

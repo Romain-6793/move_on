@@ -1,0 +1,58 @@
+<%# Footer sombre affiché sur toutes les pages via le layout application.html.erb. %>
+<%# Structure : colonne marque (gauche) + Navigation + Légal (droite). %>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+
+    <%# Colonne marque : logo bicolore, tagline et description de l'application %>
+    <div>
+      <div class="footer-brand-name">
+        <span class="move">Move</span> <span class="on">On</span>
+      </div>
+      <div class="footer-tagline">Find where you truly belong</div>
+      <p class="footer-desc">
+        Move On vous aide à trouver la ville idéale où vous installer en France,
+        selon vos critères personnels et professionnels.
+      </p>
+    </div>
+
+    <%# Colonne Navigation – liens principaux de l'application %>
+    <div class="footer-col">
+      <h4>Navigation</h4>
+      <ul>
+        <li><%= link_to "Accueil",             root_path %></li>
+        <li><%= link_to "Trouver sur la carte", maps_path %></li>
+        <% if user_signed_in? %>
+          <%# Connecté : accès direct au profil, pas de doublon connexion/inscription %>
+          <li><%= link_to "Nouvelle recherche", new_research_path %></li>
+          <li><%= link_to "Mon profil",          edit_user_registration_path %></li>
+          <li>
+            <%= link_to "Se déconnecter", destroy_user_session_path,
+                        data: { turbo_method: :delete } %>
+          </li>
+        <% else %>
+          <%# Visiteur : formulaire invité + incitation à rejoindre l'application %>
+          <li><%= link_to "Nouvelle recherche", new_guest_search_path %></li>
+          <li><%= link_to "S'inscrire",          new_user_registration_path %></li>
+          <li><%= link_to "Se connecter",        new_user_session_path %></li>
+        <% end %>
+      </ul>
+    </div>
+
+    <%# Colonne Légal – pages obligatoires (à créer via des routes dédiées si besoin) %>
+    <div class="footer-col">
+      <h4>Légal</h4>
+      <ul>
+        <li><a href="#">Mentions légales</a></li>
+        <li><a href="#">Politique de confidentialité</a></li>
+        <li><a href="#">CGU</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <%# Année générée dynamiquement pour ne jamais avoir à mettre à jour la date %>
+  <div class="footer-bottom">
+    &copy; <%= Time.current.year %> Move On. Tous droits réservés.
+  </div>
+</footer>

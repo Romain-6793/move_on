@@ -32,6 +32,7 @@ Limite chaque méthode à une seule responsabilité.
 Évite les N+1 queries : utilise includes, preload ou eager_load.
 Utilise des scopes nommés dans les modèles plutôt que des where répétés dans les contrôleurs.
 Gère les erreurs proprement : pas de rescue Exception, préfère rescue StandardError.
+Front end : tu te réfèreras à la palette graphique qui se trouve dans app/assets/stylesheets/config/_colors.scss
 Format des réponses
 Quand tu crées ou modifies un fichier, explique brièvement ce que tu fais et pourquoi avant de montrer le code.
 Si plusieurs approches existent, mentionne-les et justifie ton choix.

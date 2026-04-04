@@ -1,0 +1,68 @@
+// Section "Nos critères de recherche" – fond blanc chaud, grille 2 colonnes.
+// Les cards listent les critères disponibles pour la recherche de ville.
+
+.criteria-section {
+  background: var(--white-warm);
+  padding: 80px 24px;
+  text-align: center;
+}
+
+// Grille qui passe de 2 colonnes à 1 colonne sur mobile automatiquement
+.criteria-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.criteria-card {
+  background: var(--white-main);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  padding: 32px 28px;
+  text-align: left;
+
+  // En-tête de la card : icône SVG inline + libellé en vert foncé
+  .criteria-card-title {
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--green-dark);
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      padding: 7px 0;
+      font-size: 0.93rem;
+      color: var(--gray-800);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--gray-100);
+
+      // Pas de bordure sur le dernier élément pour éviter le double-border
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+  // Puce verte circulaire remplaçant les bullet points natifs
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--green-primary);
+    // flex-shrink: 0 empêche la puce de se réduire si le texte est long
+    flex-shrink: 0;
+  }
+}

@@ -1,0 +1,99 @@
+// Footer sombre avec branding, liens de navigation et mentions légales.
+// Grille 3 colonnes (2fr + 1fr + 1fr) qui passe en 1 colonne sur mobile.
+
+.site-footer {
+  background: var(--dark-footer);
+  padding: 56px 48px 24px;
+  color: rgba(255, 255, 255, 0.7);
+
+  // Grille principale : colonne marque (large) + 2 colonnes de liens
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 48px;
+    max-width: 1000px;
+    margin: 0 auto 40px;
+  }
+
+  // Titre de marque "Move On" : Fredoka s'approche visuellement du tracé arrondi et gras
+  // du logo SVG (texte converti en chemins, police d'origine non identifiable autrement).
+  // Les couleurs sont adaptées au fond sombre : blue-primary remplace blue-dark (meilleur contraste).
+  .footer-brand-name {
+    font-family: "Fredoka", "Nunito", sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+
+    .move { color: var(--blue-primary); }
+    .on   { color: var(--green-primary); }
+  }
+
+  // Slogan en italique vert clair sous le logo
+  .footer-tagline {
+    font-style: italic;
+    color: var(--green-soft);
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+  }
+
+  // Description courte de l'application
+  .footer-desc {
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.55);
+    max-width: 280px;
+  }
+
+  // Colonne de liens avec titre en majuscules et petite taille (style "label")
+  .footer-col {
+    h4 {
+      font-family: "Poppins", sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 16px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        margin-bottom: 10px;
+
+        a {
+          color: rgba(255, 255, 255, 0.7);
+          text-decoration: none;
+          font-size: 0.9rem;
+          transition: color 0.2s;
+
+          &:hover { color: var(--green-primary); }
+        }
+      }
+    }
+  }
+
+  // Séparateur et copyright en bas de footer
+  .footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  // Responsive : tout en colonne unique sur mobile
+  @media (max-width: 700px) {
+    padding: 40px 20px 20px;
+
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+  }
+}

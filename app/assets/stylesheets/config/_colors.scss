@@ -1,10 +1,33 @@
-// Define variables for your color scheme
-
-// For example:
-$red: #FD1015;
-$blue: #0D6EFD;
-$yellow: #FFC65A;
-$orange: #E67E22;
-$green: #1EDD88;
-$gray: #0E0000;
+// Variables SCSS utilisées par Bootstrap (bootstrap_variables.scss)
+$red:        #FD1015;
+$blue:       #0D6EFD;
+$yellow:     #FFC65A;
+$orange:     #E67E22;
+$green:      #1EDD88;
+$gray:       #0E0000;
 $light-gray: #F4F4F4;
+
+// Palette Move On – accessible partout via var(--nom-de-la-variable).
+// Les CSS custom properties (--) sont préférées aux variables SCSS pour le design system
+// car elles sont accessibles dans le HTML inline et peuvent être surchargées dynamiquement.
+:root {
+  --green-primary: #7CB342;
+  --green-soft:    #A5D6A7;
+  --green-dark:    #558B2F;
+  --blue-primary:  #4FC3F7;
+  --blue-soft:     #B3E5FC;
+  --blue-dark:     #0288D1;
+  --blue-teal:     #2E9EAD;
+  --brown-primary: #8D6E63;
+  --brown-soft:    #D7CCC8;
+  --yellow-accent: #FFCA28;
+  --white-main:    #FFFFFF;
+  --white-soft:    #FAFAFA;
+  --white-warm:    #FDFCFB;
+  --gray-100:      #F5F5F5;
+  --gray-200:      #EEEEEE;
+  --gray-300:      #E0E0E0;
+  --gray-600:      #757575;
+  --gray-800:      #424242;
+  --dark-footer:   #1E2A38;
+}

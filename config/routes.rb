@@ -24,4 +24,9 @@ end
   resources :guest_searches, only: [:new, :create] do
     get 'results', on: :collection, to: 'guest_searches#results'
   end
+
+  resources :chats, only: [:index, :show, :destroy, :update]
+
+  resources :messages, only: [:create, :destroy]
 end
+

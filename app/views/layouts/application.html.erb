@@ -1,18 +1,28 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>MoveOn</title>
+    <title>Move On – Trouvez la ville qui vous correspond</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-
   <body>
-    <%= yield %>
-    <p class="notice"><%= notice %></p>
-    <p class="alert"><%= alert %></p>
+    <%# Lien d'accessibilité pour sauter la navigation (utilisateurs clavier/lecteurs d'écran) %>
+    <%= link_to "Aller au contenu principal", "#main-content", class: "visually-hidden-focusable" %>
+
+    <header>
+      <%= render "shared/navbar" %>
+    </header>
+
+    <main id="main-content">
+      <%# Les flashes sont affichés avant le contenu de la page pour être vus immédiatement %>
+      <%= render "shared/flashes" %>
+      <%= yield %>
+    </main>
+
+    <%# Footer commun à toutes les pages %>
+    <%= render "shared/footer" %>
   </body>
 </html>

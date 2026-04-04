@@ -1,0 +1,36 @@
+<%# Barre de navigation principale – sticky en haut de toutes les pages. %>
+<%# Rendue depuis app/views/layouts/application.html.erb dans la balise <header>. %>
+<%# user_signed_in? est un helper fourni par Devise. %>
+<nav class="navbar-moveon d-flex align-items-center justify-content-between">
+  <%# Logo : image SVG extraite dans app/assets/images/logo.svg pour ne pas surcharger cette partial. %>
+  <%# mix-blend-mode: multiply (défini dans _navbar.scss) rend le fond quasi-blanc du SVG transparent %>
+  <%# sur le fond blanc de la navbar. %>
+  <%= link_to root_path, class: "navbar-brand" do %>
+    <%= image_tag "logo.svg", class: "nav-logo-icon", alt: "Move On" %>
+  <% end %>
+  <%# Liens de navigation centraux – visibles pour tous les visiteurs %>
+  <div class="nav-links">
+    <% if user_signed_in? %>
+      <%# Connecté : recherche via le formulaire complet (Research), carte, profil %>
+      <%= link_to "Mon profil",          profile_user_path(current_user), class: "nav-link-item" %>
+      <%= link_to "Nouvelle recherche", new_research_path,        class: "nav-link-item" %>
+      <%= link_to "Trouver sur la carte", maps_path,              class: "nav-link-item" %>
+    <% else %>
+      <%# Visiteur : recherche via le formulaire invité (GuestSearch) + carte %>
+      <%= link_to "Nouvelle recherche",  new_guest_search_path,   class: "nav-link-item" %>
+      <%= link_to "Trouver sur la carte", maps_path,              class: "nav-link-item" %>
+    <% end %>
+  </div>
+  <%# Actions droite : contenu différent selon l'état de session Devise %>
+  <div class="nav-actions">
+    <% if user_signed_in? %>
+      <%# Connecté : uniquement le bouton de déconnexion, les autres liens sont dans nav-links %>
+      <%= link_to "Se déconnecter", destroy_user_session_path,
+                  data: { turbo_method: :delete }, class: "btn-outline-nav" %>
+    <% else %>
+      <%# Visiteur non connecté : Connexion (discret) + Inscription (primary) %>
+      <%= link_to "Connexion",   new_user_session_path,        class: "btn-outline-nav" %>
+      <%= link_to "Inscription", new_user_registration_path,   class: "btn-primary-nav" %>
+    <% end %>
+  </div>
+</nav>

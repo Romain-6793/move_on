@@ -1,0 +1,25 @@
+// Bande d'appel à l'action (CTA) – placée avant le footer.
+// Gradient inversé par rapport au hero (vert → bleu) pour créer
+// une symétrie visuelle avec le début de la page.
+
+.cta-band {
+  background: linear-gradient(135deg, #7CB342 0%, #4FC3F7 100%);
+  padding: 72px 24px;
+  text-align: center;
+
+  h2 {
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 1rem;
+    margin-bottom: 32px;
+    // Limite la largeur pour rester lisible sur grands écrans
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

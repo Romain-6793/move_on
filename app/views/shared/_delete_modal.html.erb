@@ -1,0 +1,44 @@
+<%# Modale de confirmation avant suppression définitive du compte.
+    Déclenchée par le bouton "Supprimer mon compte" dans la sidebar via data-bs-target="#deleteAccountModal". %>
+<div class="modal fade"
+     id="deleteAccountModal"
+     tabindex="-1"
+     aria-labelledby="deleteAccountModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteAccountModalLabel">
+          <%# Icône stylée via .modal-header i.fa-triangle-exclamation dans _profile.scss %>
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          Supprimer mon compte
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer votre compte ?
+           <strong>Cette action est irréversible.</strong>
+        </p>
+        <p class="modal-warning-text">
+          Toutes vos recherches et conversations seront définitivement effacées.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">
+          Annuler
+        </button>
+
+        <%# button_to génère un <form> avec le token CSRF et la méthode DELETE.
+            C'est la façon Rails-native d'envoyer une requête destructive depuis le HTML. %>
+        <%= button_to "Supprimer définitivement",
+                      profile_user_path(current_user),
+                      method: :delete,
+                      class: "btn-modal-danger" %>
+      </div>
+
+    </div>
+  </div>
+</div>

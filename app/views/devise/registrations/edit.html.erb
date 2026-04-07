@@ -1,35 +1,89 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
+<%# Page de paramètres du compte Devise (email + mot de passe).
+    Distincte de la page de profil utilisateur (app/views/users/show.html.erb)
+    qui gère les informations personnelles (prénom, situation, projet...).
+    Ici on ne touche qu'aux informations sensibles gérées par Devise. %>
 
-<%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
-  <%= f.error_notification %>
+<div class="devise-page">
+  <div class="devise-card">
 
-  <div class="form-inputs">
-    <%= f.input :email, required: true, autofocus: true %>
+    <%# En-tête %>
+    <div class="devise-header">
+      <%= link_to root_path, class: "devise-logo" do %>
+        <span class="move">Move</span> <span class="on">On</span>
+      <% end %>
+      <h1 class="devise-title">Paramètres du compte</h1>
+      <p class="devise-subtitle">Modifiez votre e-mail ou votre mot de passe.</p>
+      <div class="devise-divider"></div>
+    </div>
 
-    <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-      <p>Currently waiting confirmation for: <%= resource.unconfirmed_email %></p>
+    <%# simple_form_for avec method: :put car la ressource est déjà persistée %>
+    <%= simple_form_for(resource, as: resource_name,
+                        url: registration_path(resource_name),
+                        html: { method: :put }) do |f| %>
+      <%= f.error_notification %>
+
+      <div class="form-inputs">
+        <%= f.input :email,
+                    label: "Adresse e-mail",
+                    required: true,
+                    autofocus: true,
+                    input_html: { autocomplete: "email" } %>
+
+        <%# Affiché uniquement si Devise est configuré avec :confirmable et qu'un
+            changement d'email est en attente de confirmation par l'utilisateur %>
+        <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+          <div class="alert alert-info py-2 small">
+            <i class="fa-solid fa-clock"></i>
+            En attente de confirmation pour : <strong><%= resource.unconfirmed_email %></strong>
+          </div>
+        <% end %>
+
+        <%= f.input :password,
+                    label: "Nouveau mot de passe",
+                    hint: "Laissez vide si vous ne souhaitez pas le changer.",
+                    required: false,
+                    input_html: { autocomplete: "new-password" } %>
+
+        <%= f.input :password_confirmation,
+                    label: "Confirmez le nouveau mot de passe",
+                    required: false,
+                    input_html: { autocomplete: "new-password" } %>
+
+        <%# Le mot de passe actuel est TOUJOURS requis par Devise pour valider
+            les changements — c'est une mesure de sécurité essentielle. %>
+        <%= f.input :current_password,
+                    label: "Mot de passe actuel",
+                    hint: "Requis pour confirmer vos modifications.",
+                    required: true,
+                    input_html: { autocomplete: "current-password" } %>
+      </div>
+
+      <div class="form-actions">
+        <%= f.button :submit, "Mettre à jour", class: "btn-devise-primary" %>
+      </div>
+
     <% end %>
 
-    <%= f.input :password,
-                hint: "leave it blank if you don't want to change it",
-                required: false,
-                input_html: { autocomplete: "new-password" } %>
-    <%= f.input :password_confirmation,
-                required: false,
-                input_html: { autocomplete: "new-password" } %>
-    <%= f.input :current_password,
-                hint: "we need your current password to confirm your changes",
-                required: true,
-                input_html: { autocomplete: "current-password" } %>
+    <%# ── Zone de danger ────────────────────────────────────────────────────
+        Séparée visuellement du formulaire principal pour éviter les clics
+        accidentels sur une action irréversible. %>
+    <div class="devise-danger-zone">
+      <h3><i class="fa-solid fa-triangle-exclamation"></i> Supprimer mon compte</h3>
+      <p>Cette action est définitive. Toutes vos données seront effacées.</p>
+
+      <%# button_to génère un <form> avec méthode DELETE et token CSRF.
+          C'est la façon Rails-native d'envoyer une requête destructive depuis le HTML.
+          turbo_confirm déclenche une boîte de dialogue de confirmation avant l'envoi. %>
+      <%= button_to "Supprimer définitivement mon compte",
+                    registration_path(resource_name),
+                    method: :delete,
+                    class: "btn-devise-danger",
+                    data: { turbo_confirm: "Êtes-vous sûr·e ? Cette action est irréversible." } %>
+    </div>
+
+    <div class="devise-links mt-3">
+      <%= link_to "← Retour à mon profil", profile_user_path(current_user) %>
+    </div>
+
   </div>
-
-  <div class="form-actions">
-    <%= f.button :submit, "Update" %>
-  </div>
-<% end %>
-
-<h3>Cancel my account</h3>
-
-<div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
-
-<%= link_to "Back", :back %>
+</div>

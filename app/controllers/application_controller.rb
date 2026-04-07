@@ -37,7 +37,8 @@ class ApplicationController < ActionController::Base
       :lastname,
       :date_of_birth,
       :situation,
-      :single
+      :single,
+      :relocation_project
     ])
   end
 

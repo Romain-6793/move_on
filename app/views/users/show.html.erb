@@ -1,2 +1,66 @@
-<h1>Some users show view</h1>
-<p>ID affiché : <%= @user.id %></p>
+<%# Page profil utilisateur — layout deux colonnes (sidebar + zone principale).
+    @user et @researches sont définis dans UsersController#show. %>
+<div class="profile-dashboard">
+
+  <%# ── COLONNE GAUCHE : sidebar profil ──────────────────────────────────── %>
+  <%= render "shared/profile_sidebar" %>
+
+  <%# ── COLONNE DROITE : contenu principal ───────────────────────────────── %>
+  <main class="profile-main">
+
+    <%# Onglets de navigation – seul "Mon profil" est actif pour l'instant %>
+    <nav class="profile-tabs" aria-label="Navigation du profil">
+      <a href="#" class="profile-tab profile-tab--active">Mon profil</a>
+      <a href="<%= new_research_path %>" class="profile-tab">Nouvelle recherche</a>
+      <a href="<%= maps_path %>" class="profile-tab">Trouver sur la carte</a>
+    </nav>
+
+    <%# Contenu de l'onglet "Mon profil" %>
+    <section class="profile-content-section">
+
+      <%# Affichage des messages flash (succès, erreur) %>
+      <% flash.each do |type, message| %>
+        <div class="alert alert-<%= type == 'notice' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
+          <%= message %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+      <% end %>
+
+      <h2 class="profile-section-title">Mes recherches</h2>
+
+      <% if @researches.any? %>
+        <div class="search-list">
+          <%# render collection: passe automatiquement chaque objet en variable locale `research`
+              et `research_counter` (utilisé comme index pour la couleur de la card). %>
+          <% @researches.each_with_index do |research, index| %>
+            <%= render "users/search_card", research: research, index: index %>
+          <% end %>
+        </div>
+      <% else %>
+        <%# État vide : invite l'utilisateur à créer sa première recherche %>
+        <div class="search-empty">
+          <i class="fa-solid fa-magnifying-glass search-empty-icon"></i>
+          <p class="search-empty-text">Vous n'avez pas encore de recherche sauvegardée.</p>
+          <%= link_to "Créer ma première recherche", new_research_path, class: "btn profile-btn" %>
+        </div>
+      <% end %>
+    </section>
+
+    <%# Bouton flottant LLM assistant — position: fixed en bas à droite via CSS %>
+    <%= link_to chats_path, class: "profile-fab", title: "Assistant IA" do %>
+      <i class="fa-solid fa-robot"></i>
+      <span class="profile-fab-label">Assistant</span>
+    <% end %>
+
+  </main>
+
+  <%# Modale de confirmation suppression compte (incluse une fois, en dehors du flow flex) %>
+  <%= render "shared/delete_modal" %>
+
+</div>
+
+<%# Footer simple %>
+<footer class="profile-footer">
+  <a href="#" class="profile-footer-link">Mentions légales</a>
+  <a href="#" class="profile-footer-link">Contact</a>
+</footer>

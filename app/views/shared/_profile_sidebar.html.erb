@@ -1,0 +1,121 @@
+<%# Sidebar du profil utilisateur.
+    Le data-controller="profile" active le Stimulus controller profile_controller.js
+    qui gère le toggle entre mode affichage et mode édition. %>
+<aside class="profile-sidebar" data-controller="profile">
+
+  <%# ── MODE AFFICHAGE (visible par défaut) ───────────────────────────────── %>
+  <div data-profile-target="displayMode">
+
+    <%# Avatar circulaire placeholder — à remplacer par Active Storage si upload ajouté plus tard %>
+    <div class="profile-avatar">
+      <i class="fa-solid fa-user"></i>
+    </div>
+
+    <h2 class="profile-username">
+      <%= "#{current_user.firstname} #{current_user.lastname}" %>
+    </h2>
+
+    <%# data-action="click->profile#toggleEdit" : au clic, Stimulus appelle toggleEdit() %>
+    <button class="btn profile-btn-edit" data-action="click->profile#toggleEdit">
+      <i class="fa-solid fa-pen-to-square"></i> Modifier
+    </button>
+
+    <ul class="profile-info-list">
+      <li class="profile-info-item">
+        <span class="profile-info-label">
+          <i class="fa-solid fa-cake-candles"></i> Date de naissance
+        </span>
+        <span class="profile-info-value">
+          <%= current_user.date_of_birth&.strftime("%d/%m/%Y") || "—" %>
+        </span>
+      </li>
+      <li class="profile-info-item">
+        <span class="profile-info-label">
+          <i class="fa-solid fa-envelope"></i> Email
+        </span>
+        <span class="profile-info-value"><%= current_user.email %></span>
+      </li>
+      <li class="profile-info-item">
+        <span class="profile-info-label">
+          <i class="fa-solid fa-map-location-dot"></i> Projet de relocation
+        </span>
+        <span class="profile-info-value">
+          <%= current_user.relocation_project.presence || "Non renseigné" %>
+        </span>
+      </li>
+    </ul>
+
+    <%# Bouton suppression en bas de sidebar, déclenche la modale Bootstrap %>
+    <div class="profile-sidebar-footer">
+      <button class="btn profile-btn-danger-sm"
+              data-bs-toggle="modal"
+              data-bs-target="#deleteAccountModal">
+        <i class="fa-solid fa-trash"></i> Supprimer mon compte
+      </button>
+    </div>
+  </div>
+
+  <%# ── MODE ÉDITION (masqué par défaut via d-none) ───────────────────────── %>
+  <%# form_with model: current_user génère les champs avec le nommage user[champ]
+      et déduit automatiquement la méthode PATCH (l'objet est déjà persisté en base).
+      On surcharge l'URL car notre route est /users/:id/profile et non /users/:id. %>
+  <%= form_with model: current_user,
+                url: profile_user_path(current_user),
+                data: { profile_target: "editMode" },
+                class: "d-none" do |f| %>
+
+    <div class="profile-avatar">
+      <i class="fa-solid fa-user"></i>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :firstname, "Prénom", class: "form-label" %>
+      <%= f.text_field :firstname, class: "form-control" %>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :lastname, "Nom", class: "form-label" %>
+      <%= f.text_field :lastname, class: "form-control" %>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :date_of_birth, "Date de naissance", class: "form-label" %>
+      <%# date_of_birth est stocké en datetime — to_date évite l'heure dans le champ %>
+      <%= f.date_field :date_of_birth,
+                       value: current_user.date_of_birth&.to_date,
+                       class: "form-control" %>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <%# L'email est en lecture seule — il se modifie via les paramètres Devise séparément %>
+      <input type="email" class="form-control" value="<%= current_user.email %>" disabled>
+      <small class="form-text text-muted">L'email se modifie dans les paramètres du compte.</small>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :situation, "Situation", class: "form-label" %>
+      <%# f.select génère un <select> dont les options correspondent aux valeurs autorisées par le modèle %>
+      <%= f.select :situation,
+                   [["Étudiant(e)", "student"], ["En activité", "working"], ["En famille", "family"]],
+                   {},
+                   class: "form-select" %>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :relocation_project, "Projet de relocation", class: "form-label" %>
+      <%= f.text_area :relocation_project, class: "form-control", rows: 3,
+                      placeholder: "Ex : Déménager seul vers une ville dynamique…" %>
+    </div>
+
+    <div class="profile-edit-actions">
+      <%= f.submit "Sauvegarder", class: "btn profile-btn" %>
+      <%# Annuler : re-toggle sans envoyer de requête %>
+      <button type="button" class="btn profile-btn-cancel"
+              data-action="click->profile#toggleEdit">
+        Annuler
+      </button>
+    </div>
+  <% end %>
+
+</aside>

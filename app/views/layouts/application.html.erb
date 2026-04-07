@@ -7,6 +7,9 @@
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <%# Permet aux vues d'injecter des balises <link> ou <script> supplémentaires dans le <head>.
+        Utilisé par exemple pour charger Mapbox GL JS uniquement sur la page carte. %>
+    <%= yield :head %>
   </head>
   <body>
     <%# Lien d'accessibilité pour sauter la navigation (utilisateurs clavier/lecteurs d'écran) %>

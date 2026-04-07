@@ -7,8 +7,9 @@
   top: 0;
   z-index: 100;
   background: var(--white-main);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-  height: 204px;
+  // Ombre plus légère pour ne pas peser visuellement sur le contenu dessous
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  height: 64px;
   padding: 0 48px;
 
   // Lien logo : icône SVG + texte "Move On" bicolore
@@ -22,7 +23,8 @@
   .nav-logo-icon {
     // Le SVG est carré (viewBox 843×842) : on fixe une hauteur et width:auto
     // pour respecter les proportions sans distorsion.
-    height: 156px;
+    // 40px = taille standard pour un logo dans une navbar de 64px (laisse 12px de marge haut/bas)
+    height: 40px;
     width: auto;
     // Empêche l'icône de se réduire sur petits écrans
     flex-shrink: 0;

@@ -1,6 +1,45 @@
+// Alertes flash – positionnées en bas à droite, par-dessus tout le contenu.
+// On surcharge ici les classes Bootstrap (.alert-info, .alert-warning) pour
+// les aligner avec la charte graphique Move On définie dans config/_colors.scss.
+
 .alert {
   position: fixed;
   bottom: 16px;
   right: 16px;
   z-index: 1000;
+
+  // Aspect général commun aux deux types d'alertes
+  border-radius: 10px;
+  border-width: 1.5px;
+  border-style: solid;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+  min-width: 260px;
+  max-width: 420px;
+
+  // Notice (confirmation, succès) → palette verte de Move On
+  // Fond doux pour ne pas agresser l'œil, texte foncé pour la lisibilité.
+  &.alert-info {
+    background-color: #EDF7E6; // teinté de --green-primary, plus doux que --green-soft
+    border-color: var(--green-primary);
+    color: var(--green-dark);
+
+    // Le bouton de fermeture Bootstrap hérite de la couleur du texte
+    .btn-close {
+      filter: invert(28%) sepia(40%) saturate(600%) hue-rotate(60deg);
+    }
+  }
+
+  // Alert (avertissement, erreur) → jaune accent de la palette
+  // Le jaune Move On (#FFCA28) est vif : on l'utilise en bordure + fond doux.
+  &.alert-warning {
+    background-color: #FFF8E1; // teinté de --yellow-accent
+    border-color: var(--yellow-accent);
+    color: var(--gray-800);
+
+    .btn-close {
+      filter: invert(15%) sepia(10%) saturate(400%) hue-rotate(0deg);
+    }
+  }
 }

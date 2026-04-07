@@ -1,0 +1,497 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Page Profil – styles principaux
+// Toutes les couleurs utilisent les CSS custom properties définies dans _colors.scss
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Layout général : deux colonnes côte à côte ───────────────────────────────
+.profile-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--white-warm);
+}
+
+// ── Sidebar gauche (~25%) ─────────────────────────────────────────────────────
+.profile-sidebar {
+  width: 280px;
+  min-width: 260px;
+  background-color: var(--white-main);
+  border-right: 1px solid var(--gray-200);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 32px;
+  color: var(--gray-600);
+}
+
+.profile-username {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 12px;
+}
+
+// Bouton "Modifier" dans la sidebar
+.profile-btn-edit {
+  display: block;
+  width: 100%;
+  background-color: var(--white-main);
+  color: var(--green-dark);
+  border: 1px solid var(--green-primary);
+  border-radius: 8px;
+  padding: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: 24px;
+
+  &:hover {
+    background-color: var(--green-primary);
+    color: var(--white-main);
+  }
+}
+
+// Liste des informations profil
+.profile-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1; // pousse le footer en bas de la sidebar
+}
+
+.profile-info-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-200);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.profile-info-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.profile-info-value {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--gray-800);
+  word-break: break-word;
+}
+
+// Footer de la sidebar (bouton suppression)
+.profile-sidebar-footer {
+  padding-top: 24px;
+  margin-top: auto;
+  border-top: 1px solid var(--gray-200);
+}
+
+// Bouton "Supprimer mon compte" — discret, style danger doux
+.profile-btn-danger-sm {
+  display: block;
+  width: 100%;
+  background-color: transparent;
+  color: var(--brown-primary);
+  border: 1px solid var(--brown-soft);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 0.8rem;
+  text-align: center;
+
+  &:hover {
+    background-color: var(--brown-soft);
+    color: var(--brown-primary);
+  }
+}
+
+// ── Formulaire d'édition inline ───────────────────────────────────────────────
+.profile-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+// Bouton "Sauvegarder"
+.profile-btn {
+  background-color: var(--green-primary);
+  color: var(--white-main);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex: 1;
+
+  &:hover {
+    background-color: var(--green-dark);
+    color: var(--white-main);
+  }
+}
+
+// Bouton "Annuler"
+.profile-btn-cancel {
+  background-color: transparent;
+  color: var(--gray-600);
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  flex: 1;
+
+  &:hover {
+    background-color: var(--gray-100);
+  }
+}
+
+// ── Zone principale droite ────────────────────────────────────────────────────
+.profile-main {
+  flex: 1;
+  padding: 32px 40px;
+  position: relative; // nécessaire pour positionner le bouton FAB en position: fixed
+  min-width: 0; // évite le dépassement de flex-item avec du contenu long
+}
+
+// ── Onglets de navigation ─────────────────────────────────────────────────────
+.profile-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--gray-200);
+  margin-bottom: 32px;
+}
+
+.profile-tab {
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px; // superpose la bordure basse de l'onglet sur celle du conteneur
+  border-radius: 4px 4px 0 0;
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    color: var(--green-dark);
+    background-color: var(--gray-100);
+  }
+
+  // Variante : onglet actif (classe ajoutée manuellement pour l'instant)
+  &--active {
+    color: var(--green-dark);
+    border-bottom-color: var(--green-primary);
+  }
+}
+
+// ── Section contenu ───────────────────────────────────────────────────────────
+.profile-content-section {
+  // Espace pour que le bouton FAB ne chevauche pas la dernière card
+  padding-bottom: 80px;
+}
+
+.profile-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 24px;
+}
+
+// ── Cards de recherche ────────────────────────────────────────────────────────
+.search-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.search-card {
+  background-color: var(--white-main);
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  // La bande de couleur gauche est ajoutée par les classes card-accent-*
+  border-left-width: 4px;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+}
+
+// Les 3 couleurs d'accent cyclées depuis la palette Move On
+.card-accent-blue   { border-left-color: var(--blue-primary); }
+.card-accent-green  { border-left-color: var(--green-primary); }
+.card-accent-yellow { border-left-color: var(--yellow-accent); }
+
+.search-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+// Boutons d'action des cards
+.search-action-btn {
+  background-color: transparent;
+  color: var(--gray-600);
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    background-color: var(--gray-100);
+    color: var(--gray-800);
+    border-color: var(--gray-600);
+  }
+
+  &.search-action-btn-danger {
+    color: var(--brown-primary);
+    border-color: var(--brown-soft);
+
+    &:hover {
+      background-color: var(--brown-soft);
+    }
+  }
+}
+
+// ── État vide (aucune recherche) ──────────────────────────────────────────────
+.search-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--gray-600);
+}
+
+.search-empty-icon {
+  font-size: 3rem;
+  color: var(--gray-300);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.search-empty-text {
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+}
+
+// ── Bouton flottant LLM assistant ─────────────────────────────────────────────
+// position: fixed pour rester visible lors du scroll, indépendamment du layout
+.profile-fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--blue-teal);
+  color: var(--white-main);
+  border-radius: 32px;
+  padding: 14px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(46, 158, 173, 0.35);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  z-index: 50;
+
+  &:hover {
+    background-color: var(--blue-dark);
+    color: var(--white-main);
+    box-shadow: 0 6px 20px rgba(2, 136, 209, 0.4);
+  }
+}
+
+// ── Modales de confirmation ───────────────────────────────────────────────────
+// On surcharge le modal Bootstrap pour coller à la charte Move On :
+// pas de rouge agressif, couleurs issues de la palette custom properties.
+
+.modal-content {
+  border: none;
+  border-radius: 16px;
+  // Ombre douce cohérente avec les cards et la devise-card
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  overflow: hidden; // s'assure que les coins arrondis s'appliquent à l'header
+}
+
+.modal-header {
+  background-color: var(--white-main);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 20px 24px 16px;
+
+  .modal-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    // Icône d'avertissement dans la palette brun/danger douce
+    i.fa-triangle-exclamation {
+      color: var(--brown-primary);
+    }
+  }
+
+  // Croix de fermeture Bootstrap : on la colore dans les tons gris doux
+  .btn-close {
+    opacity: 0.5;
+    &:hover { opacity: 1; }
+  }
+}
+
+.modal-body {
+  background-color: var(--white-soft);
+  padding: 20px 24px;
+
+  p { color: var(--gray-800); font-size: 0.95rem; margin-bottom: 8px; }
+
+  .modal-warning-text {
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    margin: 0;
+  }
+}
+
+.modal-footer {
+  background-color: var(--white-main);
+  border-top: 1px solid var(--gray-200);
+  padding: 16px 24px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+// Bouton "Annuler" dans les modales — identique au profile-btn-cancel
+.btn-modal-cancel {
+  background-color: transparent;
+  color: var(--gray-600);
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  padding: 9px 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:hover {
+    background-color: var(--gray-100);
+    color: var(--gray-800);
+    border-color: var(--gray-600);
+  }
+}
+
+// Bouton de confirmation destructive — ton brun, pas le rouge Bootstrap
+// Le brun est moins agressif mais reste visuellement distinct du reste
+.btn-modal-danger {
+  background-color: var(--brown-primary);
+  color: var(--white-main);
+  border: none;
+  border-radius: 10px;
+  padding: 9px 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    background-color: #6d4c41; // brun plus sombre pour le survol
+    box-shadow: 0 2px 8px rgba(141, 110, 99, 0.3);
+    color: var(--white-main);
+  }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.profile-footer {
+  background-color: var(--white-main);
+  border-top: 1px solid var(--gray-200);
+  padding: 16px 40px;
+  display: flex;
+  gap: 24px;
+}
+
+.profile-footer-link {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--green-dark);
+    text-decoration: underline;
+  }
+}
+
+// ── Responsive : mobile (sidebar passe au-dessus du contenu) ─────────────────
+@media (max-width: 768px) {
+  .profile-dashboard {
+    flex-direction: column;
+  }
+
+  .profile-sidebar {
+    width: 100%;
+    min-width: unset;
+    border-right: none;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 24px 16px;
+  }
+
+  .profile-main {
+    padding: 24px 16px;
+  }
+
+  .search-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-card-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .profile-fab {
+    bottom: 16px;
+    right: 16px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+  }
+
+  .profile-footer {
+    padding: 16px;
+    justify-content: center;
+  }
+}

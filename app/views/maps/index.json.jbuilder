@@ -21,7 +21,7 @@ json.cities do
     end
     json.properties do
       json.id                      city.id
-      json.city_name               city.city_name
+      json.nom_com                 city.nom_com 
       json.real_estate_score       city.real_estate_score
       json.job_market_score        city.job_market_score
       json.transport_network_score city.transport_network_score
@@ -63,7 +63,7 @@ json.pois do
       json.kind      poi.kind
       json.category  poi.category
       json.public    poi.public
-      json.city_name poi.city.city_name
+      json.nom_com   poi.city.nom_com
     end
   end
 end

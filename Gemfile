@@ -54,6 +54,8 @@ gem "sassc-rails"
 
 gem "pundit"
 
+gem "solid_queue"
+
 group :development, :test do
   gem "dotenv-rails"
   # Faker génère des données réalistes pour les seeds (noms, textes, nombres…)

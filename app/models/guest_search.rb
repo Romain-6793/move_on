@@ -1,0 +1,2 @@
+class GuestSearch < ApplicationRecord
+end

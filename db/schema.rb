@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_07_093546) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_08_094623) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -25,11 +25,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_07_093546) do
   create_table "cities", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "depcom", null: false
+    t.string "insee", null: false
     t.string "nom_com", null: false
     t.float "latitude", null: false
     t.float "longitude", null: false
-    t.string "posi_geo"
     t.string "cv"
     t.string "nom_cv"
     t.string "dep"
@@ -37,24 +36,32 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_07_093546) do
     t.string "reg"
     t.string "nom_reg"
     t.string "libgeo"
+    t.string "paysage"
     t.float "APL2023"
     t.integer "code_qual"
     t.float "avg_price_sqm"
     t.float "median_price_sqm"
     t.integer "total_transactions"
     t.integer "transactions_last_year"
-    t.float "taux_chomage"
+    t.float "chom_24"
     t.integer "population"
     t.float "population_density"
     t.integer "count_coll"
     t.integer "count_ecol"
     t.integer "count_lyce"
+    t.integer "nb_comm"
+    t.integer "nb_cultu"
+    t.integer "nb_com_ali"
+    t.integer "nb_gd_surf"
+    t.integer "nb_loisirs"
+    t.integer "nb_sport"
+    t.integer "nb_creche"
     t.float "BUS_valeur"
-    t.float "BUS_vale_1"
+    t.float "BUS_val_1"
     t.float "TRAIN_valeur"
     t.float "TRAIN_val_1"
-    t.float "METRO_vale"
-    t.float "METRO_va_1"
+    t.float "METRO_valeur"
+    t.float "METRO_val_1"
     t.float "TRAM_valeur"
     t.float "TRAM_val_1"
     t.string "real_estate_link"

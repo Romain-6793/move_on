@@ -62,7 +62,7 @@ FRENCH_CITIES.each do |city_data|
   # rand(1.0..10.0).round(1) génère un float entre 1.0 et 10.0 avec 1 décimale
   city = City.create!(
     nom_com:                  city_data[:name],
-    depcom:                   city_data[:insee_code],
+    insee:                    city_data[:insee_code],
     latitude:                 city_data[:lat],
     longitude:                city_data[:lng],
     real_estate_score:        rand(1.0..10.0).round(1),

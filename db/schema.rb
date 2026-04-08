@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_08_094623) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_08_101354) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -110,7 +110,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_08_094623) do
     t.integer "density", default: 2000
     t.boolean "no_filters"
     t.integer "real_estate", default: 0
-    t.integer "nearest_big_city", default: 0
+    t.integer "near_big_city", default: 0
     t.integer "job_market", default: 0
     t.integer "transport_network", default: 0
     t.integer "activities", default: 0
@@ -127,6 +127,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_08_094623) do
     t.string "activity_3"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "chosen_nearest_big_city"
+    t.string "education_1"
+    t.string "education_2"
+    t.string "education_3"
+    t.string "education_4"
+    t.string "education_5"
     t.index ["user_id"], name: "index_researches_on_user_id"
   end
 

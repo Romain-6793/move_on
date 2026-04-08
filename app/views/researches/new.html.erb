@@ -1,1 +1,285 @@
-<h1>Some researches new view</h1>
+<%#
+  Vue "Nouvelle recherche" – formulaire guidé de création d'une recherche personnalisée.
+
+  Structure du formulaire :
+    A) Nom de la recherche (champ texte libre)
+    B) Filtres géographiques : mer / montagne / indifférent + jauge de population
+    C) Critères de sélection répartis en 3 niveaux : essentiel / important / bonus
+       - 7 critères disponibles, chacun affiché dans les 3 sous-sections
+       - Max 3 critères par sous-section
+       - Un critère sélectionné disparaît des grilles et génère un tag dans le résumé
+       - Spécificité Éducation : sélection de niveaux scolaires obligatoire avant sélection
+
+  Toute l'interactivité est gérée par le contrôleur Stimulus "research-form"
+  (app/javascript/controllers/research_form_controller.js).
+%>
+
+<%#
+  DONNÉES STATIQUES – définies ici plutôt que dans le contrôleur car elles sont
+  purement presentationnelles et ne nécessitent pas de logique métier.
+
+  Critères : clé symbolique (= nom du champ en base), titre affiché, couleur de la card,
+             et description provisoire (lorem ipsum – à remplacer par les vraies sources).
+
+  Les couleurs s'inspirent des catégories de POI de la carte Mapbox (map_controller.js)
+  pour une cohérence visuelle entre la carte et le formulaire.
+%>
+<% criteria = [
+  {
+    key: 'real_estate',
+    title: 'Bons plans immobiliers',
+    color: '#8D6E63',  # brown-primary – evoque la pierre, le bâti
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem ' \
+                 'accusantium doloremque laudantium totam rem aperiam eaque ipsa quae.'
+  },
+  {
+    key: 'job_market',
+    title: 'Emploi',
+    color: '#FFCA28',  # yellow-accent – dynamisme économique
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis ' \
+                 'suscipit laboriosam nisi ut aliquid ex ea commodi consequatur.'
+  },
+  {
+    key: 'transport_network',
+    title: 'Qualité du réseau de transports',
+    color: '#0288D1',  # blue-dark – cohérent avec la catégorie Transport de la carte
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse ' \
+                 'quam nihil molestiae consequatur vel illum qui dolorem eum fugiat.'
+  },
+  {
+    key: 'living_cost',
+    title: 'Coût de la vie',
+    color: '#7CB342',  # green-primary – « faire des économies », croissance sereine
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis ' \
+                 'praesentium voluptatum deleniti atque corrupti quos dolores quas molestias.'
+  },
+  {
+    key: 'education',
+    title: 'Éducation',
+    color: '#558B2F',  # green-dark – apprentissage, nature, croissance
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Nam libero tempore cum soluta nobis est eligendi optio cumque nihil ' \
+                 'impedit quo minus id quod maxime placeat facere possimus omnis voluptas.'
+  },
+  {
+    key: 'health',
+    title: 'Accès aux soins',
+    color: '#2E9EAD',  # blue-teal – cohérent avec la catégorie Santé de la carte
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Temporibus autem quibusdam et aut officiis debitis aut rerum ' \
+                 'necessitatibus saepe eveniet ut et voluptates repudiandae recusandae.'
+  },
+  {
+    key: 'commercial_life',
+    title: 'Vie commerciale de la ville',
+    color: '#4FC3F7',  # blue-primary – cohérent avec la catégorie Commerce de la carte
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Itaque earum rerum hic tenetur a sapiente delectus ut aut reiciendis ' \
+                 'voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.'
+  }
+] %>
+
+<%#
+  SOUS-SECTIONS de critères – définissent les 3 niveaux d'importance.
+  summary_label : libellé affiché dans le résumé des tags en bas de chaque sous-section.
+%>
+<% sections = [
+  {
+    key: 'essential',
+    label: 'Ce qui est essentiel',
+    summary_label: 'Critères essentiels',
+    icon: '⭐'
+  },
+  {
+    key: 'important',
+    label: 'Ce qui est important',
+    summary_label: 'Critères importants',
+    icon: '✦'
+  },
+  {
+    key: 'bonus',
+    label: 'Les bonus',
+    summary_label: 'Bonus',
+    icon: '+'
+  }
+] %>
+
+<div class="research-form-page">
+
+  <%#
+    form_with construit le formulaire HTML en déduisant automatiquement :
+      - l'URL : POST /researches (car @research est un nouvel enregistrement)
+      - les noms de champs : research[nom_du_champ]
+    data-controller="research-form" connecte le contrôleur Stimulus au formulaire entier.
+  %>
+  <%= form_with model: @research,
+                html: { class: 'research-form',
+                        data: { controller: 'research-form' } } do |f| %>
+
+    <h1 class="research-form-title">Nouvelle recherche</h1>
+
+    <%# ═══════════════════════════════════════════════════════
+        A) NOM DE LA RECHERCHE
+        ═══════════════════════════════════════════════════════ %>
+    <div class="research-section-block">
+      <%= f.label :research_name, 'Nom de la recherche', class: 'research-section-label' %>
+      <%= f.text_field :research_name,
+            placeholder: 'Ex : Ma vie en bord de mer, Retraite tranquille en montagne…',
+            class: 'research-name-input',
+            autocomplete: 'off' %>
+    </div>
+
+    <%# ═══════════════════════════════════════════════════════
+        B) FILTRES GÉOGRAPHIQUES
+        ═══════════════════════════════════════════════════════ %>
+    <div class="research-section-block">
+      <p class="research-section-label">Filtres géographiques</p>
+
+      <%#
+        Radio buttons "pills" pour choisir le type de paysage.
+        Ces radio ne sont pas liés à un champ de modèle directement :
+        le contrôleur Stimulus (updateGeoFilter) met à jour les champs
+        cachés coast / mountain / no_filters selon l'option choisie.
+        "Indifférent" est coché par défaut (pas de filtre de paysage).
+      %>
+      <div class="geo-filters-group">
+        <% [
+          { value: 'coast',       label: '🌊 Mer' },
+          { value: 'mountain',    label: '⛰️  Montagne' },
+          { value: 'indifferent', label: '🗺️  Indifférent' }
+        ].each do |option| %>
+          <input type="radio"
+                 name="geo_filter"
+                 id="geo_<%= option[:value] %>"
+                 value="<%= option[:value] %>"
+                 class="geo-radio-option"
+                 data-action="change->research-form#updateGeoFilter"
+                 <%= 'checked' if option[:value] == 'indifferent' %>>
+          <label for="geo_<%= option[:value] %>"><%= option[:label] %></label>
+        <% end %>
+      </div>
+
+      <%#
+        Champs cachés pour les booléens soumis avec le formulaire.
+        Ils sont gérés par updateGeoFilter dans le contrôleur Stimulus.
+        Les targets permettent à Stimulus de les trouver facilement.
+      %>
+      <%= f.hidden_field :coast,
+            value: '0',
+            data: { research_form_target: 'coastField' } %>
+      <%= f.hidden_field :mountain,
+            value: '0',
+            data: { research_form_target: 'mountainField' } %>
+      <%= f.hidden_field :no_filters,
+            value: '1',
+            data: { research_form_target: 'noFiltersField' } %>
+
+      <%#
+        Jauge de population : l'utilisateur peut indiquer la taille approximative
+        de ville recherchée (de "toutes tailles" à 2 000 000 habitants).
+        Le champ `density` est utilisé pour stocker cette valeur (0 = pas de filtre).
+      %>
+      <div class="population-slider-wrapper">
+        <div class="population-slider-header">
+          <span class="population-slider-label-text">Taille de la ville</span>
+          <span class="population-value"
+                data-research-form-target="populationDisplay">Toutes tailles</span>
+        </div>
+
+        <%= f.range_field :density,
+              min: 0,
+              max: 2_000_000,
+              step: 10_000,
+              value: 0,
+              class: 'population-slider',
+              data: { action: 'input->research-form#updatePopulation' } %>
+
+        <div class="population-slider-extremes">
+          <span>Toutes tailles</span>
+          <span>2 000 000 hab.</span>
+        </div>
+      </div>
+    </div>
+
+    <%# ═══════════════════════════════════════════════════════
+        C) CRITÈRES DE SÉLECTION
+        ═══════════════════════════════════════════════════════ %>
+    <div class="research-section-block">
+      <p class="research-section-label">Critères de sélection</p>
+      <p class="research-section-hint">
+        Répartissez vos critères selon leur importance pour vous.
+        <strong>Maximum 3 critères par niveau.</strong>
+        Cocher un critère le retire de la grille et crée un tag de résumé ci-dessous.
+        Pour le retirer, cliquez le <strong>×</strong> sur son tag.
+      </p>
+
+      <%#
+        On itère sur les 3 sous-sections.
+        Chaque sous-section affiche la MÊME grille de 7 cartes,
+        mais l'état de sélection est indépendant par section (géré par Stimulus).
+      %>
+      <% sections.each do |section| %>
+        <%#
+          data-section-key est utilisé par animateLimitReached() dans le contrôleur
+          pour cibler la sous-section qui doit s'animer quand la limite est atteinte.
+        %>
+        <div class="criteria-subsection"
+             data-section-key="<%= section[:key] %>">
+
+          <div class="criteria-subsection-title">
+            <span><%= section[:icon] %></span>
+            <span><%= section[:label] %></span>
+          </div>
+
+          <%# Grille des cartes disponibles (non encore sélectionnées) %>
+          <div class="criterion-cards-grid">
+            <% criteria.each do |criterion| %>
+              <%#
+                On passe le critère ET la section au partial.
+                Chaque combinaison (critère × section) génère une instance distincte.
+                Le target "card" sur chaque div permet à Stimulus de les retrouver toutes.
+              %>
+              <%= render 'criterion_card',
+                    criterion: criterion,
+                    section:   section[:key] %>
+            <% end %>
+          </div>
+
+          <%#
+            Résumé de la sous-section : affiche le nombre de critères sélectionnés
+            et les tags correspondants. Tout le contenu des tags-list est injecté
+            dynamiquement par le contrôleur Stimulus (updateTagsLists).
+
+            Les noms de targets sont construits dynamiquement :
+              "essentialCount", "importantCount", "bonusCount"
+              "essentialTagsList", "importantTagsList", "bonusTagsList"
+          %>
+          <div class="criteria-summary">
+            <span class="criteria-summary-label">
+              <%= section[:summary_label] %>
+              (<span data-research-form-target="<%= section[:key] %>Count">0</span>/3)
+            </span>
+            <div class="criteria-tags-list"
+                 data-research-form-target="<%= section[:key] %>TagsList">
+            </div>
+          </div>
+
+        </div>
+      <% end %>
+    </div>
+
+    <%#
+      Bouton de soumission.
+      Note : le contrôleur create est actuellement vide – la logique serveur
+      sera implémentée dans une prochaine itération.
+    %>
+    <div class="research-submit-wrapper">
+      <%= f.submit 'Lancer ma recherche →', class: 'btn-research-submit' %>
+    </div>
+
+  <% end %>
+</div>

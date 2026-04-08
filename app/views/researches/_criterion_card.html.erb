@@ -1,0 +1,88 @@
+<%#
+  Partial : carte d'un critère de recherche.
+
+  Ce composant est affiché dans chacune des 3 sous-sections (essentiel, important, bonus),
+  soit 21 instances au total pour 7 critères.
+  Le contrôleur Stimulus "research-form" masque automatiquement toutes les copies d'un
+  critère dès qu'il est sélectionné, quelle que soit la sous-section.
+
+  Locals attendus :
+    criterion  – Hash { key:, title:, color:, description: }
+    section    – String : 'essential' | 'important' | 'bonus'
+%>
+<%# On compose l'id unique de la checkbox pour relier le <label> (accessibilité) %>
+<% checkbox_id = "criterion_#{criterion[:key]}_#{section}" %>
+<div class="criterion-card"
+     data-research-form-target="card"
+     data-criterion="<%= criterion[:key] %>"
+     data-section="<%= section %>"
+     data-title="<%= criterion[:title] %>"
+     data-color="<%= criterion[:color] %>"
+     style="--card-color: <%= criterion[:color] %>">
+  <%# Bandeau de couleur en haut : repère visuel rapide du critère %>
+  <div class="criterion-card-color-band"></div>
+  <div class="criterion-card-body">
+    <%# Titre du critère %>
+    <p class="criterion-card-title"><%= criterion[:title] %></p>
+    <%# Bouton accordéon : déplie la description des sources et du calcul du score %>
+    <button class="criterion-card-info-btn"
+            type="button"
+            data-action="click->research-form#toggleAccordion">
+      En savoir plus ▾
+    </button>
+    <%# Contenu déroulant – caché par défaut (hidden = display:none natif HTML).
+        Contiendra les sources de données et la méthode de calcul du score. %>
+    <div class="criterion-card-accordion" hidden>
+      <p><%= criterion[:description] %></p>
+    </div>
+  </div>
+  <%# ─── Spécificité Éducation ───────────────────────────────────────────
+      Ce bloc n'est rendu que pour le critère Éducation.
+      L'utilisateur doit préciser ses niveaux scolaires AVANT de pouvoir
+      cocher la checkbox. Cela garantit que la sélection est toujours précise.
+  %>
+  <% if criterion[:key] == 'education' %>
+    <div class="education-selector">
+      <p class="education-selector-label">Niveaux scolaires souhaités</p>
+      <%# Zone injectée dynamiquement par Stimulus avec les tags de niveaux choisis %>
+      <div class="education-inner-tags"
+           data-research-form-target="educationTagsDisplay">
+      </div>
+      <div class="education-selector-controls">
+        <%# Le select liste les 5 niveaux scolaires disponibles.
+            Les options déjà sélectionnées sont désactivées par Stimulus. %>
+        <select data-research-form-target="educationSelect">
+          <option value="">Choisir un niveau…</option>
+          <option value="Crèches">Crèches</option>
+          <option value="Écoles maternelles">Écoles maternelles</option>
+          <option value="Écoles élémentaires">Écoles élémentaires</option>
+          <option value="Collèges">Collèges</option>
+          <option value="Lycées">Lycées</option>
+        </select>
+        <button type="button"
+                class="education-add-btn"
+                data-action="click->research-form#addEducationTag">
+          +
+        </button>
+      </div>
+    </div>
+  <% end %>
+  <%# Pied de carte : checkbox de sélection du critère dans cette sous-section %>
+  <div class="criterion-card-footer">
+    <%# Le wrapper .checkbox-disabled est ajouté/retiré dynamiquement par Stimulus.
+        Pour Éducation, il est présent dès le départ (checkbox grisée au rendu initial). %>
+    <div class="criterion-card-checkbox-wrapper <%= 'checkbox-disabled' if criterion[:key] == 'education' %>">
+      <input type="checkbox"
+             id="<%= checkbox_id %>"
+             data-action="change->research-form#selectCriterion"
+      data-criterion="<%= criterion[:key] %>"
+      data-section="<%= section %>"
+      <%# Pour Éducation : cible Stimulus + désactivé jusqu'à ajout de tags %>
+      <% if criterion[:key] == 'education' %>
+        data-research-form-target="educationCheckbox"
+        disabled
+      <% end %>>
+      <label for="<%= checkbox_id %>">Sélectionner</label>
+    </div>
+  </div>
+</div>

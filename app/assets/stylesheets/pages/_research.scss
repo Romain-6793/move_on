@@ -1,0 +1,587 @@
+// Page "Nouvelle recherche" – tous les styles spécifiques au formulaire de création.
+// On utilise des CSS custom properties (var(--xxx)) pour les couleurs dynamiques
+// injectées via style inline (--card-color, --tag-color) depuis la vue ERB.
+
+// ─── Mise en page générale ─────────────────────────────────────────────────
+
+.research-form-page {
+  background: var(--gray-100);
+  min-height: 100vh;
+  padding: 48px 16px 100px;
+}
+
+// Conteneur centré du formulaire
+.research-form {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+// ─── Titre de page ──────────────────────────────────────────────────────────
+
+.research-form-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+// ─── Blocs de section (A, B, C) ────────────────────────────────────────────
+// Chaque section principale est encadrée dans un "bloc" blanc avec ombre légère.
+
+.research-section-block {
+  background: var(--white-main);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+// Libellé de section avec barre verte sur la gauche
+.research-section-label {
+  font-family: "Poppins", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  // La barre verticale verte est un pseudo-élément pour éviter du HTML supplémentaire
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 20px;
+    background: var(--green-primary);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+}
+
+// Texte d'explication sous le label de section
+.research-section-hint {
+  font-size: 0.88rem;
+  color: var(--gray-600);
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+// ─── A) Champ nom de la recherche ──────────────────────────────────────────
+
+.research-name-input {
+  width: 100%;
+  padding: 14px 20px;
+  border: 2px solid var(--gray-300);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: "Poppins", sans-serif;
+  color: var(--gray-800);
+  background: var(--white-soft);
+  transition: border-color 0.2s, background 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--green-primary);
+    background: var(--white-main);
+  }
+
+  &::placeholder {
+    color: var(--gray-600);
+    font-style: italic;
+  }
+}
+
+// ─── B) Filtres géographiques ──────────────────────────────────────────────
+
+// Groupe de boutons radio stylisés en "pills"
+.geo-filters-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+// On cache le radio natif et on style le <label> correspondant comme bouton
+.geo-radio-option {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+
+  & + label {
+    cursor: pointer;
+    padding: 10px 22px;
+    border-radius: 50px;
+    border: 2px solid var(--gray-300);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    background: var(--white-main);
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+  }
+
+  // État coché : fond vert primaire, texte blanc
+  &:checked + label {
+    border-color: var(--green-primary);
+    background: var(--green-primary);
+    color: white;
+  }
+
+  // État focus clavier : anneau visible pour l'accessibilité
+  &:focus-visible + label {
+    outline: 2px solid var(--green-primary);
+    outline-offset: 3px;
+  }
+}
+
+// Slider de population
+.population-slider-wrapper {
+  margin-top: 8px;
+}
+
+.population-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.population-slider-label-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+// Valeur courante du slider mise en avant en vert
+.population-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--green-dark);
+}
+
+// Slider personnalisé – compatible webkit et Firefox
+.population-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    var(--green-primary) 0%,
+    var(--green-primary) var(--slider-progress, 0%),
+    var(--gray-300) var(--slider-progress, 0%),
+    var(--gray-300) 100%
+  );
+  outline: none;
+  cursor: pointer;
+
+  // Poignée webkit (Chrome/Safari)
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--green-primary);
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s;
+
+    &:hover { transform: scale(1.15); }
+  }
+
+  // Poignée Firefox
+  &::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--green-primary);
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Labels des extrémités du slider
+.population-slider-extremes {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--gray-600);
+  margin-top: 6px;
+}
+
+// ─── C) Critères – sous-sections ───────────────────────────────────────────
+
+// Chaque sous-section (essentiel / important / bonus) est dans un encadré
+.criteria-subsection {
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 20px;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+// En-tête de sous-section avec icône d'importance
+.criteria-subsection-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// ─── Grille des cartes de critères ─────────────────────────────────────────
+
+// auto-fill : remplit le maximum de colonnes, rétrécit jusqu'à 175px
+.criterion-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+
+  // Message affiché quand toutes les cartes ont été sélectionnées
+  &:empty::after {
+    content: 'Tous les critères ont été sélectionnés ✓';
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    font-style: italic;
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 12px;
+  }
+}
+
+// ─── Carte individuelle de critère ─────────────────────────────────────────
+
+.criterion-card {
+  // --card-color est fourni via style inline (ex: style="--card-color: #0288D1")
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--white-main);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 2px solid transparent;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  }
+
+  // Bandeau coloré en haut : identifiant visuel rapide du critère
+  .criterion-card-color-band {
+    height: 6px;
+    background: var(--card-color, var(--gray-300));
+    flex-shrink: 0;
+  }
+
+  // Corps de la carte : titre + bouton accordéon
+  .criterion-card-body {
+    padding: 14px 14px 8px;
+    flex: 1;
+  }
+
+  .criterion-card-title {
+    font-family: "Poppins", sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 8px;
+    line-height: 1.35;
+  }
+
+  .criterion-card-info-btn {
+    font-size: 0.75rem;
+    color: var(--card-color, var(--gray-600));
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 500;
+
+    &:hover { opacity: 0.75; }
+  }
+
+  // Contenu déroulant "En savoir plus" (sources & méthode de calcul)
+  .criterion-card-accordion {
+    font-size: 0.78rem;
+    color: var(--gray-600);
+    line-height: 1.6;
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px solid var(--gray-200);
+  }
+
+  // Pied de carte : checkbox de sélection
+  .criterion-card-footer {
+    padding: 10px 14px 14px;
+  }
+
+  // Wrapper de la checkbox (permet de griser l'ensemble quand désactivé)
+  .criterion-card-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+
+    // État grisé : quand l'Éducation n'a pas encore de tags
+    &.checkbox-disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+      // accent-color colore la checkbox avec la couleur du critère
+      accent-color: var(--card-color, var(--green-primary));
+      flex-shrink: 0;
+
+      &:disabled { cursor: not-allowed; }
+    }
+
+    label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      cursor: pointer;
+      margin: 0;
+    }
+  }
+}
+
+// ─── Éducation : sélecteur de niveaux scolaires ────────────────────────────
+
+.education-selector {
+  padding: 0 14px 12px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.education-selector-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 10px 0 8px;
+}
+
+// Les tags de niveaux scolaires dans la carte
+.education-inner-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+  min-height: 4px; // évite un saut visuel quand la liste est vide
+}
+
+.education-inner-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  // --card-color hérité de la carte parente
+  background: var(--card-color, var(--green-dark));
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px 3px 10px;
+  border-radius: 20px;
+
+  .education-inner-tag-remove {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0;
+    line-height: 1;
+
+    &:hover { color: white; }
+  }
+}
+
+// Ligne contrôles : select + bouton "Ajouter"
+.education-selector-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+
+  select {
+    flex: 1;
+    padding: 5px 8px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: var(--gray-800);
+    background: var(--white-soft);
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+      border-color: var(--card-color, var(--green-dark));
+    }
+  }
+
+  .education-add-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    border: none;
+    background: var(--card-color, var(--green-dark));
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.82; }
+  }
+}
+
+// ─── Résumé des critères sélectionnés ──────────────────────────────────────
+
+.criteria-summary {
+  border-top: 1px dashed var(--gray-300);
+  padding-top: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+// Label "Critères essentiels (n/3)" etc.
+.criteria-summary-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  white-space: nowrap;
+  padding-top: 5px;
+  min-width: 160px;
+}
+
+// Zone des tags générés dynamiquement par Stimulus
+.criteria-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+// Tag de résumé : représente un critère sélectionné dans une sous-section
+.criterion-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  // --tag-color injecté dynamiquement depuis la couleur de la carte
+  background: var(--tag-color, #ccc);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 5px 10px 5px 13px;
+  border-radius: 20px;
+  animation: tag-appear 0.2s ease;
+
+  .criterion-tag-remove {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    line-height: 1;
+
+    &:hover { color: white; }
+  }
+}
+
+// Légère animation d'apparition des tags
+@keyframes tag-appear {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+// Animation "shake" quand la limite de 3 critères est atteinte
+@keyframes shake-limit {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-5px); }
+  60%       { transform: translateX(5px); }
+}
+
+// Classe temporairement ajoutée par le contrôleur Stimulus sur la sous-section
+.limit-reached {
+  animation: shake-limit 0.4s ease;
+  color: $red;  // variable SCSS Bootstrap définie dans _colors.scss
+
+  .criteria-subsection-title {
+    color: $red;
+  }
+}
+
+// ─── Bouton de soumission ──────────────────────────────────────────────────
+
+.research-submit-wrapper {
+  text-align: center;
+  margin-top: 48px;
+}
+
+.btn-research-submit {
+  background: var(--green-dark);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 16px 52px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: "Poppins", sans-serif;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+
+  &:hover {
+    background: var(--green-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(124, 179, 66, 0.4);
+    color: white;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ─── Responsive ────────────────────────────────────────────────────────────
+
+@media (max-width: 640px) {
+  .research-form-page   { padding: 24px 12px 80px; }
+  .research-section-block { padding: 20px 16px; }
+
+  .criteria-subsection {
+    padding: 20px 14px;
+  }
+
+  .criterion-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .criteria-summary {
+    flex-direction: column;
+  }
+}

@@ -6,7 +6,7 @@ class GuestSearchesController < ApplicationController
   skip_before_action :authenticate_user!, only: [:new, :create, :results]
 
   def new
-    
+    @guest_search = GuestSearch.new
   end
 
   def create

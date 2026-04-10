@@ -142,7 +142,7 @@
         <% [
           { value: 'coast',       label: '🌊 Mer' },
           { value: 'mountain',    label: '⛰️  Montagne' },
-          { value: 'indifferent', label: '🗺️  Indifférent' }
+          { value: 'no_filters', label: '🗺️  Indifférent' }
         ].each do |option| %>
           <input type="radio"
                  name="geo_filter"
@@ -150,7 +150,7 @@
                  value="<%= option[:value] %>"
                  class="geo-radio-option"
                  data-action="change->research-form#updateGeoFilter"
-          <%= 'checked' if option[:value] == 'indifferent' %>>
+          <%= 'checked' if option[:value] == 'no_filters' %>>
           <label for="geo_<%= option[:value] %>"><%= option[:label] %></label>
         <% end %>
       </div>

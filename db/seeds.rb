@@ -1,107 +1,123 @@
 # frozen_string_literal: true
 
+require 'csv'
+
 # Seeds idempotents : on détruit d'abord pour éviter les doublons à chaque rails db:seed.
-# En production on utiliserait find_or_create_by! à la place.
 puts "🌱 Nettoyage des données existantes..."
 PointOfInterest.destroy_all
 City.destroy_all
 
-# ── Villes françaises réelles ────────────────────────────────────────────────
-# On utilise des coordonnées réelles pour que la carte soit cohérente géographiquement.
-# Les scores sont générés aléatoirement pour simuler la future vraie donnée.
-FRENCH_CITIES = [
-  { name: "Paris",             lat: 48.8566,  lng:  2.3522, insee_code:"75056" },
-  { name: "Marseille",         lat: 43.2965,  lng:  5.3698, insee_code:"13055"  },
-  { name: "Lyon",              lat: 45.7640,  lng:  4.8357, insee_code:"69123"},
-  { name: "Toulouse",          lat: 43.6047,  lng:  1.4442, insee_code:"31555" },
-  { name: "Nice",              lat: 43.7102,  lng:  7.2620, insee_code:"06088" },
-  { name: "Nantes",            lat: 47.2184,  lng: -1.5536, insee_code:"44109" },
-  { name: "Strasbourg",        lat: 48.5734,  lng:  7.7521, insee_code:"67482" },
-  { name: "Montpellier",       lat: 43.6108,  lng:  3.8767, insee_code:"34172" },
-  { name: "Bordeaux",          lat: 44.8378,  lng: -0.5792, insee_code:"33063" },
-  { name: "Lille",             lat: 50.6292,  lng:  3.0573, insee_code:"59350" },
-  { name: "Rennes",            lat: 48.1173,  lng: -1.6778, insee_code:"35238" },
-  { name: "Reims",             lat: 49.2583,  lng:  4.0317, insee_code:"51454" },
-  { name: "Le Havre",          lat: 49.4938,  lng:  0.1079, insee_code:"76951" },
-  { name: "Saint-Étienne",     lat: 45.4397,  lng:  4.3872, insee_code:"42218" },
-  { name: "Toulon",            lat: 43.1242,  lng:  5.9280, insee_code:"83137" },
-  { name: "Grenoble",          lat: 45.1885,  lng:  5.7245, insee_code:"38185" },
-  { name: "Dijon",             lat: 47.3220,  lng:  5.0415, insee_code:"21231" },
-  { name: "Angers",            lat: 47.4784,  lng: -0.5632, insee_code:"49007" },
-  { name: "Nîmes",             lat: 43.8367,  lng:  4.3601, insee_code:"30189" },
-  { name: "Clermont-Ferrand",  lat: 45.7772,  lng:  3.0870, insee_code:"63113" },
-  { name: "Le Mans",           lat: 48.0061,  lng:  0.1996, insee_code:"72181" },
-  { name: "Aix-en-Provence",   lat: 43.5297,  lng:  5.4474, insee_code:"13001" },
-  { name: "Brest",             lat: 48.3904,  lng: -4.4861, insee_code:"29019" },
-  { name: "Limoges",           lat: 45.8336,  lng:  1.2611, insee_code:"87085" },
-  { name: "Tours",             lat: 47.3941,  lng:  0.6848, insee_code:"37261" },
-  { name: "Amiens",            lat: 49.8941,  lng:  2.2957, insee_code:"80021" },
-  { name: "Perpignan",         lat: 42.6987,  lng:  2.8956, insee_code:"66136" },
-  { name: "Metz",              lat: 49.1193,  lng:  6.1757, insee_code:"57463" },
-  { name: "Besançon",          lat: 47.2378,  lng:  6.0241, insee_code:"25056" },
-  { name: "Caen",              lat: 49.1829,  lng: -0.3707, insee_code:"14118" }
-].freeze
+# ── Import des communes depuis BD_MOVE_ON_V4.csv ────────────────────────────
+puts "📊 Import des communes depuis BD_MOVE_ON_V4.csv..."
 
-# ── Catégories de points d'intérêt ──────────────────────────────────────────
-# Chaque "kind" est un type général (visible sur la légende),
-# chaque "category" est un sous-type plus précis (visible dans le popup).
-POI_KINDS = {
-  "sport"      => %w[stade piscine salle_de_sport tennis piste_cyclable],
-  "culture"    => %w[musée théâtre cinéma bibliothèque galerie_art],
-  "nature"     => %w[parc forêt lac sentier_randonnée jardin_botanique],
-  "commerce"   => %w[marché centre_commercial halles zone_commerciale],
-  "transport"  => %w[gare aéroport station_métro arrêt_bus parking_vélos],
-  "education"  => %w[université lycée école_primaire grande_école médiathèque],
-  "health"     => %w[hôpital clinique pharmacie centre_médical maison_santé]
-}.freeze
+csv_file = Rails.root.join('db', 'BD_MOVE_ON_V4.csv')
+count = 0
+errors = 0
 
-# ── Création des villes et de leurs POIs ────────────────────────────────────
-puts "🏙️  Création de #{FRENCH_CITIES.size} villes..."
-
-FRENCH_CITIES.each do |city_data|
-  # rand(1.0..10.0).round(1) génère un float entre 1.0 et 10.0 avec 1 décimale
-  city = City.create!(
-    nom_com:                  city_data[:name],
-    insee:                    city_data[:insee_code],
-    latitude:                 city_data[:lat],
-    longitude:                city_data[:lng],
-    real_estate_score:        rand(1.0..10.0).round(1),
-    nearest_big_city_score:   rand(1.0..10.0).round(1),
-    job_market_score:         rand(1.0..10.0).round(1),
-    transport_network_score:  rand(1.0..10.0).round(1),
-    activities_score:         rand(1.0..10.0).round(1),
-    living_cost_score:        rand(1.0..10.0).round(1),
-    cultural_heritage_score:  rand(1.0..10.0).round(1),
-    education_score:          rand(1.0..10.0).round(1),
-    sunshine_score:           rand(1.0..10.0).round(1),
-    outdoor_living_score:     rand(1.0..10.0).round(1),
-    entertainment_score:      rand(1.0..10.0).round(1),
-    health_score:             rand(1.0..10.0).round(1),
-    commercial_life_score:    rand(1.0..10.0).round(1)
-  )
-
-  # Chaque ville reçoit entre 5 et 12 POIs aléatoires
-  rand(5..12).times do
-    kind     = POI_KINDS.keys.sample
-    category = POI_KINDS[kind].sample
-
-    # On disperse les POIs dans un rayon de ~5 km autour du centre-ville
-    # 0.05 degré ≈ 5 km — suffisant pour que les points soient distincts sur la carte
-    lat_offset = rand(-0.05..0.05)
-    lng_offset = rand(-0.05..0.05)
-
-    PointOfInterest.create!(
-      city:      city,
-      name:      "#{category.capitalize.tr('_', ' ')} #{Faker::Address.street_name}",
-      latitude:  city_data[:lat] + lat_offset,
-      longitude: city_data[:lng] + lng_offset,
-      kind:      kind,
-      category:  category,
-      public:    [true, true, true, false].sample # 75% publics
-    )
+# Fonction pour corriger l'encodage des caractères (UTF-8 mal interprété comme Latin-1)
+def fix_encoding(text)
+  return nil if text.nil? || text.empty?
+  return text unless text.is_a?(String)
+  
+  begin
+    text.encode('latin-1').force_encoding('utf-8')
+  rescue EncodingError
+    text
   end
-
-  print "  ✓ #{city_data[:name]} (#{city.point_of_interests.count} POIs)\n"
 end
 
-puts "\n✅ Seeds terminées : #{City.count} villes, #{PointOfInterest.count} points d'intérêt."
+# Fonction pour convertir en float (gère les virgules)
+def parse_float(value)
+  return nil if value.nil? || value.empty?
+  value.to_s.gsub(',', '.').to_f
+end
+
+# Fonction pour convertir en integer
+def parse_int(value)
+  return nil if value.nil? || value.empty?
+  value.to_i
+end
+
+CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
+  begin
+    City.create!(
+      # Identifiants
+      insee: row['insee'],
+      code_posta: row['code_posta'],
+      nom_com: fix_encoding(row['nom_com']),
+      
+      # Géographie
+      cv: row['cv'],
+      nom_cv: fix_encoding(row['nom_cv']),
+      dep: row['dep'],
+      nom_dep: fix_encoding(row['nom_dep']),
+      reg: row['reg'],
+      nom_reg: fix_encoding(row['nom_reg']),
+      libgeo: fix_encoding(row['libgeo']),
+      paysage: row['paysage'],
+      latitude: parse_float(row['latitude']),
+      longitude: parse_float(row['longitude']),
+      
+      # Démographie
+      population: parse_int(row['population']),
+      chom_24: parse_float(row['chom_24']),
+      
+      # Santé
+      APL2023: parse_float(row['APL2023']),
+      code_qual: parse_int(row['code_qual']),
+      
+      # Éducation
+      count_ecol: parse_int(row['count_ecol']),
+      count_coll: parse_int(row['count_coll']),
+      count_lyce: parse_int(row['count_lyce']),
+      nb_creche: parse_int(row['nb_creche']),
+      
+      # Équipements
+      nb_comm: parse_int(row['nb_comm']),
+      nb_cultu: parse_int(row['nb_cultu']),
+      nb_com_ali: parse_int(row['nb_com_ali']),
+      nb_gd_surf: parse_int(row['nb_gd_surf']),
+      nb_loisirs: parse_int(row['nb_loisirs']),
+      nb_sport: parse_int(row['nb_sport']),
+      
+      # Transports
+      BUS_valeur: parse_float(row['BUS_valeur']),
+      BUS_val_1: parse_float(row['BUS_val_1']),
+      TRAIN_valeur: parse_float(row['TRAIN_valeur']),
+      TRAIN_val_1: parse_float(row['TRAIN_val_1']),
+      METRO_valeur: parse_float(row['METRO_valeur']),
+      METRO_val_1: parse_float(row['METRO_val_1']),
+      TRAM_valeur: parse_float(row['TRAM_valeur']),
+      TRAM_val_1: parse_float(row['TRAM_val_1']),
+      
+      # Immobilier
+      avg_price_sqm: parse_float(row['avg_price_sqm']),
+      median_price_sqm: parse_float(row['median_price_sqm']),
+      total_transactions: parse_int(row['total_transactions']),
+      transactions_last_year: parse_int(row['transactions_last_year']),
+      price_evolution_1y: parse_float(row['price_evolution_1y']),
+      price_evolution_3y: parse_float(row['price_evolution_3y']),
+      avg_rent_sqm: parse_float(row['avg_rent_sqm']),
+      rent_quality: parse_float(row['rent_quality']),
+      nb_obs_commune: parse_float(row['nb_obs_commune']),
+      
+      # 8 scores pré-calculés (0-100)
+      score_1deg: parse_float(row['score_1deg']),
+      score_2nddeg: parse_float(row['score_2nddeg']),
+      score_transp: parse_float(row['score_transp']),
+      score_sante: parse_float(row['score_sante']),
+      score_economique: parse_float(row['score_economique']),
+      score_sport_loisirs: parse_float(row['score_sport_loisirs']),
+      score_culture: parse_float(row['score_culture']),
+      score_immo: parse_float(row['score_immo'])
+    )
+    
+    count += 1
+    print "\r  ✓ #{count} communes importées..." if count % 1000 == 0
+  rescue => e
+    errors += 1
+    puts "\n  ⚠️  Erreur pour #{row['nom_com']} (#{row['insee']}): #{e.message}"
+  end
+end
+
+puts "\n\n✅ Seeds terminées : #{City.count} communes importées (#{errors} erreurs)"

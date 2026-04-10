@@ -10,7 +10,7 @@ City.destroy_all
 # ── Import des communes depuis BD_MOVE_ON_V4.csv ────────────────────────────
 puts "📊 Import des communes depuis BD_MOVE_ON_V4.csv..."
 
-csv_file = Rails.root.join('db', 'BD_MOVE_ON_V4.csv')
+csv_file = Rails.root.join('db', 'BD_MOVE_ON_DEMO.csv')
 count = 0
 errors = 0
 
@@ -102,14 +102,14 @@ CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
       nb_obs_commune: parse_float(row['nb_obs_commune']),
       
       # 8 scores pré-calculés (0-100)
-      score_1deg: parse_float(row['score_1deg']),
-      score_2nddeg: parse_float(row['score_2nddeg']),
-      score_transp: parse_float(row['score_transp']),
-      score_sante: parse_float(row['score_sante']),
-      score_economique: parse_float(row['score_economique']),
-      score_sport_loisirs: parse_float(row['score_sport_loisirs']),
-      score_culture: parse_float(row['score_culture']),
-      score_immo: parse_float(row['score_immo'])
+      first_deg_score: parse_float(row['score_1deg']),
+      second_deg_score: parse_float(row['score_2nddeg']),
+      transport_network_score: parse_float(row['score_transp']),
+      health_score: parse_float(row['score_sante']),
+      commercial_life_score: parse_float(row['score_economique']),
+      leisures_sports_score: parse_float(row['score_sport_loisirs']),
+      cultural_heritage_score: parse_float(row['score_culture']),
+      real_estate_score: parse_float(row['score_immo'])
     )
     
     count += 1

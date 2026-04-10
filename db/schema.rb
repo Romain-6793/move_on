@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_08_134511) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_10_141500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -27,8 +27,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_08_134511) do
     t.datetime "updated_at", null: false
     t.string "insee", null: false
     t.string "nom_com", null: false
-    t.float "latitude", null: false
-    t.float "longitude", null: false
+    t.float "latitude"
+    t.float "longitude"
     t.string "cv"
     t.string "nom_cv"
     t.string "dep"
@@ -78,6 +78,20 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_08_134511) do
     t.float "entertainment_score"
     t.float "health_score"
     t.float "commercial_life_score"
+    t.float "score_1deg"
+    t.float "score_2nddeg"
+    t.float "score_transp"
+    t.float "score_sante"
+    t.float "score_economique"
+    t.float "score_sport_loisirs"
+    t.float "score_culture"
+    t.float "score_immo"
+    t.float "price_evolution_1y"
+    t.float "price_evolution_3y"
+    t.float "avg_rent_sqm"
+    t.float "rent_quality"
+    t.float "nb_obs_commune"
+    t.string "code_posta"
   end
 
   create_table "guest_searches", force: :cascade do |t|

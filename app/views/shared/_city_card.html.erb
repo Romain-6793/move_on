@@ -1,0 +1,90 @@
+<%#
+  Composant city_card – représentation visuelle d'une ville candidate.
+
+  Variables locales attendues :
+    city    : instance de City (enrichie de `computed_score` via CityRankerService)
+    index   : entier, rang dans le classement (commence à 1)
+    search  : instance de Research ou GuestSearch
+
+  Tous les liens et actions (checkbox, "Plus de détails", "Trouver sur la carte")
+  sont purement front pour l'instant – ils seront raccordés au backend ultérieurement.
+%>
+<%#
+  Configuration des 6 critères disponibles avec leurs couleurs.
+  Les couleurs reprennent exactement celles définies dans _new_research.html.erb
+  pour assurer la cohérence visuelle entre le formulaire et les résultats.
+  `score_method` est le nom de la méthode appelée sur l'objet City.
+%>
+<% city_criteria = [
+  { key: :real_estate,         title: 'Immobilier',       color: '#8D6E63', score_method: :real_estate_score },
+  { key: :transport_network,   title: 'Transports',       color: '#2E9EAD', score_method: :transport_network_score },
+  { key: :health,              title: 'Santé',            color: '#F48FB1', score_method: :health_score },
+  { key: :commercial_life,     title: 'Commerce',         color: '#FFB74D', score_method: :commercial_life_score },
+  { key: :cultural_heritage,   title: 'Culture',          color: '#9575CD', score_method: :cultural_heritage_score },
+  { key: :leisures_and_sports, title: 'Sports & loisirs', color: '#E57373', score_method: :leisures_sports_score }
+] %>
+<div class="city-card">
+  <%# ── En-tête : rang + nom + localisation ─────────────────────────── %>
+  <div class="city-card__header">
+    <%# Médaillon de rang : indique la position dans le classement %>
+    <span class="city-card__rank">#<%= index %></span>
+    <div class="city-card__identity">
+      <h3 class="city-card__name"><%= city.nom_com %></h3>
+      <%# compact supprime les nil si nom_dep ou nom_reg manquent en base %>
+      <span class="city-card__location">
+        <%= [city.nom_dep, city.nom_reg].compact.join(' · ') %>
+      </span>
+    </div>
+  </div>
+  <%# ── Placeholder photo ───────────────────────────────────────────── %>
+  <%# Cadre gris réservant l'espace pour une future photo (Cloudinary, API…). %>
+  <div class="city-card__photo-placeholder">
+    <span class="city-card__photo-label">Photo à venir</span>
+  </div>
+  <%# ── Jauges de scores par critère ────────────────────────────────── %>
+  <%#
+    On affiche les 6 critères disponibles pour toutes les villes.
+    Le score (float 0-100 en base) est arrondi et présenté comme un pourcentage.
+    .to_f.round protège contre un éventuel nil en base.
+  %>
+  <div class="city-card__scores">
+    <% city_criteria.each do |criterion| %>
+      <% score = city.public_send(criterion[:score_method]).to_f.round %>
+      <div class="city-card__score-row">
+        <span class="city-card__score-label"><%= criterion[:title] %></span>
+        <div class="city-card__gauge-track">
+          <%#
+            Largeur et couleur injectées en style inline :
+            on évite ainsi des dizaines de classes utilitaires CSS inutiles.
+            role + aria-* pour l'accessibilité (lecteurs d'écran).
+          %>
+          <div class="city-card__gauge-fill"
+               style="width: <%= score %>%; background-color: <%= criterion[:color] %>;"
+               role="progressbar"
+               aria-valuenow="<%= score %>"
+               aria-valuemin="0"
+               aria-valuemax="100">
+          </div>
+        </div>
+        <span class="city-card__score-value"><%= score %>%</span>
+      </div>
+    <% end %>
+  </div>
+  <%# ── Actions ──────────────────────────────────────────────────────── %>
+  <div class="city-card__actions">
+    <%# Checkbox "Je choisis cette ville" – front only pour l'instant %>
+    <label class="city-card__choose-label">
+      <input type="checkbox"
+             class="city-card__choose-checkbox"
+             name="chosen_cities[]"
+             value="<%= city.id %>">
+      <span>Je choisis cette ville</span>
+    </label>
+    <%# Lien "Plus de détails" – sera relié à city_path(city) une fois la route créée %>
+    <a href="#" class="city-card__details-link">Plus de détails →</a>
+    <%# Bouton "Trouver sur la carte" – appellera le contrôleur Stimulus de la carte %>
+    <%= link_to "Trouver sur la carte",
+            map_path(city.id),
+            class: "city-card__map-btn" %>
+  </div>
+</div>

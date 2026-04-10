@@ -73,7 +73,7 @@
                  'voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.'
   },
   {
-    key: 'leisures_sports',
+    key: 'leisures_and_sports',
     title: 'Sports et loisirs',
     color: '#E57373',  
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
@@ -123,6 +123,7 @@
       <%= f.label :research_name, 'Nom de la recherche', class: 'research-section-label' %>
       <%= f.text_field :research_name,
             placeholder: 'Ex : Ma vie en bord de mer, Retraite tranquille en montagne…',
+            required: true,
             class: 'research-name-input',
             autocomplete: 'off' %>
     </div>
@@ -254,10 +255,18 @@
       <% end %>
     </div>
     <%#
-      Bouton de soumission.
-      Note : le contrôleur create est actuellement vide – la logique serveur
-      sera implémentée dans une prochaine itération.
+      Champs cachés pour les critères de sélection.
+      Chaque champ est initialisé à 0 (critère non choisi) par défaut.
+      Le contrôleur Stimulus (updateCriterionFields) met à jour ces valeurs
+      selon la sous-section dans laquelle l'utilisateur place le critère :
+        essentiel = 3 | important = 2 | bonus = 1 | non choisi = 0
+      data-criterion-field permet à Stimulus de retrouver le bon champ par clé.
     %>
+    <% criteria.each do |criterion| %>
+      <%= f.hidden_field criterion[:key].to_sym,
+            value: 0,
+            data: { criterion_field: criterion[:key] } %>
+    <% end %>
     <div class="research-submit-wrapper">
       <%= f.submit 'Lancer ma recherche →', class: 'btn-research-submit' %>
     </div>

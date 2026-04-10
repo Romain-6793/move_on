@@ -173,6 +173,8 @@ export default class extends Controller {
     this.updateCounts()
     this.updateEducationCards()
     this.updateEducationCheckboxes()
+    // Met à jour les champs cachés soumis avec le formulaire
+    this.updateCriterionFields()
   }
 
   // Masque toutes les copies d'un critère sélectionné (dans les 3 sections).
@@ -280,6 +282,22 @@ export default class extends Controller {
       cb.disabled = !canSelect
       const wrapper = cb.closest('.criterion-card-checkbox-wrapper')
       if (wrapper) wrapper.classList.toggle('checkbox-disabled', !canSelect)
+    })
+  }
+
+  // ─── CHAMPS CACHÉS : valeurs entières pour le serveur ────────────────────
+
+  // Traduit l'état JS (this.selections) en valeurs entières dans les <input type="hidden">.
+  // C'est ce qui permet au contrôleur Rails de recevoir des integers propres :
+  //   essentiel = 3 | important = 2 | bonus = 1 | non sélectionné = 0
+  updateCriterionFields() {
+    const WEIGHTS = { essential: 3, important: 2, bonus: 1 }
+
+    // On cible tous les champs cachés portant l'attribut data-criterion-field
+    this.element.querySelectorAll('[data-criterion-field]').forEach(field => {
+      const key = field.dataset.criterionField
+      const section = this.selections[key]   // undefined si non sélectionné
+      field.value = section ? (WEIGHTS[section] ?? 0) : 0
     })
   }
 

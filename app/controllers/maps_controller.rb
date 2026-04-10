@@ -20,7 +20,8 @@ class MapsController < ApplicationController
   end
 
   def show
-    
+    @city = City.find(params[:id])
+    authorize @city
   end
 
 end

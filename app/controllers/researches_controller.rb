@@ -8,23 +8,30 @@ class ResearchesController < ApplicationController
   end
 
   def create
-    @research = @user.researches.build(research_params)
+    # On construit la recherche associée à l'utilisateur connecté (current_user fourni par Devise).
+    # build est équivalent à Research.new(research_params.merge(user: current_user))
+    # mais passe par l'association, ce qui est plus idiomatique Rails.
+    @research = current_user.researches.build(research_params)
 
-    # Définir le titre de la recherche si nécessaire (nouvelle recherche ou titre vide)
-    # if @research.new_record? || @research.research_name.blank?
-    #   @research.research_name = "Some title"
-    # end
-    
+    # Pundit vérifie que l'utilisateur a le droit de créer cette ressource.
+    # À placer après le build pour que la policy puisse inspecter l'objet.
+    authorize @research
+
     if @research.save
       redirect_to research_path(@research), notice: "Recherche sauvegardée"
     else
-      redirect_to new_research_path(@research), alert: "Impossible de sauvegarder la recherche"
+      redirect_to new_research_path, alert: "Impossible de sauvegarder la recherche"
     end
-    authorize @research
   end
 
   def show
-    
+    @research = Research.find(params[:id])
+    authorize @research
+
+    # CityRankerService calcule un score composite pour chaque ville selon les
+    # critères et les filtres géographiques de la recherche, puis retourne les 5
+    # meilleures en SQL (sans tout charger en mémoire Ruby).
+    @ranked_cities = CityRankerService.new(@research).top_cities
   end
 
   def edit
@@ -41,7 +48,16 @@ class ResearchesController < ApplicationController
 
   private
 
+  # Strong Parameters : on liste explicitement chaque champ autorisé.
+  # Les critères sont des integers (0/1/2/3), les filtres géographiques des booléens.
+  # On n'autorise JAMAIS user_id ici : il est assigné via current_user.researches.build.
   def research_params
+    params.require(:research).permit(
+      :research_name,
+      :coast, :mountain, :no_filters, :density,
+      :real_estate, :transport_network, :cultural_heritage,
+      :health, :commercial_life, :leisures_and_sports
+    )
   end
 
 

@@ -7,18 +7,15 @@
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.css" rel="stylesheet" />
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.js"></script>
 <% end %>
-
 <div class="map-page">
   <div class="map-page__sidebar">
     <h1 class="map-page__title">Trouver sur la carte</h1>
     <p class="map-page__description">
       Explorez les villes et leurs points d'intérêt. Cliquez sur un point pour en savoir plus.
     </p>
-
     <%# Légende des layers ─────────────────────────────────────────────────── %>
     <div class="map-legend">
       <h2 class="map-legend__title">Légende</h2>
-
       <section class="map-legend__section">
         <h3 class="map-legend__subtitle">Villes — score global</h3>
         <ul class="map-legend__list">
@@ -28,17 +25,16 @@
           <li class="map-legend__note">La taille du cercle reflète aussi le score.</li>
         </ul>
       </section>
-
       <section class="map-legend__section">
         <h3 class="map-legend__subtitle">Points d'intérêt</h3>
         <ul class="map-legend__list">
-          <li><span class="map-legend__dot" style="background:#7CB342"></span> Sport</li>
-          <li><span class="map-legend__dot" style="background:#4FC3F7"></span> Culture</li>
-          <li><span class="map-legend__dot" style="background:#558B2F"></span> Nature</li>
-          <li><span class="map-legend__dot" style="background:#FFCA28"></span> Commerce</li>
-          <li><span class="map-legend__dot" style="background:#0288D1"></span> Transport</li>
-          <li><span class="map-legend__dot" style="background:#8D6E63"></span> Éducation</li>
-          <li><span class="map-legend__dot" style="background:#2E9EAD"></span> Santé</li>
+          <li><span class="map-legend__dot" style="background:#558B2F"></span> Bons plans immobilier</li>
+          <li><span class="map-legend__dot" style="background:#2E9EAD"></span> Qualité des transports</li>
+          <li><span class="map-legend__dot" style="background:#9575CD"></span> Culture et patrimoine</li>
+          <li><span class="map-legend__dot" style="background:#0288D1"></span> Éducation</li>
+          <li><span class="map-legend__dot" style="background:#F48FB1"></span> Santé</li>
+          <li><span class="map-legend__dot" style="background:#FFB74D"></span> Vie Commerciale</li>
+          <li><span class="map-legend__dot" style="background:#E57373"></span> Sports et loisirs</li>
         </ul>
         <p class="map-legend__note">
           Les cercles bleus sont des groupes — cliquez pour zoomer et les éclater.
@@ -46,7 +42,6 @@
       </section>
     </div>
   </div>
-
   <%# data-map-data-url-value : URL de l'endpoint JSON, construite par Rails pour éviter tout hardcoding.
       Le Stimulus controller la lit via this.dataUrlValue et y fait un fetch(). %>
   <div

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_08_134511) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_10_061000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -78,6 +78,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_08_134511) do
     t.float "entertainment_score"
     t.float "health_score"
     t.float "commercial_life_score"
+    t.float "price_evolution_1y"
+    t.float "price_evolution_3y"
+    t.float "leisures_sports_score"
   end
 
   create_table "guest_searches", force: :cascade do |t|

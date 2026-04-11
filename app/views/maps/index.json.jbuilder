@@ -11,6 +11,10 @@
 # Un Feature = { type: "Feature", geometry: { type: "Point", coordinates: [lng, lat] }, properties: {} }
 # ATTENTION Mapbox : l'ordre des coordonnées est [LONGITUDE, LATITUDE] (inverse de l'intuition).
 
+# Score transports recalculé ici (pas la colonne CSV) : même périmètre que les villes affichées,
+# avec détail pédagogique pour les popups Mapbox — voir TransportNetworkScoreCalculator.
+transport_by_city = TransportNetworkScoreCalculator.new(@cities.to_a).results_by_city_id
+
 json.cities do
   json.type "FeatureCollection"
   json.features @cities do |city|
@@ -21,10 +25,19 @@ json.cities do
     end
     json.properties do
       json.id                      city.id
-      json.nom_com                 city.nom_com 
+      json.nom_com                 city.nom_com
+      # Alias attendu par map_controller.js (text-field, popups) — évite les undefined côté carte.
+      json.city_name               city.nom_com
       json.real_estate_score       city.real_estate_score
       json.job_market_score        city.job_market_score
-      json.transport_network_score city.transport_network_score
+      tn = transport_by_city.fetch(city.id)
+      json.transport_network_score   tn[:final_score]
+      json.transport_network_caption tn[:caption]
+      json.transport_component_bus   tn[:components][:bus]
+      json.transport_component_tram  tn[:components][:tram]
+      json.transport_component_metro tn[:components][:metro]
+      json.transport_component_train tn[:components][:train]
+      json.transport_weighted_index  tn[:weighted_index]
       json.activities_score        city.activities_score
       json.living_cost_score       city.living_cost_score
       json.education_score         city.education_score
@@ -37,7 +50,7 @@ json.cities do
       # Score composite = moyenne de tous les scores disponibles.
       # compact_blank retire les nil avant le calcul (sécurité si un score manque).
       scores = [
-        city.real_estate_score, city.job_market_score, city.transport_network_score,
+        city.real_estate_score, city.job_market_score, tn[:final_score],
         city.activities_score, city.living_cost_score, city.education_score,
         city.health_score, city.sunshine_score, city.outdoor_living_score,
         city.entertainment_score, city.cultural_heritage_score, city.commercial_life_score

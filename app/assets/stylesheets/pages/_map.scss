@@ -150,6 +150,23 @@
     gap: 0.2rem;
   }
 
+  // Détail du score transports : texte pédagogique + contributions pondérées
+  &__hint {
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: var(--gray-600);
+    margin-top: 0.25rem;
+    opacity: 0.92;
+  }
+
+  &__breakdown {
+    font-size: 0.7rem;
+    line-height: 1.35;
+    color: var(--gray-700);
+    margin-top: 0.2rem;
+    font-variant-numeric: tabular-nums;
+  }
+
   &__meta {
     font-size: 0.8rem;
     color: var(--gray-600);

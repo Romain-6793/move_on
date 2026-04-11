@@ -273,7 +273,15 @@ export default class extends Controller {
         </p>
         <ul class="map-popup__scores">
           <li>Emploi : ${props.job_market_score}</li>
-          <li>Transports : ${props.transport_network_score}</li>
+          <li>
+            Transports : <strong>${props.transport_network_score}</strong>
+            ${props.transport_network_caption
+              ? `<div class="map-popup__hint">${props.transport_network_caption}</div>`
+              : ""}
+            ${props.transport_component_train != null
+              ? `<div class="map-popup__breakdown">Train ×4 : ${props.transport_component_train} · Métro ×3 : ${props.transport_component_metro} · Tram ×2 : ${props.transport_component_tram} · Bus : ${props.transport_component_bus}</div>`
+              : ""}
+          </li>
           <li>Éducation : ${props.education_score}</li>
           <li>Santé : ${props.health_score}</li>
           <li>Soleil : ${props.sunshine_score}</li>

@@ -14,12 +14,14 @@ class MapsController < ApplicationController
         # includes(:point_of_interests) évite les N+1 queries :
         # sans ça, chaque ville ferait une requête SQL séparée pour ses POIs.
         @cities = City.includes(:point_of_interests).all
+        authorize @cities
       end
     end
   end
 
   def show
-    
+    @city = City.find(params[:id])
+    authorize @city
   end
 
 end

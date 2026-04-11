@@ -27,39 +27,23 @@
   {
     key: 'real_estate',
     title: 'Bons plans immobiliers',
-    color: '#8D6E63',  # brown-primary – evoque la pierre, le bâti
+    color: '#8D6E63;',  # brown-primary – evoque la pierre, le bâti
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
                  'Sed ut perspiciatis unde omnis iste natus error sit voluptatem ' \
                  'accusantium doloremque laudantium totam rem aperiam eaque ipsa quae.'
   },
   {
-    key: 'job_market',
-    title: 'Emploi',
-    color: '#FFCA28',  # yellow-accent – dynamisme économique
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
-                 'Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis ' \
-                 'suscipit laboriosam nisi ut aliquid ex ea commodi consequatur.'
-  },
-  {
     key: 'transport_network',
     title: 'Qualité du réseau de transports',
-    color: '#0288D1',  # blue-dark – cohérent avec la catégorie Transport de la carte
+    color: '#2E9EAD',  
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
                  'Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse ' \
                  'quam nihil molestiae consequatur vel illum qui dolorem eum fugiat.'
   },
   {
-    key: 'living_cost',
-    title: 'Coût de la vie',
-    color: '#7CB342',  # green-primary – « faire des économies », croissance sereine
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
-                 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis ' \
-                 'praesentium voluptatum deleniti atque corrupti quos dolores quas molestias.'
-  },
-  {
     key: 'education',
     title: 'Éducation',
-    color: '#558B2F',  # green-dark – apprentissage, nature, croissance
+    color: '#0288D1', 
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
                  'Nam libero tempore cum soluta nobis est eligendi optio cumque nihil ' \
                  'impedit quo minus id quod maxime placeat facere possimus omnis voluptas.'
@@ -67,7 +51,7 @@
   {
     key: 'health',
     title: 'Accès aux soins',
-    color: '#2E9EAD',  # blue-teal – cohérent avec la catégorie Santé de la carte
+    color: '#F48FB1',  
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
                  'Temporibus autem quibusdam et aut officiis debitis aut rerum ' \
                  'necessitatibus saepe eveniet ut et voluptates repudiandae recusandae.'
@@ -75,11 +59,27 @@
   {
     key: 'commercial_life',
     title: 'Vie commerciale de la ville',
-    color: '#4FC3F7',  # blue-primary – cohérent avec la catégorie Commerce de la carte
+    color: '#FFB74D',  
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
                  'Itaque earum rerum hic tenetur a sapiente delectus ut aut reiciendis ' \
                  'voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.'
-  }
+  },
+  {
+    key: 'cultural_heritage',
+    title: 'Culture et patrimoine',
+    color: '#9575CD',  
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Itaque earum rerum hic tenetur a sapiente delectus ut aut reiciendis ' \
+                 'voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.'
+  },
+  {
+    key: 'leisures_and_sports',
+    title: 'Sports et loisirs',
+    color: '#E57373',  
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Itaque earum rerum hic tenetur a sapiente delectus ut aut reiciendis ' \
+                 'voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.'
+  },
 ] %>
 <%#
   SOUS-SECTIONS de critères – définissent les 3 niveaux d'importance.
@@ -123,6 +123,7 @@
       <%= f.label :research_name, 'Nom de la recherche', class: 'research-section-label' %>
       <%= f.text_field :research_name,
             placeholder: 'Ex : Ma vie en bord de mer, Retraite tranquille en montagne…',
+            required: true,
             class: 'research-name-input',
             autocomplete: 'off' %>
     </div>
@@ -142,7 +143,7 @@
         <% [
           { value: 'coast',       label: '🌊 Mer' },
           { value: 'mountain',    label: '⛰️  Montagne' },
-          { value: 'indifferent', label: '🗺️  Indifférent' }
+          { value: 'no_filters', label: '🗺️  Indifférent' }
         ].each do |option| %>
           <input type="radio"
                  name="geo_filter"
@@ -150,7 +151,7 @@
                  value="<%= option[:value] %>"
                  class="geo-radio-option"
                  data-action="change->research-form#updateGeoFilter"
-          <%= 'checked' if option[:value] == 'indifferent' %>>
+          <%= 'checked' if option[:value] == 'no_filters' %>>
           <label for="geo_<%= option[:value] %>"><%= option[:label] %></label>
         <% end %>
       </div>
@@ -254,10 +255,18 @@
       <% end %>
     </div>
     <%#
-      Bouton de soumission.
-      Note : le contrôleur create est actuellement vide – la logique serveur
-      sera implémentée dans une prochaine itération.
+      Champs cachés pour les critères de sélection.
+      Chaque champ est initialisé à 0 (critère non choisi) par défaut.
+      Le contrôleur Stimulus (updateCriterionFields) met à jour ces valeurs
+      selon la sous-section dans laquelle l'utilisateur place le critère :
+        essentiel = 3 | important = 2 | bonus = 1 | non choisi = 0
+      data-criterion-field permet à Stimulus de retrouver le bon champ par clé.
     %>
+    <% criteria.each do |criterion| %>
+      <%= f.hidden_field criterion[:key].to_sym,
+            value: 0,
+            data: { criterion_field: criterion[:key] } %>
+    <% end %>
     <div class="research-submit-wrapper">
       <%= f.submit 'Lancer ma recherche →', class: 'btn-research-submit' %>
     </div>

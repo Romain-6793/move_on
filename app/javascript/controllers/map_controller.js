@@ -8,23 +8,26 @@ import { Controller } from "@hotwired/stimulus"
 // Le clustering (regroupement automatique de points proches) est géré nativement par Mapbox.
 export default class extends Controller {
   static values = {
-    token:   String,
-    lat:     { type: Number, default: 46.6034 },
-    lng:     { type: Number, default: 1.8883  },
-    zoom:    { type: Number, default: 5       },
-    dataUrl: String // URL de l'endpoint GeoJSON (passée via data-map-data-url-value)
+    token: String,
+    lat: { type: Number, default: 46.6034 },
+    lng: { type: Number, default: 1.8883 },
+    zoom: { type: Number, default: 5 },
+    dataUrl: String, // URL de l'endpoint GeoJSON (passée via data-map-data-url-value)
+    geolocate: Boolean,
+    // cityName permet d'afficher le nom dans le popup du marqueur de ville unique (vue show)
+    cityName: String
   }
 
   // ── Couleurs par kind de POI — cohérentes avec la palette Move On ──────────
   // On définit les couleurs ici pour les réutiliser dans la légende ET dans les layers.
   static POI_COLORS = {
-    sport:      "#7CB342", // --green-primary
-    culture:    "#4FC3F7", // --blue-primary
-    nature:     "#558B2F", // --green-dark
-    commerce:   "#FFCA28", // --yellow-accent
-    transport:  "#0288D1", // --blue-dark
-    education:  "#8D6E63", // --brown-primary
-    health:     "#2E9EAD"  // --blue-teal
+    sport: "#7CB342", // --green-primary
+    culture: "#4FC3F7", // --blue-primary
+    nature: "#558B2F", // --green-dark
+    commerce: "#FFCA28", // --yellow-accent
+    transport: "#0288D1", // --blue-dark
+    education: "#8D6E63", // --brown-primary
+    health: "#2E9EAD"  // --blue-teal
   }
 
   connect() {
@@ -37,25 +40,33 @@ export default class extends Controller {
 
     this.map = new mapboxgl.Map({
       container: this.element,
-      style:     "mapbox://styles/mapbox/outdoors-v12",
-      center:    [this.lngValue, this.latValue],
-      zoom:      this.zoomValue
+      style: "mapbox://styles/mapbox/outdoors-v12",
+      center: [this.lngValue, this.latValue],
+      zoom: this.zoomValue
     })
 
     this.map.addControl(new mapboxgl.NavigationControl(), "top-right")
 
     // GeolocateControl : le navigateur demande la permission si nécessaire.
-    this.geolocate = new mapboxgl.GeolocateControl({
-      positionOptions:  { enableHighAccuracy: true },
-      trackUserLocation: true,
-      showUserHeading:   true
-    })
-    this.map.addControl(this.geolocate, "top-right")
+    if (this.geolocateValue) {
+      this.geolocate = new mapboxgl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: true
+      })
+      this.map.addControl(this.geolocate, "top-right")
+    }
 
     // On attend que la carte soit chargée AVANT d'ajouter les sources et layers.
     // Sinon Mapbox lèverait une erreur ("style not loaded").
     this.map.on("load", () => {
-      this.geolocate.trigger() // déclenche la géolocalisation automatiquement
+      // this.geolocate n'est défini que si geolocateValue est true (voir ci-dessus).
+      // Appeler .trigger() sans ce garde levait une TypeError qui bloquait tout le callback.
+      if (this.geolocateValue) this.geolocate.trigger()
+
+      // Si une ville précise est ciblée (vue show), on pose un marqueur à ses coordonnées.
+      if (this.cityNameValue) this.addCityMarker()
+
       this.loadMapData()
     })
   }
@@ -80,6 +91,19 @@ export default class extends Controller {
     }
   }
 
+  // ── Marqueur de la ville ciblée (vue show uniquement) ────────────────────
+  // Contrairement aux layers WebGL, un Marker Mapbox est un élément DOM :
+  // c'est acceptable ici car il n'y a qu'un seul point à afficher.
+  addCityMarker() {
+    const popup = new mapboxgl.Popup({ offset: 25 })
+      .setHTML(`<strong class="map-popup__title">${this.cityNameValue}</strong>`)
+
+    new mapboxgl.Marker({ color: "#2E9EAD" })
+      .setLngLat([this.lngValue, this.latValue])
+      .setPopup(popup)
+      .addTo(this.map)
+  }
+
   // ── Layer VILLES ──────────────────────────────────────────────────────────
   // Affiche chaque ville comme un cercle dont la taille et la couleur
   // dépendent du score composite (moyenne de tous les critères).
@@ -92,8 +116,8 @@ export default class extends Controller {
 
     // Layer cercles — taille et couleur proportionnelles au score composite
     this.map.addLayer({
-      id:     "cities-circles",
-      type:   "circle",
+      id: "cities-circles",
+      type: "circle",
       source: "cities-source",
       paint: {
         // interpolate crée une interpolation linéaire entre les valeurs :
@@ -108,11 +132,11 @@ export default class extends Controller {
         "circle-color": [
           "interpolate", ["linear"],
           ["get", "composite_score"],
-          0,  "#e74c3c",
-          5,  "#FFCA28",
+          0, "#e74c3c",
+          5, "#FFCA28",
           10, "#7CB342"
         ],
-        "circle-opacity":      0.85,
+        "circle-opacity": 0.85,
         "circle-stroke-width": 2,
         "circle-stroke-color": "#FFFFFF"
       }
@@ -120,20 +144,20 @@ export default class extends Controller {
 
     // Layer étiquettes — nom de la ville, visible à partir du zoom 7
     this.map.addLayer({
-      id:     "cities-labels",
-      type:   "symbol",
+      id: "cities-labels",
+      type: "symbol",
       source: "cities-source",
       minzoom: 7, // n'apparaît qu'en zoomant pour ne pas surcharger la vue nationale
       layout: {
-        "text-field":  ["get", "city_name"],
-        "text-font":   ["Open Sans Semibold", "Arial Unicode MS Bold"],
-        "text-size":   13,
+        "text-field": ["get", "city_name"],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 13,
         "text-offset": [0, 1.5] // décale le texte sous le cercle
       },
       paint: {
-        "text-color":       "#1E2A38",
-        "text-halo-color":  "#FFFFFF",
-        "text-halo-width":  1.5
+        "text-color": "#1E2A38",
+        "text-halo-color": "#FFFFFF",
+        "text-halo-width": 1.5
       }
     })
 
@@ -160,18 +184,18 @@ export default class extends Controller {
   // avec le décompte. C'est géré côté Mapbox (WebGL), pas en JS — très performant.
   addPoisLayer(geojson) {
     this.map.addSource("pois-source", {
-      type:           "geojson",
-      data:           geojson,
-      cluster:        true,      // active le clustering
+      type: "geojson",
+      data: geojson,
+      cluster: true,      // active le clustering
       clusterMaxZoom: 13,        // au-delà de ce zoom, les clusters éclatent en points individuels
-      clusterRadius:  50         // rayon en pixels dans lequel les points sont regroupés
+      clusterRadius: 50         // rayon en pixels dans lequel les points sont regroupés
     })
 
     // ── Cercles de clusters ──────────────────────────────────────────────────
     // Taille et couleur varient selon le nombre de points dans le cluster
     this.map.addLayer({
-      id:     "pois-clusters",
-      type:   "circle",
+      id: "pois-clusters",
+      type: "circle",
       source: "pois-source",
       filter: ["has", "point_count"], // ne s'applique qu'aux clusters, pas aux points seuls
       paint: {
@@ -194,14 +218,14 @@ export default class extends Controller {
 
     // ── Nombre de points dans chaque cluster ────────────────────────────────
     this.map.addLayer({
-      id:     "pois-cluster-count",
-      type:   "symbol",
+      id: "pois-cluster-count",
+      type: "symbol",
       source: "pois-source",
       filter: ["has", "point_count"],
       layout: {
         "text-field": ["get", "point_count_abbreviated"],
-        "text-font":  ["Open Sans Bold", "Arial Unicode MS Bold"],
-        "text-size":  13
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        "text-size": 13
       },
       paint: {
         "text-color": "#1E2A38"
@@ -211,8 +235,8 @@ export default class extends Controller {
     // ── Points individuels (hors cluster) ───────────────────────────────────
     // Colorés par kind grâce à une expression match Mapbox
     this.map.addLayer({
-      id:     "pois-unclustered",
-      type:   "circle",
+      id: "pois-unclustered",
+      type: "circle",
       source: "pois-source",
       filter: ["!", ["has", "point_count"]], // exclut les clusters
       paint: {
@@ -220,13 +244,13 @@ export default class extends Controller {
         // match compare la propriété "kind" à une liste de cas, avec un fallback gris
         "circle-color": [
           "match", ["get", "kind"],
-          "sport",     "#7CB342",
-          "culture",   "#4FC3F7",
-          "nature",    "#558B2F",
-          "commerce",  "#FFCA28",
+          "sport", "#7CB342",
+          "culture", "#4FC3F7",
+          "nature", "#558B2F",
+          "commerce", "#FFCA28",
           "transport", "#0288D1",
           "education", "#8D6E63",
-          "health",    "#2E9EAD",
+          "health", "#2E9EAD",
           "#757575" // fallback gris si kind inconnu
         ],
         "circle-stroke-width": 1.5,
@@ -236,8 +260,8 @@ export default class extends Controller {
 
     // Clic sur un cluster → zoom pour l'éclater
     this.map.on("click", "pois-clusters", (e) => {
-      const features   = this.map.queryRenderedFeatures(e.point, { layers: ["pois-clusters"] })
-      const clusterId  = features[0].properties.cluster_id
+      const features = this.map.queryRenderedFeatures(e.point, { layers: ["pois-clusters"] })
+      const clusterId = features[0].properties.cluster_id
       this.map.getSource("pois-source").getClusterExpansionZoom(clusterId, (err, zoom) => {
         if (err) return
         this.map.easeTo({ center: features[0].geometry.coordinates, zoom })
@@ -253,8 +277,8 @@ export default class extends Controller {
         .addTo(this.map)
     })
 
-    this.map.on("mouseenter", "pois-clusters",    () => { this.map.getCanvas().style.cursor = "pointer" })
-    this.map.on("mouseleave", "pois-clusters",    () => { this.map.getCanvas().style.cursor = "" })
+    this.map.on("mouseenter", "pois-clusters", () => { this.map.getCanvas().style.cursor = "pointer" })
+    this.map.on("mouseleave", "pois-clusters", () => { this.map.getCanvas().style.cursor = "" })
     this.map.on("mouseenter", "pois-unclustered", () => { this.map.getCanvas().style.cursor = "pointer" })
     this.map.on("mouseleave", "pois-unclustered", () => { this.map.getCanvas().style.cursor = "" })
   }
@@ -287,7 +311,7 @@ export default class extends Controller {
       sport: "#7CB342", culture: "#4FC3F7", nature: "#558B2F",
       commerce: "#FFCA28", transport: "#0288D1", education: "#8D6E63", health: "#2E9EAD"
     }
-    const color     = colors[props.kind] || "#757575"
+    const color = colors[props.kind] || "#757575"
     const publicBadge = props.public ? "Public" : "Privé"
     return `
       <div class="map-popup map-popup--poi">

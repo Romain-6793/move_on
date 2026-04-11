@@ -1,0 +1,19 @@
+<%# Page de résultats pour un visiteur anonyme (GuestSearch). %>
+<div class="results-page container">
+
+  <div class="results-page-header">
+    <h1 class="results-page-title">
+      <%= @guest_search.research_name.presence || "Vos résultats" %>
+    </h1>
+    <p class="results-page-subtitle">
+      Les 5 villes qui correspondent le mieux à vos critères
+    </p>
+  </div>
+
+  <div class="city-cards-grid">
+    <% @ranked_cities.each_with_index do |city, i| %>
+      <%= render 'shared/city_card', city: city, index: i + 1, search: @guest_search %>
+    <% end %>
+  </div>
+
+</div>

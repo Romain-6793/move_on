@@ -1,24 +1,23 @@
 <%# Partial card de recherche — reçoit deux variables locales :
     - research : l'objet Research à afficher
     - index    : la position dans la liste, utilisée pour varier la couleur de la bande %>
-
 <%
   # On cycle sur 3 couleurs de la palette Move On pour distinguer visuellement les cards.
   # L'opérateur modulo (%) garantit qu'on revient à la première couleur après la troisième card.
   card_colors = %w[card-accent-blue card-accent-green card-accent-yellow]
   color_class  = card_colors[index % card_colors.length]
 %>
-
 <div class="search-card <%= color_class %>">
   <div class="search-card-body">
     <h3 class="search-card-title"><%= research.research_name %></h3>
   </div>
-
   <div class="search-card-actions">
+    <%= link_to research_path(research), class: "btn search-action-btn" do %>
+      <i class="fa-solid fa-magnifying-glass"></i> Voir
+    <% end %>
     <%= link_to edit_research_path(research), class: "btn search-action-btn" do %>
       <i class="fa-solid fa-pen"></i> Éditer
     <% end %>
-
     <%# button_to génère un <form> avec method DELETE et le token CSRF automatiquement.
         data-turbo-confirm déclenche une boîte de confirmation native avant l'envoi. %>
     <%= button_to research_path(research),
@@ -27,7 +26,6 @@
                   class: "btn search-action-btn search-action-btn-danger" do %>
       <i class="fa-solid fa-trash"></i> Supprimer
     <% end %>
-
     <%= link_to "#", class: "btn search-action-btn" do %>
       <i class="fa-solid fa-file-export"></i> Exporter
     <% end %>

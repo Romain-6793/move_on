@@ -1,1 +1,21 @@
-<h1>Some researches show view</h1>
+<%# Page de résultats d'une recherche sauvegardée (utilisateur connecté). %>
+<div class="results-page container">
+
+  <div class="results-page-header">
+    <%# presence renvoie nil si la chaîne est vide, ce qui déclenche le || %>
+    <h1 class="results-page-title">
+      <%= @research.research_name.presence || "Mes résultats" %>
+    </h1>
+    <p class="results-page-subtitle">
+      Les 5 villes qui correspondent le mieux à votre recherche
+    </p>
+  </div>
+
+  <%# each_with_index démarre à 0 ; on ajoute 1 pour afficher #1, #2… %>
+  <div class="city-cards-grid">
+    <% @ranked_cities.each_with_index do |city, i| %>
+      <%= render 'shared/city_card', city: city, index: i + 1, search: @research %>
+    <% end %>
+  </div>
+
+</div>

@@ -52,9 +52,18 @@ gem "font-awesome-sass", "~> 6.1"
 gem "simple_form", github: "heartcombo/simple_form"
 gem "sassc-rails"
 
+
+# Control accesses depending on users
+
 gem "pundit"
 
+# For Background jobs (if needed...)
+
 gem "solid_queue"
+
+# For searching/filtering cities adding weight to some criterias
+
+gem "pg_search"
 
 group :development, :test do
   gem "dotenv-rails"

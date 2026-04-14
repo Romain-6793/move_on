@@ -97,25 +97,23 @@ class CityRankerService
     parts = []
 
     # Petite enfance → normalisation SQL du nombre de crèches
-    if levels.include?("Petite enfance")
-      parts << normalized_nurseries_sql
-    end
+    parts << normalized_nurseries_sql if levels.include?("Petite enfance")
 
     # Premier degré → score déjà normalisé en base
-    if levels.include?("Premier degré")
-      parts << "COALESCE(first_deg_score, 0)"
-    end
+    parts << "COALESCE(first_deg_score, 0)" if levels.include?("Premier degré")
 
     # Second degré → score déjà normalisé en base
-    if levels.include?("Second degré")
-      parts << "COALESCE(second_deg_score, 0)"
-    end
+    parts << "COALESCE(second_deg_score, 0)" if levels.include?("Second degré")
 
-    # Moyenne des sous-critères sélectionnés
+    # Si aucun niveau reconnu n'est sélectionné, on ne génère pas de SQL invalide
+    return nil if parts.empty?
+
+    # Moyenne des sous-critères sélectionnés.
+    # Attention : la méthode doit retourner cette chaîne en dernière expression.
+    # Les deux lignes de logger ci-dessous avaient cassé ce retour en étant placées
+    # APRÈS la chaîne SQL, dont elles devenaient l'expression de retour de la méthode.
+    # De plus, l'appel education_sql dans le logger provoquait une récursion infinie.
     "( (#{parts.join(' + ')}) / #{parts.size} )"
-
-    Rails.logger.info "EDU LEVELS = #{@search.education_levels.inspect}"
-    Rails.logger.info "EDU SQL = #{education_sql}"
   end
 
   # squish évite les caractères inutiles (retours à la ligne et espaces), NULLIF évite une division par 0
@@ -124,7 +122,7 @@ class CityRankerService
     <<~SQL.squish
       (
         100.0 * (
-          nurseries_count - (SELECT MIN(nb_creche) FROM cities)
+          nb_creche - (SELECT MIN(nb_creche) FROM cities)
         ) / NULLIF(
           (SELECT MAX(nb_creche) FROM cities) -
           (SELECT MIN(nb_creche) FROM cities),

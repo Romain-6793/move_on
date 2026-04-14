@@ -267,6 +267,18 @@
             value: 0,
             data: { criterion_field: criterion[:key] } %>
     <% end %>
+    <%#
+      Champ caché pour les niveaux scolaires du critère Éducation.
+      Placé ICI (une seule fois dans le formulaire) plutôt que dans le partial
+      _criterion_card, car ce partial est rendu 3 fois (une par section), ce qui
+      génèrerait 3 champs homonymes. Rack ne retenant que le dernier envoyé (vide),
+      Rails aurait toujours reçu un tableau vide.
+      Le contrôleur Stimulus (updateEducationHiddenField) cible ce champ via
+      data-research-form-target="educationHiddenField" et le remplit au format JSON.
+    %>
+    <%= f.hidden_field :education_levels,
+          value: '[]',
+          data: { research_form_target: 'educationHiddenField' } %>
     <div class="research-submit-wrapper">
       <%= f.submit 'Lancer ma recherche →', class: 'btn-research-submit' %>
     </div>

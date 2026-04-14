@@ -65,7 +65,7 @@ export default class extends Controller {
     // l'interface (tags, compteurs, visibilité des cartes).
     const WEIGHT_TO_SECTION = { 3: 'essential', 2: 'important', 1: 'bonus' }
     this.element.querySelectorAll('[data-criterion-field]').forEach(field => {
-      const key   = field.dataset.criterionField
+      const key = field.dataset.criterionField
       const value = parseInt(field.value, 10)
       if (value > 0 && WEIGHT_TO_SECTION[value]) {
         this.selections[key] = WEIGHT_TO_SECTION[value]
@@ -342,7 +342,6 @@ export default class extends Controller {
     el.classList.add('limit-reached')
     setTimeout(() => el.classList.remove('limit-reached'), 600)
   }
-
 
   // ─── RENDU : méthode centrale ─────────────────────────────────────────────
 

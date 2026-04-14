@@ -203,7 +203,7 @@
         <%= f.range_field :density,
               min: 0,
               max: 2_000_000,
-              step: 10_000,
+              step: 5_000,
               value: research.density || 0,
               class: 'population-slider',
               data: { action: 'input->research-form#updatePopulation' } %>

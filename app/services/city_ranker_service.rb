@@ -120,7 +120,12 @@ class CityRankerService
 
   def education_sql
     levels = @search.education_levels
-    return nil if levels.blank?
+
+    # Si l'utilisateur n'a sélectionné aucun niveau, on utilise les trois catégories
+    # par défaut afin que la jauge "Education" soit toujours visible dans les city cards.
+    # Cela n'influe pas sur le score composite : education_score_part vérifie
+    # séparément que l'éducation est un critère actif (poids > 0).
+    levels = ["Petite enfance", "Premier degré", "Second degré"] if levels.blank?
 
     parts = []
 
@@ -135,14 +140,10 @@ class CityRankerService
     # Second degré → score déjà normalisé en base
     parts << "COALESCE(second_deg_score, 0)" if levels.include?("Second degré")
 
-    # Si aucun niveau reconnu n'est sélectionné, on ne génère pas de SQL invalide
+    # Garde-fou : si levels contenait des valeurs non reconnues uniquement
     return nil if parts.empty?
 
     # Moyenne des sous-critères sélectionnés.
-    # Attention : la méthode doit retourner cette chaîne en dernière expression.
-    # Les deux lignes de logger ci-dessous avaient cassé ce retour en étant placées
-    # APRÈS la chaîne SQL, dont elles devenaient l'expression de retour de la méthode.
-    # De plus, l'appel education_sql dans le logger provoquait une récursion infinie.
     "( (#{parts.join(' + ')}) / #{parts.size} )"
   end
 

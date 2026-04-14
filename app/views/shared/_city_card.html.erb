@@ -81,8 +81,6 @@
              value="<%= city.id %>">
       <span>Je choisis cette ville</span>
     </label>
-    <%# Lien "Plus de détails" – sera relié à city_path(city) une fois la route créée %>
-    <a href="#" class="city-card__details-link">Plus de détails →</a>
     <%# Bouton "Trouver sur la carte" – appellera le contrôleur Stimulus de la carte %>
     <%= link_to "Trouver sur la carte",
             map_path(city.id),

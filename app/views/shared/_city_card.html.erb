@@ -36,11 +36,26 @@
       </span>
     </div>
   </div>
-  <%# ── Placeholder photo ───────────────────────────────────────────── %>
-  <%# Cadre gris réservant l'espace pour une future photo (Cloudinary, API…). %>
-  <div class="city-card__photo-placeholder">
-    <span class="city-card__photo-label">Photo à venir</span>
-  </div>
+  <%# ── Photo de la ville ──────────────────────────────────────────────────── %>
+  <%#
+    Si image_url est nil (ville jamais consultée avant, ou API indisponible),
+    on affiche un bloc CSS placeholder pour conserver le gabarit de la carte.
+    loading="lazy" : le navigateur ne charge l'image qu'au moment où la carte
+    entre dans le viewport — améliore le temps de chargement initial.
+  %>
+  <% if city.image_url.present? %>
+    <div class="city-card__photo">
+      <%= image_tag city.image_url,
+            alt:     "Vue de #{city.nom_com}",
+            loading: "lazy" %>
+      <%# Crédit Wikimedia Commons (licence Creative Commons) %>
+      <span class="city-card__photo-credit">© Wikimedia Commons</span>
+    </div>
+  <% else %>
+    <div class="city-card__photo-placeholder">
+      <span class="city-card__photo-label">Photo à venir</span>
+    </div>
+  <% end %>
   <%# ── Jauges de scores par critère ────────────────────────────────── %>
   <%#
     On affiche les 6 critères disponibles pour toutes les villes.
@@ -86,5 +101,24 @@
     <%= link_to "Trouver sur la carte",
             map_path(city.id),
             class: "city-card__map-btn" %>
+    <%#
+      Lien SeLoger : secondaire visuellement (outline) pour ne pas concurrencer
+      les actions principales. target="_blank" + rel="noopener noreferrer" :
+      - _blank ouvre dans un nouvel onglet (l'utilisateur garde la page Move On)
+      - noopener : empêche la page cible d'accéder à window.opener (sécurité)
+      - noreferrer : n'envoie pas le Referer HTTP (confidentialité)
+    %>
+    <%= link_to seloger_url(city),
+          target: "_blank",
+          rel:    "noopener noreferrer",
+          class:  "city-card__seloger-btn" do %>
+      <svg class="city-card__seloger-icon" width="14" height="14" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5"
+           aria-hidden="true">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      SeLoger.com
+    <% end %>
   </div>
 </div>

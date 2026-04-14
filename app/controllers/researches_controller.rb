@@ -32,6 +32,10 @@ class ResearchesController < ApplicationController
     # critères et les filtres géographiques de la recherche, puis retourne les 5
     # meilleures en SQL (sans tout charger en mémoire Ruby).
     @ranked_cities = CityRankerService.new(@research).top_cities
+
+    # Même logique que dans GuestSearchesController : les images sont récupérées
+    # une seule fois par ville et mises en cache dans la colonne image_url.
+    @ranked_cities.each { |city| CityImageFetcherService.new(city).call }
   end
 
   def edit

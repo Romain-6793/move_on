@@ -40,6 +40,11 @@ class GuestSearchesController < ApplicationController
     return redirect_to new_guest_search_path unless @guest_search
 
     @ranked_cities = CityRankerService.new(@guest_search).top_cities
+
+    # On pré-charge les images manquantes avant le rendu de la vue.
+    # Au premier passage : jusqu'à 5 appels Unsplash (1 par ville).
+    # Les fois suivantes : image_url déjà en base → aucun appel réseau.
+    @ranked_cities.each { |city| CityImageFetcherService.new(city).call }
   end
 
   private

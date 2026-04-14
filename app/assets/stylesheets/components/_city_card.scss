@@ -66,13 +66,49 @@
     color: var(--gray-600);
   }
 
-  // ─── Placeholder photo ──────────────────────────────────────────────────
+  // ─── Photo de la ville ──────────────────────────────────────────────────
 
-  // Cadre gris réservant l'espace pour une future photo de la ville.
-  // La hauteur fixe garantit que toutes les cartes sont visuellement uniformes.
+  // Bloc image réelle : object-fit cover découpe l'image pour remplir
+  // parfaitement le cadre sans déformer, quelle que soit la dimension originale.
+  &__photo {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      // Transition douce lors du survol de la carte (hérité du &:hover sur .city-card)
+      transition: transform 0.35s ease;
+    }
+  }
+
+  // Zoom léger sur l'image quand on survole la carte entière
+  &:hover &__photo img {
+    transform: scale(1.04);
+  }
+
+  // Crédit Unsplash : discret, positionné en bas de l'image, requis par leurs CGU.
+  &__photo-credit {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 2px 8px;
+    background: rgba(0, 0, 0, 0.38);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.65rem;
+    border-top-left-radius: 6px;
+    // pointer-events: none : le crédit ne capture pas les clics
+    pointer-events: none;
+  }
+
+  // Fallback : même hauteur que le bloc photo pour conserver le gabarit
+  // quand l'image n'est pas encore disponible.
   &__photo-placeholder {
     background: var(--gray-300);
-    height: 140px;
+    height: 160px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -213,6 +249,47 @@
     &:active {
       transform: translateY(0);
     }
+  }
+
+  // ─── Bouton SeLoger ──────────────────────────────────────────────────────
+
+  // Style "outline" (fond transparent, bordure marron) pour rester secondaire
+  // visuellement : le CTA principal est le bouton carte (vert plein).
+  // La couleur marron (--brown-primary) est cohérente avec le critère "Immobilier"
+  // déjà utilisé dans les jauges de scores.
+  &__seloger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: transparent;
+    color: var(--brown-primary);
+    border: 1.5px solid var(--brown-soft);
+    border-radius: 50px;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+
+    &:hover {
+      background: var(--brown-soft);
+      border-color: var(--brown-primary);
+      color: var(--brown-primary);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &__seloger-icon {
+    flex-shrink: 0;
+    // L'icône hérite de la couleur du bouton via currentColor
+    stroke: currentColor;
   }
 }
 

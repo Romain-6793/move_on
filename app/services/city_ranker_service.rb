@@ -20,7 +20,8 @@ class CityRankerService
     cultural_heritage:   "cultural_heritage_score",
     health:              "health_score",
     commercial_life:     "commercial_life_score",
-    leisures_and_sports: "leisures_sports_score"
+    leisures_and_sports: "leisures_sports_score",
+    education:           "education_score",
   }.freeze
 
   # Bonus accordé quand le paysage ou la population correspond au filtre.
@@ -36,10 +37,14 @@ class CityRankerService
   # Retourne une ActiveRecord::Relation de City triée par score décroissant.
   # Chaque ville expose l'attribut virtuel `computed_score` (calculé en SQL).
   # Le calcul en SQL évite de charger toutes les villes en mémoire Ruby.
+  # On insère dans la requête les calculs particuliers comme education_score
   def top_cities(limit: 5)
-    City.select("cities.*, (#{score_expression}) AS computed_score")
-        .order("computed_score DESC")
-        .limit(limit)
+    # On génère la partie SQL du score éducation (ou "0" si aucun niveau choisi)
+    education_part = education_sql || "0"
+
+    City.select("cities.*, (#{score_expression}) AS computed_score, (#{education_part}) AS education_score")
+      .order("computed_score DESC")
+      .limit(limit)
   end
 
   private
@@ -83,6 +88,50 @@ class CityRankerService
     return nil if threshold.zero?
 
     "CASE WHEN population >= #{threshold} THEN #{GEOGRAPHY_BONUS} ELSE 0 END"
+  end
+
+  def education_sql
+    levels = @search.education_levels
+    return nil if levels.blank?
+
+    parts = []
+
+    # Petite enfance → normalisation SQL du nombre de crèches
+    if levels.include?("Petite enfance")
+      parts << normalized_nurseries_sql
+    end
+
+    # Premier degré → score déjà normalisé en base
+    if levels.include?("Premier degré")
+      parts << "COALESCE(first_deg_score, 0)"
+    end
+
+    # Second degré → score déjà normalisé en base
+    if levels.include?("Second degré")
+      parts << "COALESCE(second_deg_score, 0)"
+    end
+
+    # Moyenne des sous-critères sélectionnés
+    "( (#{parts.join(' + ')}) / #{parts.size} )"
+
+    Rails.logger.info "EDU LEVELS = #{@search.education_levels.inspect}"
+    Rails.logger.info "EDU SQL = #{education_sql}"
+  end
+
+  # squish évite les caractères inutiles (retours à la ligne et espaces), NULLIF évite une division par 0
+
+  def normalized_nurseries_sql
+    <<~SQL.squish
+      (
+        100.0 * (
+          nurseries_count - (SELECT MIN(nb_creche) FROM cities)
+        ) / NULLIF(
+          (SELECT MAX(nb_creche) FROM cities) -
+          (SELECT MIN(nb_creche) FROM cities),
+          0
+        )
+      )
+    SQL
   end
 
   # Génère un terme SQL par critère actif (poids 1, 2 ou 3).

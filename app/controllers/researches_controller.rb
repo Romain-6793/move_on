@@ -52,12 +52,19 @@ class ResearchesController < ApplicationController
   # Les critères sont des integers (0/1/2/3), les filtres géographiques des booléens.
   # On n'autorise JAMAIS user_id ici : il est assigné via current_user.researches.build.
   def research_params
-    params.require(:research).permit(
+    rp = params.require(:research).permit(
       :research_name,
       :coast, :mountain, :no_filters, :density,
       :real_estate, :transport_network, :cultural_heritage,
-      :health, :commercial_life, :leisures_and_sports
+      :health, :commercial_life, :leisures_and_sports, :education, :education_levels
     )
+
+    # Convertit le JSON string → Array Ruby
+    if rp[:education_levels].present?
+      rp[:education_levels] = JSON.parse(rp[:education_levels])
+    end
+
+    rp
   end
 
 

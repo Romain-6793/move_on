@@ -30,7 +30,8 @@ export default class extends Controller {
     "populationDisplay",     // texte affichant la valeur courante du slider
     "coastField",            // champ caché research[coast]
     "mountainField",         // champ caché research[mountain]
-    "noFiltersField"         // champ caché research[no_filters]
+    "noFiltersField",        // champ caché research[no_filters]
+    "educationHiddenField"   // champ caché pour le sous-tag dans éducation
   ]
 
   // ─── État interne ─────────────────────────────────────────────────────────
@@ -47,7 +48,15 @@ export default class extends Controller {
   // ─── Cycle de vie ────────────────────────────────────────────────────────
 
   connect() {
-    // Rendu initial : s'assure que tout est cohérent dès le chargement de la page
+    // Si le champ caché contient déjà des valeurs (mode édition ou rechargement)
+    if (this.hasEducationHiddenFieldTarget && this.educationHiddenFieldTarget.value) {
+      try {
+        this.educationTags = JSON.parse(this.educationHiddenFieldTarget.value)
+      } catch (e) {
+        this.educationTags = []
+      }
+    }
+
     this.renderAll()
   }
 
@@ -126,6 +135,14 @@ export default class extends Controller {
     this.renderAll()
   }
 
+  // Transforme mon array educationTags en JSON pour rails
+
+  updateEducationHiddenField() {
+    if (this.hasEducationHiddenFieldTarget) {
+      this.educationHiddenFieldTarget.value = JSON.stringify(this.educationTags)
+    }
+  }
+
   // ─── ACCORDÉON "En savoir plus" ───────────────────────────────────────────
 
   // Bascule l'affichage du détail d'une carte (sources & méthode de calcul).
@@ -168,12 +185,12 @@ export default class extends Controller {
   // Appelée après chaque changement d'état pour mettre à jour l'ensemble du DOM.
   // On repart de l'état JS et on reconstruit les parties dynamiques.
   renderAll() {
+    this.updateEducationHiddenField()
     this.updateCardVisibility()
     this.updateTagsLists()
     this.updateCounts()
     this.updateEducationCards()
     this.updateEducationCheckboxes()
-    // Met à jour les champs cachés soumis avec le formulaire
     this.updateCriterionFields()
   }
 

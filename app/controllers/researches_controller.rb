@@ -35,15 +35,35 @@ class ResearchesController < ApplicationController
   end
 
   def edit
-    
+    # On retrouve la recherche par son id et on vérifie que l'utilisateur connecté
+    # en est bien le propriétaire (Pundit → ResearchPolicy#edit?).
+    @research = Research.find(params[:id])
+    authorize @research
   end
 
   def update
-    
+    @research = Research.find(params[:id])
+    authorize @research
+
+    if @research.update(research_params)
+      redirect_to research_path(@research), notice: "Recherche mise à jour"
+    else
+      # status: :unprocessable_entity est la convention Rails 7 pour signaler
+      # à Turbo que la réponse est une erreur de validation (ne remplace pas l'URL).
+      render :edit, status: :unprocessable_entity
+    end
   end
 
   def destroy
-    
+    @research = Research.find(params[:id])
+    authorize @research
+    @research.destroy
+
+    # Après suppression on renvoie l'utilisateur sur son profil
+    # plutôt que sur researches#index (qui n'existe pas).
+    # profile_user_path est le helper généré par la route member `get 'profile'`
+    # définie dans resources :users (config/routes.rb).
+    redirect_to profile_user_path(current_user), notice: "Recherche supprimée"
   end
 
   private

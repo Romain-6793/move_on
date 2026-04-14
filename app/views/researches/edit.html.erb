@@ -1,1 +1,4 @@
-<h1>Some researches edit view</h1>
+<%# Vue "Modifier une recherche" – réutilise le même partial que new.html.erb.
+    form_with détecte que @research est un enregistrement existant (persisted?)
+    et génère automatiquement une requête PATCH vers /researches/:id. %>
+<%= render 'shared/research', research: @research %>

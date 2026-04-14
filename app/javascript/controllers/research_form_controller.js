@@ -48,13 +48,40 @@ export default class extends Controller {
   // ─── Cycle de vie ────────────────────────────────────────────────────────
 
   connect() {
-    // Si le champ caché contient déjà des valeurs (mode édition ou rechargement)
+    // ── 1. Restaure les niveaux scolaires depuis le champ caché JSON ──────────
+    // Utilisé à la fois en mode création (valeur "[]") et en mode édition.
     if (this.hasEducationHiddenFieldTarget && this.educationHiddenFieldTarget.value) {
       try {
         this.educationTags = JSON.parse(this.educationHiddenFieldTarget.value)
       } catch (e) {
         this.educationTags = []
       }
+    }
+
+    // ── 2. Restaure les critères sélectionnés depuis les champs cachés ────────
+    // En mode édition, les champs cachés contiennent les poids sauvegardés
+    // (3 = essentiel, 2 = important, 1 = bonus, 0 = non sélectionné).
+    // On reconstitue this.selections pour que renderAll() puisse reconstruire
+    // l'interface (tags, compteurs, visibilité des cartes).
+    const WEIGHT_TO_SECTION = { 3: 'essential', 2: 'important', 1: 'bonus' }
+    this.element.querySelectorAll('[data-criterion-field]').forEach(field => {
+      const key   = field.dataset.criterionField
+      const value = parseInt(field.value, 10)
+      if (value > 0 && WEIGHT_TO_SECTION[value]) {
+        this.selections[key] = WEIGHT_TO_SECTION[value]
+      }
+    })
+
+    // ── 3. Initialise l'affichage du slider de population ────────────────────
+    // updatePopulation n'est déclenché que sur l'événement "input", donc il faut
+    // initialiser manuellement l'étiquette au chargement (surtout en mode édition).
+    const slider = this.element.querySelector('.population-slider')
+    if (slider && this.hasPopulationDisplayTarget) {
+      const value = parseInt(slider.value, 10) || 0
+      const label = value === 0
+        ? 'Toutes tailles'
+        : value.toLocaleString('fr-FR') + '\u202fhab.'
+      this.populationDisplayTargets.forEach(el => (el.textContent = label))
     }
 
     this.renderAll()

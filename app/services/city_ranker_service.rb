@@ -14,6 +14,11 @@ class CityRankerService
   # Correspondance champ du formulaire → colonne de score sur City (0-100).
   # On isole cette table en constante pour éviter de la dupliquer entre
   # le service (calcul) et la vue (affichage des jauges).
+  #
+  # Note : l'éducation est intentionnellement absente ici.
+  # Son score est calculé dynamiquement par education_sql (combinaison de
+  # sous-critères : crèches, premier degré, second degré) plutôt que depuis
+  # la colonne statique cities.education_score. Voir education_score_part.
   CRITERIA_MAPPING = {
     real_estate:         "real_estate_score",
     transport_network:   "transport_network_score",
@@ -21,7 +26,6 @@ class CityRankerService
     health:              "health_score",
     commercial_life:     "commercial_life_score",
     leisures_and_sports: "leisures_sports_score",
-    education:           "education_score",
   }.freeze
 
   # Bonus accordé quand le paysage ou la population correspond au filtre.
@@ -56,9 +60,33 @@ class CityRankerService
     parts = [landscape_sql, population_sql].compact
     parts.concat(criteria_sql_parts)
 
+    # L'éducation est ajoutée séparément car son calcul est dynamique :
+    # il dépend des niveaux scolaires sélectionnés (crèches, premier ou second degré).
+    # On ne peut pas utiliser la colonne statique cities.education_score ici,
+    # car elle ne reflète pas ces sous-critères.
+    parts << education_score_part if education_score_part
+
     # Si aucun filtre ni critère n'est actif, toutes les villes ont un score de 0
     # et seront renvoyées dans l'ordre de la base (acceptable pour le cas d'usage).
     parts.join(" + ").presence || "0"
+  end
+
+  # Construit la contribution de l'éducation au score composite,
+  # en s'appuyant sur education_sql (calcul dynamique par niveaux).
+  # Retourne nil si l'éducation n'est pas sélectionnée ou si aucun niveau n'est choisi.
+  def education_score_part
+    # Mémoïsation : on ne calcule qu'une seule fois pour éviter d'appeler
+    # education_sql deux fois (une pour le score, une pour l'affichage).
+    return @education_score_part if defined?(@education_score_part)
+
+    weight = @search.education.to_i
+    edu_sql = education_sql
+
+    # Si pas de poids ou pas de niveaux sélectionnés, aucune contribution
+    @education_score_part = if weight.positive? && edu_sql
+      # COALESCE(..., 0) protège contre les villes où nb_creche est NULL
+      "(#{weight} * COALESCE(#{edu_sql}, 0))"
+    end
   end
 
   # +400 si le type de paysage de la ville correspond au filtre choisi.
@@ -96,8 +124,10 @@ class CityRankerService
 
     parts = []
 
-    # Petite enfance → normalisation SQL du nombre de crèches
-    parts << normalized_nurseries_sql if levels.include?("Petite enfance")
+    # Petite enfance → normalisation SQL du nombre de crèches.
+    # COALESCE(..., 0) est indispensable : nb_creche peut être NULL pour certaines villes,
+    # et NULL + n'importe quoi = NULL en SQL, ce qui ferait tomber toute la moyenne à NULL.
+    parts << "COALESCE(#{normalized_nurseries_sql}, 0)" if levels.include?("Petite enfance")
 
     # Premier degré → score déjà normalisé en base
     parts << "COALESCE(first_deg_score, 0)" if levels.include?("Premier degré")
@@ -122,8 +152,9 @@ class CityRankerService
     <<~SQL.squish
       (
         100.0 * (
-          nb_creche - (SELECT MIN(nb_creche) FROM cities)
-        ) / NULLIF(
+          CAST(nb_creche AS INTEGER)
+          - (SELECT MIN(nb_creche) FROM cities)
+          ) / NULLIF(
           (SELECT MAX(nb_creche) FROM cities) -
           (SELECT MIN(nb_creche) FROM cities),
           0

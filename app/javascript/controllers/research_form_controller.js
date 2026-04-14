@@ -180,19 +180,7 @@ export default class extends Controller {
     this.noFiltersFieldTarget.value = value === 'indifferent' ? '1' : '0'
   }
 
-  // ─── RENDU : méthode centrale ─────────────────────────────────────────────
 
-  // Appelée après chaque changement d'état pour mettre à jour l'ensemble du DOM.
-  // On repart de l'état JS et on reconstruit les parties dynamiques.
-  renderAll() {
-    this.updateEducationHiddenField()
-    this.updateCardVisibility()
-    this.updateTagsLists()
-    this.updateCounts()
-    this.updateEducationCards()
-    this.updateEducationCheckboxes()
-    this.updateCriterionFields()
-  }
 
   // Masque toutes les copies d'un critère sélectionné (dans les 3 sections).
   updateCardVisibility() {
@@ -326,5 +314,20 @@ export default class extends Controller {
     if (!el) return
     el.classList.add('limit-reached')
     setTimeout(() => el.classList.remove('limit-reached'), 600)
+  }
+
+
+  // ─── RENDU : méthode centrale ─────────────────────────────────────────────
+
+  // Appelée après chaque changement d'état pour mettre à jour l'ensemble du DOM.
+  // On repart de l'état JS et on reconstruit les parties dynamiques.
+  renderAll() {
+    this.updateEducationHiddenField()
+    this.updateCardVisibility()
+    this.updateTagsLists()
+    this.updateCounts()
+    this.updateEducationCards()
+    this.updateEducationCheckboxes()
+    this.updateCriterionFields()
   }
 }

@@ -1,10 +1,8 @@
 <%# Page d'inscription Devise.
     On utilise .devise-card--wide (max-width 560px) car le formulaire
     d'inscription comporte plus de champs que la connexion. %>
-
 <div class="devise-page">
   <div class="devise-card devise-card--wide">
-
     <%# En-tête : logo bicolore Move On + titre + barre verte décorative %>
     <div class="devise-header">
       <%= link_to root_path, class: "devise-logo" do %>
@@ -14,12 +12,10 @@
       <p class="devise-subtitle">Rejoignez Move On et trouvez votre ville idéale.</p>
       <div class="devise-divider"></div>
     </div>
-
     <%# f.error_notification affiche un message récapitulatif si des erreurs existent.
         Il est placé en dehors des form-inputs pour être visible en premier. %>
     <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
       <%= f.error_notification %>
-
       <div class="form-inputs">
         <%# ── Identité ── %>
         <div class="row">
@@ -36,40 +32,34 @@
                         input_html: { autocomplete: "family-name" } %>
           </div>
         </div>
-
         <%= f.input :date_of_birth,
                     label: "Date de naissance",
                     as: :string,
                     input_html: { type: :date } %>
-
         <%# ── Accès au compte ── %>
         <%= f.input :email,
                     label: "Adresse e-mail",
                     required: true,
                     autofocus: true,
                     input_html: { autocomplete: "email" } %>
-
         <%= f.input :password,
                     label: "Mot de passe",
                     required: true,
                     hint: ("#{@minimum_password_length} caractères minimum" if @minimum_password_length),
                     input_html: { autocomplete: "new-password" } %>
-
         <%= f.input :password_confirmation,
                     label: "Confirmez le mot de passe",
                     required: true,
                     input_html: { autocomplete: "new-password" } %>
-
         <%# ── Profil de mobilité ── %>
         <%# collection génère un <select> avec les options définies %>
         <%= f.input :situation,
                     label: "Ma situation",
                     collection: [
                       ["Étudiant·e", "student"],
-                      ["Jeune actif·ve", "working"],
+                      ["Actif·ve", "working"],
                       ["En famille", "family"]
                     ] %>
-
         <%# as: :radio_buttons génère des boutons radio au lieu d'un select %>
         <%= f.input :single,
                     label: "Je déménage…",
@@ -79,17 +69,13 @@
                       ["À plusieurs", false]
                     ] %>
       </div>
-
       <div class="form-actions">
         <%= f.button :submit, "Créer mon compte", class: "btn-devise-primary" %>
       </div>
-
     <% end %>
-
     <%# Liens vers les autres pages Devise (connexion…) %>
     <div class="devise-links">
       <%= render "devise/shared/links" %>
     </div>
-
   </div>
 </div>

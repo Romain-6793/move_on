@@ -11,7 +11,7 @@
 %>
 <%#
   Configuration des 6 critères disponibles avec leurs couleurs.
-  Les couleurs reprennent exactement celles définies dans _new_research.html.erb
+  Les couleurs reprennent exactement celles définies dans _research.html.erb
   pour assurer la cohérence visuelle entre le formulaire et les résultats.
   `score_method` est le nom de la méthode appelée sur l'objet City.
 %>
@@ -21,6 +21,7 @@
   { key: :health,              title: 'Santé',            color: '#F48FB1', score_method: :health_score },
   { key: :commercial_life,     title: 'Commerce',         color: '#FFB74D', score_method: :commercial_life_score },
   { key: :cultural_heritage,   title: 'Culture',          color: '#9575CD', score_method: :cultural_heritage_score },
+  { key: :education,           title: 'Education',        color: '#0288D1', score_method: :education_score },
   { key: :leisures_and_sports, title: 'Sports & loisirs', color: '#E57373', score_method: :leisures_sports_score }
 ] %>
 <div class="city-card">
@@ -80,8 +81,6 @@
              value="<%= city.id %>">
       <span>Je choisis cette ville</span>
     </label>
-    <%# Lien "Plus de détails" – sera relié à city_path(city) une fois la route créée %>
-    <a href="#" class="city-card__details-link">Plus de détails →</a>
     <%# Bouton "Trouver sur la carte" – appellera le contrôleur Stimulus de la carte %>
     <%= link_to "Trouver sur la carte",
             map_path(city.id),

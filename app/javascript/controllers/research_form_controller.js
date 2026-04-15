@@ -30,7 +30,8 @@ export default class extends Controller {
     "populationDisplay",     // texte affichant la valeur courante du slider
     "coastField",            // champ caché research[coast]
     "mountainField",         // champ caché research[mountain]
-    "noFiltersField"         // champ caché research[no_filters]
+    "noFiltersField",        // champ caché research[no_filters]
+    "educationHiddenField"   // champ caché pour le sous-tag dans éducation
   ]
 
   // ─── État interne ─────────────────────────────────────────────────────────
@@ -47,7 +48,42 @@ export default class extends Controller {
   // ─── Cycle de vie ────────────────────────────────────────────────────────
 
   connect() {
-    // Rendu initial : s'assure que tout est cohérent dès le chargement de la page
+    // ── 1. Restaure les niveaux scolaires depuis le champ caché JSON ──────────
+    // Utilisé à la fois en mode création (valeur "[]") et en mode édition.
+    if (this.hasEducationHiddenFieldTarget && this.educationHiddenFieldTarget.value) {
+      try {
+        this.educationTags = JSON.parse(this.educationHiddenFieldTarget.value)
+      } catch (e) {
+        this.educationTags = []
+      }
+    }
+
+    // ── 2. Restaure les critères sélectionnés depuis les champs cachés ────────
+    // En mode édition, les champs cachés contiennent les poids sauvegardés
+    // (3 = essentiel, 2 = important, 1 = bonus, 0 = non sélectionné).
+    // On reconstitue this.selections pour que renderAll() puisse reconstruire
+    // l'interface (tags, compteurs, visibilité des cartes).
+    const WEIGHT_TO_SECTION = { 3: 'essential', 2: 'important', 1: 'bonus' }
+    this.element.querySelectorAll('[data-criterion-field]').forEach(field => {
+      const key = field.dataset.criterionField
+      const value = parseInt(field.value, 10)
+      if (value > 0 && WEIGHT_TO_SECTION[value]) {
+        this.selections[key] = WEIGHT_TO_SECTION[value]
+      }
+    })
+
+    // ── 3. Initialise l'affichage du slider de population ────────────────────
+    // updatePopulation n'est déclenché que sur l'événement "input", donc il faut
+    // initialiser manuellement l'étiquette au chargement (surtout en mode édition).
+    const slider = this.element.querySelector('.population-slider')
+    if (slider && this.hasPopulationDisplayTarget) {
+      const value = parseInt(slider.value, 10) || 0
+      const label = value === 0
+        ? 'Toutes tailles'
+        : value.toLocaleString('fr-FR') + '\u202fhab.'
+      this.populationDisplayTargets.forEach(el => (el.textContent = label))
+    }
+
     this.renderAll()
   }
 
@@ -126,6 +162,14 @@ export default class extends Controller {
     this.renderAll()
   }
 
+  // Transforme mon array educationTags en JSON pour rails
+
+  updateEducationHiddenField() {
+    if (this.hasEducationHiddenFieldTarget) {
+      this.educationHiddenFieldTarget.value = JSON.stringify(this.educationTags)
+    }
+  }
+
   // ─── ACCORDÉON "En savoir plus" ───────────────────────────────────────────
 
   // Bascule l'affichage du détail d'une carte (sources & méthode de calcul).
@@ -163,19 +207,7 @@ export default class extends Controller {
     this.noFiltersFieldTarget.value = value === 'indifferent' ? '1' : '0'
   }
 
-  // ─── RENDU : méthode centrale ─────────────────────────────────────────────
 
-  // Appelée après chaque changement d'état pour mettre à jour l'ensemble du DOM.
-  // On repart de l'état JS et on reconstruit les parties dynamiques.
-  renderAll() {
-    this.updateCardVisibility()
-    this.updateTagsLists()
-    this.updateCounts()
-    this.updateEducationCards()
-    this.updateEducationCheckboxes()
-    // Met à jour les champs cachés soumis avec le formulaire
-    this.updateCriterionFields()
-  }
 
   // Masque toutes les copies d'un critère sélectionné (dans les 3 sections).
   updateCardVisibility() {
@@ -309,5 +341,19 @@ export default class extends Controller {
     if (!el) return
     el.classList.add('limit-reached')
     setTimeout(() => el.classList.remove('limit-reached'), 600)
+  }
+
+  // ─── RENDU : méthode centrale ─────────────────────────────────────────────
+
+  // Appelée après chaque changement d'état pour mettre à jour l'ensemble du DOM.
+  // On repart de l'état JS et on reconstruit les parties dynamiques.
+  renderAll() {
+    this.updateEducationHiddenField()
+    this.updateCardVisibility()
+    this.updateTagsLists()
+    this.updateCounts()
+    this.updateEducationCards()
+    this.updateEducationCheckboxes()
+    this.updateCriterionFields()
   }
 }

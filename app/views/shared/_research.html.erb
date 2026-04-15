@@ -41,14 +41,6 @@
                  'quam nihil molestiae consequatur vel illum qui dolorem eum fugiat.'
   },
   {
-    key: 'education',
-    title: 'Éducation',
-    color: '#0288D1', 
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
-                 'Nam libero tempore cum soluta nobis est eligendi optio cumque nihil ' \
-                 'impedit quo minus id quod maxime placeat facere possimus omnis voluptas.'
-  },
-  {
     key: 'health',
     title: 'Accès aux soins',
     color: '#F48FB1',  
@@ -71,6 +63,14 @@
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
                  'Itaque earum rerum hic tenetur a sapiente delectus ut aut reiciendis ' \
                  'voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.'
+  },
+  {
+    key: 'education',
+    title: 'Éducation',
+    color: '#0288D1', 
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Nam libero tempore cum soluta nobis est eligendi optio cumque nihil ' \
+                 'impedit quo minus id quod maxime placeat facere possimus omnis voluptas.'
   },
   {
     key: 'leisures_and_sports',
@@ -115,7 +115,10 @@
   <%= form_with model: research,
                 html: { class: 'research-form',
                         data: { controller: 'research-form' } } do |f| %>
-    <h1 class="research-form-title">Nouvelle recherche</h1>
+    <%# Titre adapté selon qu'on crée ou qu'on modifie une recherche. %>
+    <h1 class="research-form-title">
+      <%= research.new_record? ? 'Nouvelle recherche' : 'Modifier la recherche' %>
+    </h1>
     <%# ═══════════════════════════════════════════════════════
         A) NOM DE LA RECHERCHE
         ═══════════════════════════════════════════════════════ %>
@@ -145,13 +148,21 @@
           { value: 'mountain',    label: '⛰️  Montagne' },
           { value: 'no_filters', label: '🗺️  Indifférent' }
         ].each do |option| %>
+          <%#
+            Pré-coche le radio correct : pour un nouvel enregistrement on coche
+            "no_filters" par défaut ; pour une modification on lit les booléens
+            enregistrés en base.
+          %>
+          <% geo_checked = (option[:value] == 'coast'      && research.coast?) ||
+                            (option[:value] == 'mountain'   && research.mountain?) ||
+                            (option[:value] == 'no_filters' && (research.new_record? || research.no_filters?)) %>
           <input type="radio"
                  name="geo_filter"
                  id="geo_<%= option[:value] %>"
                  value="<%= option[:value] %>"
                  class="geo-radio-option"
                  data-action="change->research-form#updateGeoFilter"
-          <%= 'checked' if option[:value] == 'no_filters' %>>
+          <%= 'checked' if geo_checked %>>
           <label for="geo_<%= option[:value] %>"><%= option[:label] %></label>
         <% end %>
       </div>
@@ -160,14 +171,19 @@
         Ils sont gérés par updateGeoFilter dans le contrôleur Stimulus.
         Les targets permettent à Stimulus de les trouver facilement.
       %>
+      <%#
+        On convertit les booléens Rails en '1'/'0' pour correspondre à ce que
+        le contrôleur Stimulus lit et écrit (updateGeoFilter).
+        Pour un nouvel enregistrement, no_filters est coché par défaut.
+      %>
       <%= f.hidden_field :coast,
-            value: '0',
+            value: research.coast? ? '1' : '0',
             data: { research_form_target: 'coastField' } %>
       <%= f.hidden_field :mountain,
-            value: '0',
+            value: research.mountain? ? '1' : '0',
             data: { research_form_target: 'mountainField' } %>
       <%= f.hidden_field :no_filters,
-            value: '1',
+            value: (research.new_record? || research.no_filters?) ? '1' : '0',
             data: { research_form_target: 'noFiltersField' } %>
       <%#
         Jauge de population : l'utilisateur peut indiquer la taille approximative
@@ -176,15 +192,19 @@
       %>
       <div class="population-slider-wrapper">
         <div class="population-slider-header">
-          <span class="population-slider-label-text">Taille de la ville</span>
+          <span class="population-slider-label-text">Taille minimale de la ville</span>
           <span class="population-value"
                 data-research-form-target="populationDisplay">Toutes tailles</span>
         </div>
+        <%#
+          En mode édition, on utilise la valeur enregistrée.
+          Pour un nouveau formulaire, density est nil → on revient à 0 ("Toutes tailles").
+        %>
         <%= f.range_field :density,
               min: 0,
               max: 2_000_000,
-              step: 10_000,
-              value: 0,
+              step: 5_000,
+              value: research.density || 0,
               class: 'population-slider',
               data: { action: 'input->research-form#updatePopulation' } %>
         <div class="population-slider-extremes">
@@ -262,13 +282,37 @@
         essentiel = 3 | important = 2 | bonus = 1 | non choisi = 0
       data-criterion-field permet à Stimulus de retrouver le bon champ par clé.
     %>
+    <%#
+      En mode édition, on injecte la valeur sauvegardée (3/2/1/0) dans chaque
+      champ caché. Le contrôleur Stimulus lira ces valeurs au connect() pour
+      reconstruire l'état visuel des cartes de critères.
+      .to_i garantit 0 si la valeur est nil (nouveau formulaire sans défaut BDD).
+    %>
     <% criteria.each do |criterion| %>
       <%= f.hidden_field criterion[:key].to_sym,
-            value: 0,
+            value: research.send(criterion[:key]).to_i,
             data: { criterion_field: criterion[:key] } %>
     <% end %>
+    <%#
+      Champ caché pour les niveaux scolaires du critère Éducation.
+      Placé ICI (une seule fois dans le formulaire) plutôt que dans le partial
+      _criterion_card, car ce partial est rendu 3 fois (une par section), ce qui
+      génèrerait 3 champs homonymes. Rack ne retenant que le dernier envoyé (vide),
+      Rails aurait toujours reçu un tableau vide.
+      Le contrôleur Stimulus (updateEducationHiddenField) cible ce champ via
+      data-research-form-target="educationHiddenField" et le remplit au format JSON.
+    %>
+    <%#
+      En mode édition, on sérialise le tableau PostgreSQL en JSON pour que le
+      contrôleur Stimulus puisse le lire et reconstruire les tags d'éducation.
+      Pour un nouvel enregistrement, education_levels vaut [] → JSON donne '[]'.
+    %>
+    <%= f.hidden_field :education_levels,
+          value: (research.education_levels || []).to_json,
+          data: { research_form_target: 'educationHiddenField' } %>
     <div class="research-submit-wrapper">
-      <%= f.submit 'Lancer ma recherche →', class: 'btn-research-submit' %>
+      <%= f.submit(research.new_record? ? 'Lancer ma recherche →' : 'Mettre à jour →',
+                   class: 'btn-research-submit') %>
     </div>
   <% end %>
 </div>

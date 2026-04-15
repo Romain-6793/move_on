@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_14_082820) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_14_144259) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -109,18 +109,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_14_082820) do
     t.integer "entertainment", default: 0
     t.integer "health", default: 0
     t.integer "commercial_life", default: 0
-    t.string "activity_1"
-    t.string "activity_2"
-    t.string "activity_3"
     t.string "chosen_nearest_big_city"
-    t.string "education_1"
-    t.string "education_2"
-    t.string "education_3"
-    t.string "education_4"
-    t.string "education_5"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "leisures_and_sports", default: 0
+    t.string "education_levels", default: [], array: true
+    t.string "leisure_levels", default: [], array: true
   end
 
   create_table "messages", force: :cascade do |t|

@@ -39,15 +39,35 @@ class ResearchesController < ApplicationController
   end
 
   def edit
-    
+    # On retrouve la recherche par son id et on vérifie que l'utilisateur connecté
+    # en est bien le propriétaire (Pundit → ResearchPolicy#edit?).
+    @research = Research.find(params[:id])
+    authorize @research
   end
 
   def update
-    
+    @research = Research.find(params[:id])
+    authorize @research
+
+    if @research.update(research_params)
+      redirect_to research_path(@research), notice: "Recherche mise à jour"
+    else
+      # status: :unprocessable_entity est la convention Rails 7 pour signaler
+      # à Turbo que la réponse est une erreur de validation (ne remplace pas l'URL).
+      render :edit, status: :unprocessable_entity
+    end
   end
 
   def destroy
-    
+    @research = Research.find(params[:id])
+    authorize @research
+    @research.destroy
+
+    # Après suppression on renvoie l'utilisateur sur son profil
+    # plutôt que sur researches#index (qui n'existe pas).
+    # profile_user_path est le helper généré par la route member `get 'profile'`
+    # définie dans resources :users (config/routes.rb).
+    redirect_to profile_user_path(current_user), notice: "Recherche supprimée"
   end
 
   private
@@ -56,12 +76,19 @@ class ResearchesController < ApplicationController
   # Les critères sont des integers (0/1/2/3), les filtres géographiques des booléens.
   # On n'autorise JAMAIS user_id ici : il est assigné via current_user.researches.build.
   def research_params
-    params.require(:research).permit(
+    rp = params.require(:research).permit(
       :research_name,
       :coast, :mountain, :no_filters, :density,
       :real_estate, :transport_network, :cultural_heritage,
-      :health, :commercial_life, :leisures_and_sports
+      :health, :commercial_life, :leisures_and_sports, :education, :education_levels
     )
+
+    # Convertit le JSON string → Array Ruby
+    if rp[:education_levels].present?
+      rp[:education_levels] = JSON.parse(rp[:education_levels])
+    end
+
+    rp
   end
 
 

@@ -28,6 +28,10 @@ end
   get 'recherche/nouveau', to: 'search_steps#new_wizard', as: :new_research_wizard
   resources :search_steps, only: [:show, :update]
 
+  # Redirige /researches/new vers le wizard Wicked pour éviter que Rails
+  # ne l'interprète comme show avec id="new" (ce qui lèverait un RecordNotFound).
+  get 'researches/new', to: redirect('/recherche/nouveau')
+
   resources :researches, only: [:show, :edit, :update, :destroy]
   resources :maps, only: [:index, :show]
   resources :guest_searches, only: [:new, :create] do

@@ -1,0 +1,42 @@
+<%# Widget assistant : visible uniquement pour les comptes connectés (pas de requête LLM anonyme). %>
+<% if user_signed_in? %>
+  <div id="chatbot-widget"
+       class="chatbot-widget"
+       data-chatbot-messages-url="<%= messages_path(format: :json) %>"
+       data-chatbot-chat-url-template="<%= chat_path(id: "___CHAT_ID___", format: :json) %>"
+       data-chatbot-csrf-token="<%= form_authenticity_token %>"
+       hidden>
+    <button type="button"
+            id="chatbot-toggle"
+            class="chatbot-widget__fab"
+            aria-expanded="false"
+            aria-controls="chatbot-panel"
+            title="Assistant immobilier">
+      <i class="fa-solid fa-robot" aria-hidden="true"></i>
+    </button>
+
+    <div id="chatbot-panel"
+         class="chatbot-widget__panel"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="chatbot-title"
+         hidden>
+      <div class="chatbot-widget__header">
+        <h2 id="chatbot-title" class="chatbot-widget__title">Assistant immobilier</h2>
+        <button type="button" id="chatbot-close" class="chatbot-widget__close" aria-label="Fermer le chat">
+          &times;
+        </button>
+      </div>
+      <div id="chatbot-messages" class="chatbot-widget__messages" aria-live="polite"></div>
+      <form id="chatbot-form" class="chatbot-widget__form">
+        <label for="chatbot-input" class="visually-hidden">Votre message</label>
+        <textarea id="chatbot-input"
+                  class="chatbot-widget__input"
+                  rows="2"
+                  placeholder="Posez votre question…"
+                  autocomplete="off"></textarea>
+        <button type="submit" class="chatbot-widget__send">Envoyer</button>
+      </form>
+    </div>
+  </div>
+<% end %>

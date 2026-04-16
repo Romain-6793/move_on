@@ -68,6 +68,10 @@ gem "solid_queue"
 
 gem "pg_search"
 
+# Assistant immobilier (RubyLLM + rendu markdown des réponses)
+gem "ruby_llm", "~> 1.2.0"
+gem "redcarpet", "~> 3.6"
+
 group :development, :test do
   gem "dotenv-rails"
   # Faker génère des données réalistes pour les seeds (noms, textes, nombres…)

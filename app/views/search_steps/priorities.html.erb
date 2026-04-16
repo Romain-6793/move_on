@@ -1,0 +1,101 @@
+<%#
+  Wizard – Étape 3 : Pondération des critères
+  ─────────────────────────────────────────────
+  L'utilisateur assigne une importance aux critères non-essentiels.
+  Les critères déjà marqués "essentiel" (valeur 3 en base) sont affichés
+  avec un badge verrouillé — ils ne peuvent pas être modifiés ici.
+  Pour les autres : select dropdown Important (2) / Bonus (1) / Non retenu (0).
+%>
+<% wizard_criteria = [
+  { key: 'real_estate',         title: 'Bons plans immobiliers',  icon: 'fa-house',           color: '#8D6E63' },
+  { key: 'transport_network',   title: 'Qualité des transports',  icon: 'fa-train',           color: '#2E9EAD' },
+  { key: 'health',              title: 'Accès aux soins',         icon: 'fa-stethoscope',     color: '#F48FB1' },
+  { key: 'commercial_life',     title: 'Vie commerciale',         icon: 'fa-store',           color: '#FFB74D' },
+  { key: 'cultural_heritage',   title: 'Culture et patrimoine',   icon: 'fa-landmark',        color: '#9575CD' },
+  { key: 'education',           title: 'Éducation',               icon: 'fa-graduation-cap',  color: '#0288D1' },
+  { key: 'leisures_and_sports', title: 'Sports et loisirs',       icon: 'fa-dumbbell',        color: '#E57373' },
+] %>
+
+<div class="search-wizard-page search-background">
+  <%= render 'progress_bar',
+        current_step: 3,
+        total_steps:  4,
+        step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+
+  <div class="wizard-card">
+    <div class="wizard-card-header">
+      <h1 class="wizard-card-title">
+        <i class="fas fa-sliders-h wizard-title-icon" aria-hidden="true"></i>
+        Affinez vos priorités
+      </h1>
+      <p class="wizard-card-subtitle">
+        Parmi les critères restants, indiquez lesquels sont <strong>importants</strong>
+        ou <strong>bonus</strong> pour vous.
+      </p>
+    </div>
+
+    <%= form_with url: wizard_path, method: :patch, html: { class: 'wizard-form' } do |f| %>
+      <div class="wizard-priorities-list">
+        <% wizard_criteria.each do |criterion| %>
+          <% current_value = @research.send(criterion[:key]).to_i %>
+          <% is_essential  = current_value == 3 %>
+
+          <div class="wizard-priority-row <%= 'wizard-priority-row--essential' if is_essential %>"
+               style="--card-color: <%= criterion[:color] %>">
+            <%# Barre colorée à gauche %>
+            <div class="wizard-priority-band"></div>
+
+            <%# Icône + titre du critère %>
+            <div class="wizard-priority-info">
+              <i class="fas <%= criterion[:icon] %> wizard-criterion-icon"
+                 style="color: <%= criterion[:color] %>"
+                 aria-hidden="true"></i>
+              <span class="wizard-priority-title"><%= criterion[:title] %></span>
+            </div>
+
+            <%# Sélecteur ou badge selon l'état %>
+            <div class="wizard-priority-selector">
+              <% if is_essential %>
+                <%#
+                  Ce critère a été marqué "essentiel" à l'étape précédente.
+                  On l'affiche en lecture seule et on renvoie sa valeur 3 dans un champ caché.
+                %>
+                <span class="wizard-essential-badge">
+                  <i class="fas fa-star" aria-hidden="true"></i>
+                  Essentiel
+                </span>
+                <input type="hidden"
+                       name="research[<%= criterion[:key] %>]"
+                       value="3">
+              <% else %>
+                <%#
+                  Select pour les critères non-essentiels.
+                  Les valeurs correspondent aux poids du moteur de classement :
+                    2 = important  |  1 = bonus  |  0 = non retenu
+                %>
+                <select name="research[<%= criterion[:key] %>]"
+                        class="wizard-priority-select"
+                        style="border-color: <%= criterion[:color] %>">
+                  <option value="0" <%= 'selected' if current_value == 0 %>>Non retenu</option>
+                  <option value="1" <%= 'selected' if current_value == 1 %>>Bonus</option>
+                  <option value="2" <%= 'selected' if current_value == 2 %>>Important</option>
+                </select>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="wizard-nav">
+        <%= link_to wizard_path(:essentials), class: "btn-wizard-prev" do %>
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+          Précédent
+        <% end %>
+        <button type="submit" class="btn-wizard-next">
+          Voir le récapitulatif
+          <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -60,6 +60,11 @@ gem "sassc-rails"
 
 gem "pundit"
 
+# Wizard multi-étapes pour le formulaire de recherche.
+# Wicked fournit un DSL simple (steps, render_wizard) pour enchaîner
+# plusieurs vues sous un seul contrôleur.
+gem "wicked"
+
 # For Background jobs (if needed...)
 
 gem "solid_queue"

@@ -10,6 +10,20 @@
     criterion  – Hash { key:, title:, color:, description: }
     section    – String : 'essential' | 'important' | 'bonus'
 %>
+<%#
+  Mapping critère → classe Font Awesome (free solid tier).
+  Défini ici plutôt que dans _research.html.erb (données presentationnelles).
+  Font Awesome est chargé via la gem font-awesome-sass (@import "font-awesome" dans application.scss).
+%>
+<% criterion_icons = {
+  'real_estate'         => 'fa-house',
+  'transport_network'   => 'fa-train',
+  'health'              => 'fa-stethoscope',
+  'commercial_life'     => 'fa-store',
+  'cultural_heritage'   => 'fa-landmark',
+  'education'           => 'fa-graduation-cap',
+  'leisures_and_sports' => 'fa-dumbbell'
+} %>
 <%# On compose l'id unique de la checkbox pour relier le <label> (accessibilité) %>
 <% checkbox_id = "criterion_#{criterion[:key]}_#{section}" %>
 <div class="criterion-card"
@@ -22,8 +36,18 @@
   <%# Bandeau de couleur en haut : repère visuel rapide du critère %>
   <div class="criterion-card-color-band"></div>
   <div class="criterion-card-body">
-    <%# Titre du critère %>
-    <p class="criterion-card-title"><%= criterion[:title] %></p>
+    <%# Titre du critère avec icône Font Awesome à gauche %>
+    <p class="criterion-card-title">
+      <% icon_class = criterion_icons[criterion[:key]] %>
+      <% if icon_class %>
+        <%#
+          L'icône hérite de la couleur du critère (--card-color) pour une cohérence
+          visuelle avec le bandeau de couleur en haut de la carte.
+        %>
+        <i class="fas <%= icon_class %> criterion-icon" aria-hidden="true"></i>
+      <% end %>
+      <%= criterion[:title] %>
+    </p>
     <%# Bouton accordéon : déplie la description des sources et du calcul du score %>
     <button class="criterion-card-info-btn"
             type="button"

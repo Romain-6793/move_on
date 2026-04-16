@@ -1,28 +1,7 @@
 class ResearchesController < ApplicationController
-
-  def new
-    # On instancie un Research vide pour que form_with puisse construire le formulaire.
-    # Rails utilise cet objet pour déduire l'URL (POST /researches) et pré-remplir les champs.
-    @research = Research.new
-    authorize @research
-  end
-
-  def create
-    # On construit la recherche associée à l'utilisateur connecté (current_user fourni par Devise).
-    # build est équivalent à Research.new(research_params.merge(user: current_user))
-    # mais passe par l'association, ce qui est plus idiomatique Rails.
-    @research = current_user.researches.build(research_params)
-
-    # Pundit vérifie que l'utilisateur a le droit de créer cette ressource.
-    # À placer après le build pour que la policy puisse inspecter l'objet.
-    authorize @research
-
-    if @research.save
-      redirect_to research_path(@research), notice: "Recherche sauvegardée"
-    else
-      redirect_to new_research_path, alert: "Impossible de sauvegarder la recherche"
-    end
-  end
+  # Les actions new et create ont été déplacées dans SearchStepsController
+  # qui gère le wizard multi-étapes (gem wicked). ResearchesController ne gère
+  # plus que la consultation, la modification et la suppression des recherches existantes.
 
   def show
     @research = Research.find(params[:id])

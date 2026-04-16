@@ -21,7 +21,14 @@ resources :users, only: [] do
   end
 end
 
-  resources :researches, only: [:new, :create, :show, :edit, :update, :destroy]
+  # Wizard de création de recherche (gem wicked, 4 étapes).
+  # GET  /recherche/nouveau    → démarre un nouveau wizard (vide la session wizard)
+  # GET  /search_steps/:id     → affiche l'étape courante (:id = nom de l'étape)
+  # PATCH /search_steps/:id   → sauvegarde l'étape et avance
+  get 'recherche/nouveau', to: 'search_steps#new_wizard', as: :new_research_wizard
+  resources :search_steps, only: [:show, :update]
+
+  resources :researches, only: [:show, :edit, :update, :destroy]
   resources :maps, only: [:index, :show]
   resources :guest_searches, only: [:new, :create] do
     get 'results', on: :collection, to: 'guest_searches#results'

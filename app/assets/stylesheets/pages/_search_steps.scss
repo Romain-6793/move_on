@@ -1,0 +1,906 @@
+// Styles du formulaire de recherche multi-étapes (wizard Wicked).
+// Ce fichier couvre :
+//   - La barre de progression (_progress_bar)
+//   - La carte wizard (conteneur de chaque étape)
+//   - Les critères de l'étape 2 (essentials) et 3 (priorities)
+//   - Les boutons de navigation Précédent / Suivant / Lancer
+//   - La page de récapitulatif (confirm)
+//
+// ⚠️  Le fond "silhouette de France" est défini dans _research.scss via .search-background
+//    et appliqué à .search-wizard-page depuis les vues ERB.
+
+// ─── Mise en page générale ─────────────────────────────────────────────────
+
+.search-wizard-page {
+  background: var(--gray-100);
+  min-height: 100vh;
+  padding: 40px 16px 100px;
+}
+
+// ─── Barre de progression ──────────────────────────────────────────────────
+
+// Conteneur horizontal centré avec les pastilles et les traits
+.wizard-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 640px;
+  margin: 0 auto 12px;
+  padding: 0 8px;
+}
+
+// Une pastille + son label
+.wizard-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+// Cercle de la pastille
+.wizard-progress-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: background 0.25s, border-color 0.25s, color 0.25s;
+}
+
+// Étapes complétées : fond vert, coche
+.wizard-progress-step--completed .wizard-progress-dot {
+  background: var(--green-primary);
+  color: white;
+  border: none;
+}
+
+// Étape courante : fond bleu foncé
+.wizard-progress-step--current .wizard-progress-dot {
+  background: var(--blue-dark);
+  color: white;
+  border: none;
+  box-shadow: 0 0 0 3px rgba(2, 136, 209, 0.25);
+}
+
+// Étapes à venir : fond gris clair, texte gris
+.wizard-progress-step--upcoming .wizard-progress-dot {
+  background: var(--gray-200);
+  color: var(--gray-600);
+  border: 2px solid var(--gray-300);
+}
+
+// Libellé sous la pastille
+.wizard-progress-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  white-space: nowrap;
+
+  .wizard-progress-step--current &  { color: var(--blue-dark);    }
+  .wizard-progress-step--completed & { color: var(--green-dark);  }
+}
+
+// Trait horizontal entre les pastilles
+.wizard-progress-line {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  margin-bottom: 22px; // aligne le trait avec le centre des pastilles (dot 36px + label ~22px)
+
+  &--done { background: var(--green-primary); }
+  &--todo { background: var(--gray-300);      }
+}
+
+// Texte "Étape N sur N" – visible sur mobile, réduit sur desktop
+.wizard-step-counter {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  margin-bottom: 32px;
+  font-weight: 500;
+}
+
+// ─── Carte wizard (conteneur de chaque étape) ─────────────────────────────
+
+.wizard-card {
+  background: var(--white-main);
+  border-radius: 20px;
+  max-width: 860px;
+  margin: 0 auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+
+.wizard-card-header {
+  padding: 36px 40px 24px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.wizard-card-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+// Icône dans le titre de la carte wizard
+.wizard-title-icon {
+  color: var(--green-primary);
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.wizard-card-subtitle {
+  font-size: 0.95rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+  margin: 0;
+}
+
+// ─── Formulaire générique ─────────────────────────────────────────────────
+
+.wizard-form {
+  padding: 32px 40px 40px;
+}
+
+// Groupe d'un champ (label + input + hint)
+.wizard-field-group {
+  margin-bottom: 32px;
+
+  &:last-of-type { margin-bottom: 0; }
+}
+
+.wizard-field-label {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// Icône à gauche du label de champ
+.wizard-field-icon {
+  color: var(--green-primary);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.wizard-field-hint {
+  font-size: 0.82rem;
+  color: var(--gray-600);
+  margin-top: 4px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+// Champ texte (nom de la recherche)
+.wizard-text-input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid var(--gray-300);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: "Poppins", sans-serif;
+  color: var(--gray-800);
+  background: var(--white-soft);
+  transition: border-color 0.2s, background 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--green-primary);
+    background: var(--white-main);
+  }
+
+  &::placeholder {
+    color: var(--gray-600);
+    font-style: italic;
+  }
+}
+
+// ─── Filtres géographiques (étape 1) ─────────────────────────────────────
+
+.wizard-geo-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+// Radio bouton masqué + label stylisé en pill
+.wizard-geo-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+
+  & + .wizard-geo-label {
+    cursor: pointer;
+    padding: 10px 22px;
+    border-radius: 50px;
+    border: 2px solid var(--gray-300);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    background: var(--white-main);
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  &:checked + .wizard-geo-label {
+    border-color: var(--green-primary);
+    background: var(--green-primary);
+    color: white;
+  }
+
+  &:focus-visible + .wizard-geo-label {
+    outline: 2px solid var(--green-primary);
+    outline-offset: 3px;
+  }
+}
+
+// ─── Slider de population (étape 1) ───────────────────────────────────────
+
+.wizard-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+// Valeur dynamique affichée en vert à droite du label
+.wizard-slider-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--green-dark);
+}
+
+.wizard-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--gray-300);
+  outline: none;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--green-primary);
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  &::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--green-primary);
+    cursor: pointer;
+    border: 3px solid white;
+  }
+}
+
+.wizard-slider-extremes {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--gray-600);
+  margin-top: 6px;
+}
+
+// ─── Compteur essentiels + alerte limite (étape 2) ────────────────────────
+
+.wizard-essentials-counter {
+  margin-top: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--blue-dark);
+
+  span {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+}
+
+.wizard-limit-alert {
+  margin-top: 10px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: rgba(253, 16, 21, 0.08);
+  color: $red;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: shake-limit 0.4s ease;
+}
+
+// ─── Grille des cartes de critères (étape 2) ──────────────────────────────
+
+.wizard-criteria-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+// Carte individuelle de critère
+.wizard-criterion-card {
+  // --card-color injecté via style inline depuis la vue ERB
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--white-main);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 2px solid transparent;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.11);
+  }
+}
+
+// Bandeau coloré en haut de la carte
+.wizard-criterion-band {
+  height: 6px;
+  background: var(--card-color, var(--gray-300));
+  flex-shrink: 0;
+}
+
+.wizard-criterion-body {
+  padding: 16px 16px 8px;
+  flex: 1;
+}
+
+.wizard-criterion-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+// Icône FA dans la carte critère
+.wizard-criterion-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+  // la couleur est injectée via style inline (color: criterion[:color])
+}
+
+.wizard-criterion-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  line-height: 1.35;
+  margin: 0;
+}
+
+// Pied de carte : label + checkbox
+.wizard-criterion-footer {
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--gray-200);
+  margin-top: 8px;
+}
+
+// Label cliquable qui englobe la checkbox
+.wizard-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+
+  // État désactivé (Éducation sans tags)
+  &.wizard-checkbox-disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.wizard-criterion-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--card-color, var(--green-primary));
+  flex-shrink: 0;
+
+  &:disabled { cursor: not-allowed; }
+}
+
+.wizard-checkbox-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+// ─── Éducation : sélecteur de niveaux (étape 2) ───────────────────────────
+
+.wizard-education-block {
+  border-top: 1px solid var(--gray-200);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.wizard-education-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.wizard-education-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+  min-height: 4px;
+}
+
+// Tag de niveau scolaire
+.wizard-edu-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--card-color, var(--blue-dark));
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px 2px 8px;
+  border-radius: 20px;
+}
+
+.wizard-edu-tag-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  line-height: 1;
+
+  &:hover { color: white; }
+}
+
+//
+// Disposition en colonne : le select prend toute la largeur de la carte,
+// le bouton d'ajout est positionné juste en dessous.
+// Cela évite le problème précédent où le select (dont la largeur intrinsèque
+// dépend du texte de ses options) débordait et poussait le bouton hors de la carte.
+//
+.wizard-education-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wizard-education-select {
+  // width: 100% garanti puisque le parent est flex-direction: column
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--gray-300);
+  border-radius: 7px;
+  font-size: 0.76rem;
+  color: var(--gray-800);
+  background: var(--white-soft);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: var(--card-color, var(--blue-dark));
+  }
+}
+
+.wizard-education-add-btn {
+  // Bouton pleine largeur en forme de pill – plus facile à cliquer/tapper
+  // que le petit cercle de 24px qui existait avant
+  width: 100%;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: var(--card-color, var(--blue-dark));
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.82; }
+}
+
+// ─── Liste des critères / pondération (étape 3) ───────────────────────────
+
+.wizard-priorities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+// Ligne d'un critère dans l'étape 3
+.wizard-priority-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--white-main);
+  border-radius: 12px;
+  padding: 0 20px 0 0;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  min-height: 58px;
+
+  // Les critères essentiels sont légèrement mis en avant
+  &--essential {
+    background: var(--white-soft);
+    border: 1.5px solid var(--green-soft);
+  }
+}
+
+// Barre colorée à gauche (identique à .wizard-criterion-band)
+.wizard-priority-band {
+  width: 6px;
+  align-self: stretch;
+  flex-shrink: 0;
+  background: var(--card-color, var(--gray-300));
+}
+
+// Zone icône + titre
+.wizard-priority-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0; // empêche le texte de déborder
+}
+
+.wizard-priority-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Zone du sélecteur (select ou badge essentiel)
+.wizard-priority-selector {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+// Select de pondération
+.wizard-priority-select {
+  padding: 6px 10px;
+  border: 1.5px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--gray-800);
+  background: var(--white-soft);
+  cursor: pointer;
+  min-width: 130px;
+
+  &:focus {
+    outline: none;
+    // border-color injecté via style inline depuis la vue ERB
+  }
+}
+
+// Badge "Essentiel" en lecture seule
+.wizard-essential-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--green-primary);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+
+  .fa-star { font-size: 0.7rem; }
+}
+
+// ─── Récapitulatif (étape 4) ──────────────────────────────────────────────
+
+.wizard-card--confirm {
+  // La carte confirm est légèrement plus large pour aérer le contenu
+  max-width: 760px;
+}
+
+.wizard-confirm-section {
+  padding: 28px 40px 24px;
+  border-bottom: 1px solid var(--gray-200);
+
+  &:last-of-type { border-bottom: none; }
+}
+
+.wizard-confirm-section-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .fas { color: var(--green-primary); }
+}
+
+// Description list pour les données de base (nom, géo, taille)
+.wizard-confirm-dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 20px;
+  font-size: 0.9rem;
+
+  dt {
+    color: var(--gray-600);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  dd {
+    color: var(--gray-800);
+    margin: 0;
+  }
+}
+
+// Groupe de critères par niveau
+.wizard-confirm-criteria-group {
+  margin-bottom: 20px;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+// Label du groupe (Essentiel / Important / Bonus)
+.wizard-confirm-group-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  // Couleurs selon le niveau d'importance
+  &.badge-essential {
+    background: rgba(124, 179, 66, 0.15);
+    color: var(--green-dark);
+  }
+
+  &.badge-important {
+    background: rgba(2, 136, 209, 0.12);
+    color: var(--blue-dark);
+  }
+
+  &.badge-bonus {
+    background: rgba(255, 202, 40, 0.2);
+    color: #A08000;
+  }
+}
+
+// Liste des critères dans un groupe
+.wizard-confirm-criteria-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--gray-800);
+
+    .fas { font-size: 0.9rem; }
+  }
+}
+
+// Niveaux scolaires dans le récap Éducation
+.wizard-confirm-education-levels {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  font-style: italic;
+}
+
+// Message si aucun critère sélectionné
+.wizard-confirm-warning {
+  font-size: 0.88rem;
+  color: var(--gray-600);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--gray-100);
+  border-radius: 10px;
+
+  .fas { color: var(--yellow-accent); }
+}
+
+// Lien "Recommencer"
+.wizard-restart-link {
+  text-align: center;
+  padding: 16px 40px 0;
+  font-size: 0.85rem;
+
+  a {
+    color: var(--gray-600);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    &:hover { color: var(--blue-dark); }
+  }
+}
+
+// ─── Boutons de navigation wizard ─────────────────────────────────────────
+
+.wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 32px;
+  gap: 12px;
+  border-top: 1px solid var(--gray-200);
+
+  // Quand il n'y a qu'un seul bouton (étape 1), on le pousse à droite
+  &--right {
+    justify-content: flex-end;
+    border-top: none;
+    margin-top: 16px;
+  }
+}
+
+// Bouton "Précédent" : discret, outline vert
+.btn-wizard-prev {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border: 2px solid var(--gray-300);
+  border-radius: 50px;
+  background: transparent;
+  color: var(--gray-600);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+
+  &:hover {
+    border-color: var(--blue-dark);
+    color: var(--blue-dark);
+  }
+}
+
+// Bouton "Suivant" : bleu foncé
+.btn-wizard-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 50px;
+  background: var(--blue-dark);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: "Poppins", sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+
+  &:hover {
+    background: #026ca8;
+    transform: translateY(-1px);
+  }
+}
+
+// Bouton "Lancer ma recherche" : vert, plus imposant
+.btn-wizard-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 36px;
+  border: none;
+  border-radius: 50px;
+  background: var(--green-dark);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: "Poppins", sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    background: var(--green-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124, 179, 66, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ─── Responsive ────────────────────────────────────────────────────────────
+
+@media (max-width: 700px) {
+  .search-wizard-page { padding: 24px 12px 80px; }
+
+  .wizard-card-header,
+  .wizard-form,
+  .wizard-confirm-section { padding-left: 20px; padding-right: 20px; }
+
+  // Labels de la barre de progression masqués sur petit écran
+  .wizard-progress-label { display: none; }
+
+  .wizard-criteria-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  // La carte Éducation a des contrôles supplémentaires (select + bouton d'ajout)
+  // qui deviennent illisibles dans une colonne de ~200px.
+  // On la force à occuper toute la largeur de la grille pour qu'elle reste utilisable.
+  .wizard-criterion-card[data-criterion="education"] {
+    grid-column: 1 / -1;
+  }
+
+  .wizard-priority-row {
+    flex-wrap: wrap;
+    padding-right: 12px;
+    gap: 8px;
+  }
+
+  .wizard-priority-selector { width: 100%; padding-left: 22px; padding-bottom: 10px; }
+
+  .wizard-confirm-dl {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-nav {
+    flex-direction: column-reverse;
+
+    .btn-wizard-next, .btn-wizard-launch { width: 100%; justify-content: center; }
+    .btn-wizard-prev { width: 100%; justify-content: center; }
+  }
+}
+
+@media (max-width: 480px) {
+  .wizard-criteria-grid { grid-template-columns: 1fr; }
+}

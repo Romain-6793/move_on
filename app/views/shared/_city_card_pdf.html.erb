@@ -1,0 +1,91 @@
+<%#
+  Composant city_card pour l'export PDF.
+  Identique à _city_card.html.erb avec deux différences intentionnelles :
+    1. Pas de div city-card__actions (checkbox, carte, SeLoger) : inutiles en PDF.
+    2. Pas d'attribut loading="lazy" sur les images : non pertinent pour wkhtmltopdf.
+
+  Variables locales attendues :
+    city           : instance de City (enrichie de `computed_score` via CityRankerService)
+    index          : entier, rang dans le classement (commence à 1)
+    image_data_uri : String "data:image/jpeg;base64,..." calculée dans le contrôleur,
+                     ou nil si le téléchargement a échoué → le placeholder prend le relais.
+%>
+<%#
+  Configuration des 7 critères avec leurs couleurs.
+  Les couleurs sont identiques à celles de _city_card.html.erb pour cohérence visuelle.
+  On les reprend en dur ici car le CSS PDF n'a pas accès aux CSS custom properties
+  de _colors.scss (limitation de wkhtmltopdf / WebKit embarqué).
+%>
+<% city_criteria = [
+  { key: :real_estate,         title: 'Immobilier',       color: '#8D6E63', score_method: :real_estate_score },
+  { key: :transport_network,   title: 'Transports',       color: '#2E9EAD', score_method: :transport_network_score },
+  { key: :health,              title: 'Santé',            color: '#F48FB1', score_method: :health_score },
+  { key: :commercial_life,     title: 'Commerce',         color: '#FFB74D', score_method: :commercial_life_score },
+  { key: :cultural_heritage,   title: 'Culture',          color: '#9575CD', score_method: :cultural_heritage_score },
+  { key: :leisures_and_sports, title: 'Sports & loisirs', color: '#E57373', score_method: :leisures_sports_score },
+  { key: :education,           title: 'Education',        color: '#0288D1', score_method: :education_score }
+] %>
+<div class="city-card">
+  <%# ── En-tête : rang + nom + localisation ─────────────────────────── %>
+  <div class="city-card__header">
+    <span class="city-card__rank">#<%= index %></span>
+    <div class="city-card__identity">
+      <h3 class="city-card__name"><%= city.nom_com %></h3>
+      <%# compact supprime les nil si nom_dep ou nom_reg manquent en base %>
+      <span class="city-card__location">
+        <%= [city.nom_dep, city.nom_reg].compact.join(' · ') %>
+      </span>
+    </div>
+  </div>
+  <%# ── Photo de la ville ─────────────────────────────────────────────── %>
+  <%#
+    On utilise image_data_uri (data URI base64) plutôt que city.image_url.
+    Le contenu de l'image est inliné dans le HTML : wkhtmltopdf n'a aucune
+    requête HTTP à faire, ce qui résout les échecs de chargement liés au réseau,
+    aux User-Agent bloqués ou aux certificats non reconnus par le vieux WebKit.
+    Si image_data_uri est nil (échec de téléchargement côté Rails), le placeholder
+    s'affiche — l'export PDF n'est jamais planté par une image manquante.
+  %>
+  <% if image_data_uri.present? %>
+    <%#
+      On utilise un div avec background-image plutôt qu'un <img>.
+      Raison : object-fit (CSS3) n'est pas supporté par le WebKit embarqué de wkhtmltopdf,
+      ce qui provoque un étirement de l'image. En revanche, background-size: cover
+      et background-position: center sont eux reconnus et produisent le cadrage attendu.
+      Les styles sont en inline pour garantir leur priorité et éviter tout conflit CSS.
+    %>
+    <div class="city-card__photo"
+         style="background-image: url('<%= image_data_uri %>'); background-size: cover; background-position: center;">
+      <span class="city-card__photo-credit">© Wikimedia Commons</span>
+    </div>
+  <% else %>
+    <div class="city-card__photo-placeholder">
+      <span class="city-card__photo-label">Photo à venir</span>
+    </div>
+  <% end %>
+  <%# ── Jauges de scores par critère ──────────────────────────────────── %>
+  <%#
+    Les jauges utilisent des styles inline pour la largeur et la couleur :
+    c'est la technique la plus fiable en PDF car elle ne dépend pas du CSS externe.
+    .to_f.round protège contre un éventuel nil en base.
+  %>
+  <div class="city-card__scores">
+    <% city_criteria.each do |criterion| %>
+      <% score = city.public_send(criterion[:score_method]).to_f.round %>
+      <div class="city-card__score-row">
+        <span class="city-card__score-label"><%= criterion[:title] %></span>
+        <div class="city-card__gauge-track">
+          <div class="city-card__gauge-fill"
+               style="width: <%= score %>%; background-color: <%= criterion[:color] %>;"
+               role="progressbar"
+               aria-valuenow="<%= score %>"
+               aria-valuemin="0"
+               aria-valuemax="100">
+          </div>
+        </div>
+        <span class="city-card__score-value"><%= score %>%</span>
+      </div>
+    <% end %>
+  </div>
+  <%# Pas de div city-card__actions : boutons/liens sans intérêt dans un PDF statique %>
+</div>

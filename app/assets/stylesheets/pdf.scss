@@ -1,0 +1,251 @@
+// Stylesheet dédié à l'export PDF via WickedPDF + wkhtmltopdf.
+//
+// ⚠ Règle importante : pas de CSS custom properties (var(--...)) ici.
+// wkhtmltopdf utilise un moteur WebKit embarqué (QtWebKit) qui ne les supporte pas.
+// Toutes les couleurs sont donc écrites en dur (valeurs reprises depuis _colors.scss).
+//
+// Polices : Poppins est importée dans le layout pdf.html.erb.
+// Si Google Fonts est inaccessible, le rendu bascule sur la pile système.
+
+// ─── Reset minimal ──────────────────────────────────────────────────────────
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 13px;
+  color: #424242; // --gray-800
+  background: #FFFFFF;
+  line-height: 1.5;
+}
+
+// ─── Wrapper principal ──────────────────────────────────────────────────────
+
+.pdf-wrapper {
+  padding: 0 8px 60px; // 60px en bas pour laisser la place au copyright fixe
+}
+
+// ─── En-tête du document (logo + titre recherche) ───────────────────────────
+
+.pdf-header {
+  text-align: center;
+  padding: 24px 0 20px;
+
+  // L'image logo est déjà dimensionnée via les attributs width/height dans la vue.
+  // On ajoute un display block + marge auto pour centrer le SVG.
+  img {
+    display: block;
+    margin: 0 auto 16px;
+    max-width: 300px;
+    max-height: 300px;
+  }
+}
+
+.pdf-research-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #558B2F; // --green-dark
+  margin-bottom: 6px;
+}
+
+.pdf-research-subtitle {
+  font-size: 12px;
+  color: #757575; // --gray-600
+  margin-bottom: 0;
+}
+
+// ─── Grille de city-cards ────────────────────────────────────────────────────
+//
+// On utilise display: flex + flex-wrap pour placer 2 cards côte à côte.
+// CSS Grid n'est pas fiable dans wkhtmltopdf (support limité de WebKit embarqué).
+
+.pdf-city-cards-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+// ─── City card ───────────────────────────────────────────────────────────────
+
+.city-card {
+  // Chaque card prend ~50% de la largeur (2 colonnes), en tenant compte du gap.
+  // calc() est supporté par wkhtmltopdf 0.12.x.
+  width: calc(50% - 8px);
+
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid #EEEEEE; // --gray-200
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+
+  // page-break-inside: avoid empêche wkhtmltopdf de couper une card entre deux pages.
+  // C'est la propriété CSS clé pour un rendu PDF propre des éléments de bloc.
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid; // préfixe WebKit pour compatibilité
+
+  // ── En-tête de la card ────────────────────────────────────────────────────
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid #EEEEEE; // --gray-200
+  }
+
+  // Médaillon circulaire vert indiquant le rang
+  &__rank {
+    flex-shrink: 0;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #7CB342; // --green-primary
+    color: #FFFFFF;
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__identity {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #424242; // --gray-800
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__location {
+    font-size: 10px;
+    color: #757575; // --gray-600
+  }
+
+  // ── Photo de la ville ──────────────────────────────────────────────────────
+
+  &__photo {
+    position: relative;
+    height: 130px;
+    overflow: hidden;
+    flex-shrink: 0;
+    // Pas de règle img ici : on utilise background-image dans la vue PDF
+    // car object-fit n'est pas supporté par le WebKit embarqué de wkhtmltopdf.
+  }
+
+  // Crédit Wikimedia Commons positionné en bas de la photo
+  &__photo-credit {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.38);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 8px;
+    border-top-left-radius: 4px;
+  }
+
+  // Fallback si image_url est nil
+  &__photo-placeholder {
+    background: #E0E0E0; // --gray-300
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__photo-label {
+    font-size: 10px;
+    color: #757575; // --gray-600
+    font-style: italic;
+  }
+
+  // ── Jauges de scores ──────────────────────────────────────────────────────
+
+  &__scores {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    flex: 1;
+  }
+
+  &__score-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  // Libellé du critère : largeur fixe pour aligner verticalement toutes les jauges
+  &__score-label {
+    flex-shrink: 0;
+    width: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #424242; // --gray-800
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Piste de la jauge (fond gris neutre)
+  &__gauge-track {
+    flex: 1;
+    height: 6px;
+    background: #EEEEEE; // --gray-200
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  // Remplissage coloré : largeur et couleur injectées en style inline depuis la vue
+  &__gauge-fill {
+    height: 100%;
+    border-radius: 3px;
+    min-width: 2px;
+  }
+
+  // Valeur numérique à droite de la jauge
+  &__score-value {
+    flex-shrink: 0;
+    width: 30px;
+    text-align: right;
+    font-size: 10px;
+    font-weight: 700;
+    color: #424242; // --gray-800
+  }
+}
+
+// ─── Copyright fixe en bas de chaque page ───────────────────────────────────
+//
+// position: fixed bottom fait que wkhtmltopdf répète le footer sur chaque page
+// du PDF (comportement natif du moteur WebKit pour les éléments fixed).
+
+.pdf-copyright {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 15px;
+  background: #FFFFFF;
+  border-top: 1px solid #EEEEEE; // --gray-200
+  font-size: 9px;
+  color: #757575; // --gray-600
+  text-align: center;
+}

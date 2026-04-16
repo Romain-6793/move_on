@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_14_144259) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_16_104714) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -45,7 +45,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_14_144259) do
     t.integer "transactions_last_year"
     t.float "chom_24"
     t.integer "population"
-    t.float "population_density"
     t.integer "count_coll"
     t.integer "count_ecol"
     t.integer "count_lyce"
@@ -64,7 +63,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_14_144259) do
     t.float "METRO_val_1"
     t.float "TRAM_valeur"
     t.float "TRAM_val_1"
-    t.string "real_estate_link"
     t.float "real_estate_score"
     t.float "nearest_big_city_score"
     t.float "job_market_score"
@@ -88,6 +86,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_14_144259) do
     t.float "avg_rent_sqm"
     t.float "rent_quality"
     t.string "image_url"
+    t.float "latitude_centre"
+    t.float "longitude_centre"
+    t.integer "taille_unite_urbaine"
+    t.integer "moy_cumul"
+    t.integer "moy_nb_jou"
+    t.integer "sport_ext_nombre"
+    t.integer "rev_median"
+    t.integer "eq_gd_air"
+    t.string "url_wikipedia"
+    t.string "url_villedereve"
   end
 
   create_table "guest_searches", force: :cascade do |t|
@@ -114,7 +122,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_14_144259) do
     t.datetime "updated_at", null: false
     t.integer "leisures_and_sports", default: 0
     t.string "education_levels", default: [], array: true
-    t.string "leisure_levels", default: [], array: true
   end
 
   create_table "messages", force: :cascade do |t|
@@ -164,7 +171,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_14_144259) do
     t.string "chosen_nearest_big_city"
     t.integer "leisures_and_sports", default: 0
     t.string "education_levels", default: [], array: true
-    t.string "leisure_levels", default: [], array: true
     t.index ["user_id"], name: "index_researches_on_user_id"
   end
 

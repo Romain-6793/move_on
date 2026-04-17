@@ -31,8 +31,7 @@ module UrbanAssist
       previous = SendMessage.llm_chat_entry_override
       SendMessage.llm_chat_entry_override = -> { fake_llm }
       result = SendMessage.new(
-        user: @user,
-        session: @session,
+                session: @session,
         content: "Bonjour",
         chat: @chat
       ).call
@@ -46,7 +45,7 @@ module UrbanAssist
     end
 
     test "refuse un contenu vide" do
-      result = SendMessage.new(user: @user, session: @session, content: "   ", chat: @chat).call
+      result = SendMessage.new(session: @session, content: "   ", chat: @chat).call
       assert_not result.success
       assert_equal :blank_content, result.error
     end

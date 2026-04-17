@@ -29,5 +29,9 @@ end
 
   resources :chats, only: [:index, :show, :destroy, :update]
 
-  resources :messages, only: [:create, :destroy]
+  resources :messages, only: [:create, :destroy] do
+    collection do
+      post :stream
+    end
+  end
 end

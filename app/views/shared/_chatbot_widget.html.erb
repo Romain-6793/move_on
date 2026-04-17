@@ -3,6 +3,7 @@
   <div id="chatbot-widget"
        class="chatbot-widget"
        data-chatbot-messages-url="<%= messages_path(format: :json) %>"
+       data-chatbot-stream-url="<%= stream_messages_path %>"
        data-chatbot-chat-url-template="<%= chat_path(id: "___CHAT_ID___", format: :json) %>"
        data-chatbot-csrf-token="<%= form_authenticity_token %>"
        hidden>

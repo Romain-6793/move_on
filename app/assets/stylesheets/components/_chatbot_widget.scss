@@ -132,6 +132,17 @@
   margin-bottom: 8px;
 }
 
+.chatbot-widget__bubble--streaming {
+  white-space: pre-wrap;
+  font-family: system-ui, sans-serif;
+}
+
+.chatbot-widget__error {
+  border-left: 3px solid var(--red-soft);
+  background: var(--gray-100);
+  color: var(--gray-800);
+}
+
 .chatbot-widget__form {
   display: flex;
   flex-direction: column;

@@ -94,7 +94,7 @@ class MessagesController < ApplicationController
   end
 
   def chat_for_authorization
-    permitted_chat_id = params.permit(:chat_id)[:chat_id]
+    permitted_chat_id = params.permit(:chat_id, message: [:content])[:chat_id]
     cid = permitted_chat_id.presence || session[UrbanAssist::SendMessage::SESSION_CHAT_KEY]
     if cid.present?
       found = current_user.chats.find_by(id: cid)

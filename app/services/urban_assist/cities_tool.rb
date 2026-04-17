@@ -149,7 +149,6 @@ module UrbanAssist
         "rent_quality" => c.rent_quality&.round(2),
         "nb_obs_commune" => c.nb_obs_commune&.round,
         "population" => c.population,
-        "population_density" => c.population_density&.round(2)
       }
     end
 

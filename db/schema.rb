@@ -87,10 +87,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_17_100000) do
     t.float "avg_rent_sqm"
     t.float "rent_quality"
     t.string "image_url"
-    t.index ["dep"], name: "index_cities_on_dep"
-    t.index ["insee"], name: "index_cities_on_insee"
-    t.index ["nom_dep"], name: "index_cities_on_nom_dep"
-    t.index ["nom_reg"], name: "index_cities_on_nom_reg"
     t.float "latitude_centre"
     t.float "longitude_centre"
     t.integer "taille_unite_urbaine"
@@ -101,6 +97,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_17_100000) do
     t.integer "eq_gd_air"
     t.string "url_wikipedia"
     t.string "url_villedereve"
+    t.index ["dep"], name: "index_cities_on_dep"
+    t.index ["insee"], name: "index_cities_on_insee"
+    t.index ["nom_dep"], name: "index_cities_on_nom_dep"
+    t.index ["nom_reg"], name: "index_cities_on_nom_reg"
   end
 
   create_table "guest_searches", force: :cascade do |t|

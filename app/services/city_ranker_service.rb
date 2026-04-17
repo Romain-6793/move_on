@@ -26,6 +26,8 @@ class CityRankerService
     health:              "health_score",
     commercial_life:     "commercial_life_score",
     leisures_and_sports: "leisures_sports_score",
+    sunshine:            "sunshine_score",
+    outdoor_living:      "outdoor_living_score"
   }.freeze
 
   # Bonus accordé quand le paysage ou la population correspond au filtre.

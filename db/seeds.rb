@@ -10,7 +10,7 @@ City.destroy_all
 # ── Import des communes depuis BD_MOVE_ON_V4.csv ────────────────────────────
 puts "📊 Import des communes depuis BD_MOVE_ON_20260415.csv..."
 
-csv_file = Rails.root.join('db', 'BD_MOVE_ON_DEMO.csv')
+csv_file = Rails.root.join('db', 'BD_MOVE_ON_20260417.csv')
 count = 0
 errors = 0
 

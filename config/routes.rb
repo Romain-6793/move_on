@@ -21,7 +21,14 @@ resources :users, only: [] do
   end
 end
 
-  resources :researches, only: [:new, :create, :show, :edit, :update, :destroy]
+  # member do...end permet d'ajouter une action custom sur une ressource existante.
+  # `get 'export_pdf'` génère : GET /researches/:id/export_pdf → researches#export_pdf
+  # et le helper export_pdf_research_path(@research).
+  resources :researches, only: [:new, :create, :show, :edit, :update, :destroy] do
+    member do
+      get 'export_pdf'
+    end
+  end
   resources :maps, only: [:index, :show]
   resources :guest_searches, only: [:new, :create] do
     get 'results', on: :collection, to: 'guest_searches#results'

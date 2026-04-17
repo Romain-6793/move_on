@@ -13,21 +13,22 @@ $light-gray: #F4F4F4;
 :root {
   --green-primary: #7CB342;
   --green-soft:    #A5D6A7;
-  --green-dark:    #558B2F;
+  --green-dark:    #558B2F; // critère vie au grand air
   --blue-primary:  #4FC3F7;
-  --blue-soft:     #B3E5FC;
-  --blue-dark:     #0288D1;
-  --blue-teal:     #2E9EAD;
-  --brown-primary: #8D6E63;
-  --brown-soft:    #D7CCC8;
-  --yellow-accent: #FFCA28;
+  --blue-soft:     #B3E5FC; // critère emploi ?
+  --blue-dark:     #0288D1; // critère éducation
+  --blue-night:    #2A4D69; // critère divertissement
+  --blue-teal:     #2E9EAD; // critère transports
+  --brown-primary: #8D6E63; // critère immobilier
+  --brown-soft:    #D7CCC8; // critère proximité grande ville ?
+  --yellow-accent: #FFCA28; // critère ensoleillement
   --white-main:    #FFFFFF;
   --white-soft:    #FAFAFA;
   --white-warm:    #FDFCFB;
-  --red-soft:      #E57373;
-  --purple-soft:   #9575CD;
-  --orange-warm:   #FFB74D;
-  --pink-soft:     #F48FB1;
+  --red-soft:      #E57373; // critère sport & loisirs
+  --purple-soft:   #9575CD; // critère culture
+  --orange-warm:   #FFB74D; // critère commerce
+  --pink-soft:     #F48FB1; // critère santé
   --gray-100:      #F5F5F5;
   --gray-200:      #EEEEEE;
   --gray-300:      #E0E0E0;

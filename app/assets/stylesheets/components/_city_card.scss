@@ -299,10 +299,11 @@
 // auto-fill : Rails adapte automatiquement le nombre de colonnes selon la largeur.
 .city-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 20px;
   padding: 24px 0;
 }
+
 
 // ─── Page de résultats ──────────────────────────────────────────────────────
 
@@ -310,6 +311,11 @@
   min-height: 100vh;
   padding-top: 40px;
   padding-bottom: 80px;
+}
+
+.results-page.container {
+  width: 80%;
+  max-width: 1700px;
 }
 
 .results-page-title {

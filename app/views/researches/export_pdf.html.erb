@@ -1,0 +1,46 @@
+<%#
+  Vue de l'export PDF d'une recherche sauvegardée.
+  Rendue par WickedPDF via researches#export_pdf, dans le layout pdf.html.erb.
+
+  Structure :
+    1. En-tête centré : logo Move On (300×300) + nom de la recherche + sous-titre
+    2. Grille de city-cards (partial _city_card_pdf, sans la div actions)
+%>
+<%# ── En-tête : logo + titre ──────────────────────────────────────────────── %>
+<div class="pdf-header">
+  <%#
+    wicked_pdf_image_tag résout le chemin de l'asset via Sprockets et génère
+    une URL file:// que wkhtmltopdf peut lire directement depuis le disque.
+    C'est l'équivalent PDF de image_tag pour les assets locaux.
+  %>
+  <% if @logo_data_uri %>
+    <img src="<%= @logo_data_uri %>" width="300" height="300" alt="Move On">
+  <% end %>
+  <h1 class="pdf-research-title">
+    <%= @research.research_name.presence || "Mes résultats" %>
+  </h1>
+  <p class="pdf-research-subtitle">
+    Les 5 villes qui correspondent le mieux à votre recherche
+  </p>
+</div>
+<%# ── Grille de city-cards (version PDF, sans les actions) ──────────────── %>
+<div class="pdf-city-cards-grid">
+  <%# each_with_index démarre à 0 ; on ajoute 1 pour afficher #1, #2… %>
+  <% @ranked_cities.each_with_index do |city, i| %>
+    <%#
+      On utilise le partial _city_card_pdf (et non _city_card) pour exclure
+      la div city-card__actions qui ne fait pas sens dans un document PDF
+      (liens, checkbox, boutons ne sont pas interactifs en PDF).
+    %>
+    <%#
+      On passe image_data_uri en local : c'est la data URI base64 calculée dans
+      le contrôleur pour cette ville. Le partial n'a plus besoin d'accéder à
+      city.image_url ni de dépendre d'une requête HTTP externe.
+      Si le téléchargement a échoué, image_data_uri vaut nil → placeholder affiché.
+    %>
+    <%= render 'shared/city_card_pdf',
+               city:           city,
+               index:          i + 1,
+               image_data_uri: @city_image_data_uris[city.id] %>
+  <% end %>
+</div>

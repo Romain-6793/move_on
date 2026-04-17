@@ -26,8 +26,13 @@
                   class: "btn search-action-btn search-action-btn-danger" do %>
       <i class="fa-solid fa-trash"></i> Supprimer
     <% end %>
-    <%= link_to "#", class: "btn search-action-btn" do %>
-      <i class="fa-solid fa-file-export"></i> Exporter
+    <%#
+      export_pdf_research_path génère GET /researches/:id/export_pdf.
+      WickedPDF renvoie le PDF avec Content-Type: application/pdf et
+      Content-Disposition: attachment, ce qui déclenche le téléchargement.
+    %>
+    <%= link_to export_pdf_research_path(research), class: "btn search-action-btn" do %>
+      <i class="fa-solid fa-file-pdf"></i> Exporter
     <% end %>
   </div>
 </div>

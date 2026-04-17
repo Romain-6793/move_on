@@ -1,7 +1,7 @@
 Rails app generated with [lewagon/rails-templates](https://github.com/lewagon/rails-templates), created by the [Le Wagon coding bootcamp](https://www.lewagon.com) team.
 
 
-# fichier CSV BD_MOVE_ON_V4.csv
+# fichier CSV BD_MOVE_ON_20260415.csv
 
 ## Liste des champs et description des données
 
@@ -19,14 +19,18 @@ Rails app generated with [lewagon/rails-templates](https://github.com/lewagon/ra
 | **reg** | Code de la région | "84", "28" |
 | **nom_reg** | Nom de la région | Auvergne-Rhône-Alpes, Normandie |
 | **libgeo** | Libellé géographique (souvent vide) | Trun, (vide) |
-| **latitude** | Latitude GPS de la commune | 48.851, 46.123 |
-| **longitude** | Longitude GPS de la commune | 0.046, 2.308 |
+| **latitude** | Latitude GPS de la Mairie de la commune | 48.851, 46.123 |
+| **longitude** | Longitude GPS de la Mairie de la commune | 0.046, 2.308 |
+| **latitude_centre** | Latitude GPS (géographique) du centre de la commune | 48.851, 46.123 |
+| **longitude_centre** | Longitude GPS (géographique) du centre de la commune | 0.046, 2.308 |
+| **taille_unite_urbaine** | Taille de l'unité urbaine (nombre d'habitants). 0 = commune rurale et 8 = métropole | "0.0", "1.0", "7.0" |
 
 ### Démographie et environnement
 
 | Champ | Description | Exemple de données |
 |-------|-------------|-------------------|
 | **population** | Population de la commune | "1485", "1225" |
+| **rev_median** | Revenu médian par commune (€/an) | "20310", "22440", "25000" |
 | **chom_24** | Taux de chômage par région dernier trimestre 2024 (%) | "6.8", "7.2" |
 | **paysage** | Type de paysage | "littoral", "montagne", "plaine" |
 | **code_qual** | Indicateur qualité de l'air : 1=Bon, 2=Moyen, 3=Dégradé, 4=Mauvais, 5=Très mauvais, 6=Extrêmement mauvais, 0=Absent, 7=Évènement | "2", "3" |
@@ -69,6 +73,8 @@ Rails app generated with [lewagon/rails-templates](https://github.com/lewagon/ra
 | **nb_cultu** | Nombre d'équipements culturels | "11", "45" |
 | **nb_loisirs** | Nombre d'équipements de loisirs | "49", "89" |
 | **nb_sport** | Nombre d'équipements sportifs | "0", "45" |
+| **eq_gd_air** | Nombre d'équipements de grand air (espaces naturels, parcs, etc.) | "0", "2", "7" |
+| **sport_ext_Nombre** | Nombre de sports d'extérieur disponibles | "0", "2", "22" |
 
 ### Immobilier
 
@@ -84,6 +90,20 @@ Rails app generated with [lewagon/rails-templates](https://github.com/lewagon/ra
 | **rent_quality** | Qualité prédiction (R²) | "0.725", "0.784" |
 | **nb_obs_commune** | Nombre d'observations pour les données immobilières | "62", "118" |
 
+### Météorologie
+
+| Champ | Description | Exemple de données |
+|-------|-------------|-------------------|
+| **moy_cumul_** | Moyenne du cumul de pluie par an en millimètres | "582", "757", "1187" |
+| **moy_nb_jou** | Moyenne du nombre de jours de pluie par an | "99", "130", "131" |
+
+### Métadonnées et liens
+
+| Champ | Description | Exemple de données |
+|-------|-------------|-------------------|
+| **url_wikipedia** | URL de la page Wikipedia de la commune | https://fr.wikipedia.org/wiki/fr:Vallon-en-Sully |
+| **url_villedereve** | URL de la fiche commune sur villedereve.fr | https://villedereve.fr/ville/03297-vallon-en-sully |
+
 ### Scores pré-calculés (0-100)
 
 | Champ | Description | Méthode de calcul |
@@ -96,5 +116,5 @@ Rails app generated with [lewagon/rails-templates](https://github.com/lewagon/ra
 | **score_sport_loisirs** | Score sport & loisirs | Rang centile de (nb_sport + nb_loisirs). Plus il y a d'équipements, meilleur est le score |
 | **score_culture** | Score culture | Rang centile de nb_cultu. Plus il y a d'équipements culturels, meilleur est le score |
 | **score_immo** | Score immobilier | Composite de 2 indicateurs : **price_score (60%)** = normalisation min-max inversée de [(median_price_sqm × 0.7) + (avg_price_sqm × 0.3)] → prix bas = bon score ; **market_score (40%)** = normalisation min-max de [(transactions_last_year × 0.7) + (total_transactions × 0.3)] → plus de transactions = bon score. Score final = (price_score × 0.6) + (market_score × 0.4) |
-
-**Note sur les scores** : Tous les scores utilisent la méthode du rang centile (`rank(pct=True) × 100`), ce qui garantit une distribution uniforme entre 0 et 100. Un score de 50 signifie que la commune est dans la médiane, 75 dans le top 25%, etc.
+| **score_grand_air** | Score grand air | Rang centile de (eq_gd_air + sport_ext_Nombre). Plus il y a d'équipements de grand air et de sports extérieurs, meilleur est le score |
+| **score_pluviometrie** | Score pluviométrie | Score inversé (donc attention plus la note est basse plus il y a beaucoup de pluie et régulièrement) basé sur un composite de la pluviométrie : **cumul_norm (60%)** = normalisation min-max de moy_cumul_ ; **nb_jours_norm (40%)** = normalisation min-max de moy_nb_jou. Score final = (1 - composite) × 100 → moins de pluie = meilleur score |

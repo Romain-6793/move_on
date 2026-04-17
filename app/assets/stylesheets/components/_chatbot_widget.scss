@@ -1,0 +1,188 @@
+// Bulle + panneau assistant (Urban Assist) — couleurs via variables Move On.
+.chatbot-widget {
+  position: fixed;
+  z-index: 1080;
+  bottom: 20px;
+  right: 20px;
+  font-family: inherit;
+}
+
+.chatbot-widget__fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: var(--white-main);
+  background: linear-gradient(135deg, var(--green-primary), var(--blue-teal));
+  box-shadow: 0 6px 20px rgba(46, 158, 173, 0.35);
+
+  &:hover {
+    filter: brightness(1.05);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--blue-soft);
+    outline-offset: 2px;
+  }
+}
+
+.chatbot-widget__panel {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  // clamp : évite que Sass interprète min()/max() comme des fonctions SCSS.
+  width: clamp(280px, calc(100vw - 32px), 380px);
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--white-main);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(30, 42, 56, 0.18);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+}
+
+.chatbot-widget__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--white-soft);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.chatbot-widget__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.chatbot-widget__close {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--gray-600);
+  padding: 0 4px;
+
+  &:hover {
+    color: var(--gray-800);
+  }
+}
+
+.chatbot-widget__messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px;
+  min-height: 160px;
+  max-height: calc(60vh - 130px);
+  background: var(--white-warm);
+}
+
+.chatbot-widget__bubble {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--gray-800);
+
+  &--user {
+    margin-left: 24px;
+    background: var(--blue-soft);
+    border: 1px solid var(--gray-200);
+  }
+
+  &--assistant {
+    margin-right: 16px;
+    background: var(--white-main);
+    border: 1px solid var(--gray-200);
+
+    h1, h2, h3 {
+      font-size: 1rem;
+      margin: 0.4em 0;
+    }
+
+    ul, ol {
+      padding-left: 1.2rem;
+      margin: 0.35em 0;
+    }
+
+    p {
+      margin: 0.35em 0;
+    }
+
+    a {
+      color: var(--blue-dark);
+    }
+  }
+}
+
+.chatbot-widget__typing {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.chatbot-widget__bubble--streaming {
+  white-space: pre-wrap;
+  font-family: system-ui, sans-serif;
+}
+
+.chatbot-widget__error {
+  border-left: 3px solid var(--red-soft);
+  background: var(--gray-100);
+  color: var(--gray-800);
+}
+
+.chatbot-widget__form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--gray-200);
+  background: var(--white-main);
+}
+
+.chatbot-widget__input {
+  width: 100%;
+  resize: none;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+
+  &:focus {
+    border-color: var(--blue-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--blue-soft);
+  }
+}
+
+.chatbot-widget__send {
+  align-self: flex-end;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--white-main);
+  background: var(--green-primary);
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--green-dark);
+  }
+}

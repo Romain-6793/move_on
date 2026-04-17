@@ -68,6 +68,9 @@ gem "solid_queue"
 
 gem "pg_search"
 
+# Assistant immobilier (RubyLLM + rendu markdown des réponses)
+gem "ruby_llm", "~> 1.2.0"
+gem "redcarpet", "~> 3.6"
 # WickedPDF + son binaire wkhtmltopdf pour l'export PDF des recherches.
 # wicked_pdf orchestre la conversion HTML→PDF depuis Rails.
 # wkhtmltopdf-binary embarque le binaire natif (pas d'installation système requise).

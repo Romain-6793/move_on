@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_16_104714) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_17_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "unaccent"
 
   create_table "chats", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -86,6 +87,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_16_104714) do
     t.float "avg_rent_sqm"
     t.float "rent_quality"
     t.string "image_url"
+    t.index ["dep"], name: "index_cities_on_dep"
+    t.index ["insee"], name: "index_cities_on_insee"
+    t.index ["nom_dep"], name: "index_cities_on_nom_dep"
+    t.index ["nom_reg"], name: "index_cities_on_nom_reg"
     t.float "latitude_centre"
     t.float "longitude_centre"
     t.integer "taille_unite_urbaine"

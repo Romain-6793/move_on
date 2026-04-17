@@ -6,7 +6,7 @@ class ChatPolicy < ApplicationPolicy
   # https://gist.github.com/Burgestrand/4b4bc22f31c8a95c425fc0e30d7ef1f5
 
   def index?
-    record.user == user
+    user.present?
   end
 
   def update?
@@ -22,9 +22,8 @@ class ChatPolicy < ApplicationPolicy
   end
 
   class Scope < ApplicationPolicy::Scope
-    # NOTE: Be explicit about which records you allow access to!
-    # def resolve
-    #   scope.all
-    # end
+    def resolve
+      scope.where(user_id: user.id)
+    end
   end
 end

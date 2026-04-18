@@ -628,15 +628,44 @@
   .fa-star { font-size: 0.7rem; }
 }
 
+// ─── Sections de l'étape 3 (Priorités) ───────────────────────────────────
+
+// Conteneur d'une section (Essentiels / Importants / Bonus) à l'étape 3.
+// On réutilise la grille .wizard-criteria-grid et les cards .wizard-criterion-card
+// — même visuel qu'à l'étape 2 (Essentiels), ce qui assure la cohérence.
+.wizard-priorities-section {
+  margin-bottom: 32px;
+
+  &:last-of-type { margin-bottom: 0; }
+
+  // Label de section : réutilise .wizard-confirm-group-label (déjà défini plus bas)
+  // pour les badges colorés Essentiel / Important / Bonus.
+  .wizard-confirm-group-label {
+    margin-bottom: 16px;
+  }
+}
+
+// Variante de card verrouillée (essentiels à l'étape 3) :
+// Aspect légèrement grisé pour indiquer qu'on ne peut pas la modifier.
+.wizard-criterion-card--locked {
+  opacity: 0.75;
+  pointer-events: none;   // désactive hover et clics
+
+  // Le footer affiche un badge à la place d'une checkbox
+  .wizard-criterion-footer {
+    border-top: 1px solid var(--gray-200);
+  }
+}
+
 // ─── Récapitulatif (étape 4) ──────────────────────────────────────────────
 
 .wizard-card--confirm {
-  // La carte confirm est légèrement plus large pour aérer le contenu
-  max-width: 760px;
+  // On laisse la carte confirm à la même largeur que les autres cartes wizard (860px).
+  // Pas de max-width différent ici — la cohérence visuelle est plus importante que l'aération.
 }
 
 .wizard-confirm-section {
-  padding: 28px 40px 24px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--gray-200);
 
   &:last-of-type { border-bottom: none; }
@@ -658,8 +687,8 @@
 // Description list pour les données de base (nom, géo, taille)
 .wizard-confirm-dl {
   display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 8px 20px;
+  grid-template-columns: 140px 1fr;
+  gap: 12px 20px;
   font-size: 0.9rem;
 
   dt {

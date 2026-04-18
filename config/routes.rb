@@ -21,12 +21,20 @@ resources :users, only: [] do
   end
 end
 
-  # Wizard de création de recherche (gem wicked, 4 étapes).
+  # Wizard de création de recherche (gem wicked, 4 étapes) — utilisateur connecté.
   # GET  /recherche/nouveau    → démarre un nouveau wizard (vide la session wizard)
   # GET  /search_steps/:id     → affiche l'étape courante (:id = nom de l'étape)
   # PATCH /search_steps/:id   → sauvegarde l'étape et avance
   get 'recherche/nouveau', to: 'search_steps#new_wizard', as: :new_research_wizard
   resources :search_steps, only: [:show, :update]
+
+  # Wizard de création de recherche (gem wicked, 4 étapes) — visiteur non connecté.
+  # Même parcours que le wizard utilisateur mais sans authentification.
+  # GET  /recherche/invite/nouveau → démarre un nouveau wizard invité
+  # GET  /guest_search_steps/:id  → affiche l'étape courante
+  # PATCH /guest_search_steps/:id → sauvegarde l'étape et avance
+  get 'recherche/invite/nouveau', to: 'guest_search_steps#new_wizard', as: :new_guest_wizard
+  resources :guest_search_steps, only: [:show, :update]
 
   # Redirige /researches/new vers le wizard Wicked pour éviter que Rails
   # ne l'interprète comme show avec id="new" (ce qui lèverait un RecordNotFound).

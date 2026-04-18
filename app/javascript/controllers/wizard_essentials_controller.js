@@ -60,9 +60,12 @@ export default class extends Controller {
     const key      = checkbox.dataset.criterion
 
     if (checkbox.checked) {
-      // Vérifie la limite avant d'accepter la nouvelle sélection
+      // Attention : quand l'événement "change" se déclenche, le navigateur a DÉJÀ
+      // mis checkbox.checked = true. countSelected() compte donc le critère
+      // qu'on vient de cocher. On utilise > (strict) et non >= pour autoriser
+      // exactement MAX_ESSENTIALS sélections sans bloquer la dernière.
       const currentCount = this.countSelected()
-      if (currentCount >= MAX_ESSENTIALS) {
+      if (currentCount > MAX_ESSENTIALS) {
         // Annule le clic et affiche le message d'alerte
         checkbox.checked = false
         this.showLimitAlert()

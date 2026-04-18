@@ -283,10 +283,12 @@
 
 // ─── Grille des cartes de critères ─────────────────────────────────────────
 
-// auto-fill : remplit le maximum de colonnes, rétrécit jusqu'à 175px
+// auto-fill : remplit le maximum de colonnes.
+// 220px correspond à la même taille min que .wizard-criteria-grid (étapes wizard) :
+// les cards guest et les cards wizard sont ainsi visuellement identiques.
 .criterion-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 14px;
   margin-bottom: 24px;
 
@@ -628,6 +630,7 @@
   }
 
   .criterion-cards-grid {
+    // Sur mobile les cards passent en 2 colonnes (comme le wizard sur tablette)
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 

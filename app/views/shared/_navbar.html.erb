@@ -20,8 +20,8 @@
       <%= link_to "Nouvelle recherche", new_research_wizard_path, class: "nav-link-item" %>
       <%= link_to "Trouver sur la carte", maps_path,              class: "nav-link-item" %>
     <% else %>
-      <%# Visiteur : recherche via le formulaire invité one-page (GuestSearch) + carte %>
-      <%= link_to "Nouvelle recherche",  new_guest_search_path,   class: "nav-link-item" %>
+      <%# Visiteur : recherche via le wizard Wicked invité (même parcours que l'utilisateur connecté) %>
+      <%= link_to "Nouvelle recherche",  new_guest_wizard_path,   class: "nav-link-item" %>
       <%= link_to "Trouver sur la carte", maps_path,              class: "nav-link-item" %>
     <% end %>
   </div>

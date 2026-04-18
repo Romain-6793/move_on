@@ -32,8 +32,8 @@
                         data: { turbo_method: :delete } %>
           </li>
         <% else %>
-          <%# Visiteur : formulaire invité + incitation à rejoindre l'application %>
-          <li><%= link_to "Nouvelle recherche", new_guest_search_path %></li>
+          <%# Visiteur : wizard invité (même parcours que l'utilisateur connecté) %>
+          <li><%= link_to "Nouvelle recherche", new_guest_wizard_path %></li>
           <li><%= link_to "S'inscrire",          new_user_registration_path %></li>
           <li><%= link_to "Se connecter",        new_user_session_path %></li>
         <% end %>

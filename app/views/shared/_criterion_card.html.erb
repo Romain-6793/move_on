@@ -104,7 +104,16 @@
         data-research-form-target="educationCheckbox"
         disabled
       <% end %>>
-      <label for="<%= checkbox_id %>">Sélectionner</label>
+      <%#
+        Label dynamique selon la section : cohérence visuelle avec le wizard.
+        "Essentiel pour moi" / "Important pour moi" / "Bonus pour moi"
+      %>
+      <% section_labels = {
+           'essential' => 'Essentiel pour moi',
+           'important' => 'Important pour moi',
+           'bonus'     => 'Bonus pour moi'
+         } %>
+      <label for="<%= checkbox_id %>"><%= section_labels[section] || 'Sélectionner' %></label>
     </div>
   </div>
 </div>

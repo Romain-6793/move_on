@@ -88,14 +88,6 @@
   </div>
   <%# ── Actions ──────────────────────────────────────────────────────── %>
   <div class="city-card__actions">
-    <%# Checkbox "Je choisis cette ville" – front only pour l'instant %>
-    <label class="city-card__choose-label">
-      <input type="checkbox"
-             class="city-card__choose-checkbox"
-             name="chosen_cities[]"
-             value="<%= city.id %>">
-      <span>Je choisis cette ville</span>
-    </label>
     <%# Bouton "Trouver sur la carte" – appellera le contrôleur Stimulus de la carte %>
     <%= link_to "Trouver sur la carte",
             map_path(city.id),

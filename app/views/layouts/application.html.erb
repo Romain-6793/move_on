@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+    <%#
+      Favicons Move On :
+      - SVG pour les navigateurs modernes (Chrome, Firefox, Safari 13+) — qualité vectorielle
+      - ICO en fallback pour Internet Explorer et anciens navigateurs
+      - apple-touch-icon pour iOS (écran d'accueil, PWA-ready)
+    %>
+    <%= favicon_link_tag 'favicon.svg', rel: 'icon', type: 'image/svg+xml' %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
     <%# Permet aux vues d'injecter des balises <link> ou <script> supplémentaires dans le <head>.

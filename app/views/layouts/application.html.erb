@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+    <%#
+      Favicons Move On – stratégie multi-format :
+      - SVG  : navigateurs modernes (Chrome 80+, Firefox, Safari 13+) — vectoriel, toujours net
+      - PNG 16/32 : navigateurs récents qui ne lisent pas le SVG
+      - ICO  : fallback universel (IE, anciens Chromium) ; placé en dernier car priorité basse
+      - apple-touch-icon : iOS — icône écran d'accueil / PWA (180×180 requis par Apple)
+      - android-chrome   : Android / PWA manifest
+      Les PNG et ICO sont dans public/ (servis statiquement, sans asset pipeline).
+    %>
+    <%= favicon_link_tag 'favicon.svg', rel: 'icon', type: 'image/svg+xml' %>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
     <%# Permet aux vues d'injecter des balises <link> ou <script> supplémentaires dans le <head>.

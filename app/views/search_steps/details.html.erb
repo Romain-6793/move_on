@@ -1,0 +1,147 @@
+<%#
+  Wizard – Étape 1 : Détails de la recherche
+  ─────────────────────────────────────────────
+  L'utilisateur définit ici le nom de sa recherche, ses préférences géographiques
+  et la taille minimale de ville souhaitée.
+
+  Ces données correspondent aux champs "Section A" et "Section B" du formulaire
+  one-page original (shared/_research.html.erb).
+
+  Le contrôleur Stimulus "wizard-details" gère :
+    - L'affichage dynamique de la valeur du slider de population
+    - La synchronisation des boutons radio → champs cachés coast/mountain/no_filters
+%>
+<div class="search-wizard-page search-background">
+  <%# Barre de progression en haut du wizard %>
+  <%= render 'progress_bar',
+        current_step: 1,
+        total_steps:  4,
+        step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+
+  <div class="wizard-card" data-controller="wizard-details">
+    <div class="wizard-card-header">
+      <h1 class="wizard-card-title">
+        <i class="fas fa-map-marker-alt wizard-title-icon" aria-hidden="true"></i>
+        Décrivez votre projet
+      </h1>
+      <p class="wizard-card-subtitle">
+        Donnez un nom à votre recherche et précisez vos préférences géographiques.
+      </p>
+    </div>
+
+    <%#
+      form_with avec une URL manuelle (wizard_path = URL de l'étape courante).
+      method: :patch car Wicked utilise PATCH pour avancer dans le wizard.
+    %>
+    <%= form_with url: wizard_path, method: :patch, html: { class: 'wizard-form' } do |f| %>
+
+      <%# ── A) Nom de la recherche ───────────────────────────────── %>
+      <div class="wizard-field-group">
+        <label for="research_research_name" class="wizard-field-label">
+          <i class="fas fa-pen wizard-field-icon" aria-hidden="true"></i>
+          Nom de la recherche
+        </label>
+        <%#
+          On utilise research[research_name] comme nom de champ pour que le
+          contrôleur puisse récupérer les données via params.require(:research).
+          La valeur est pré-remplie si l'utilisateur revient sur cette étape.
+        %>
+        <input type="text"
+               id="research_research_name"
+               name="research[research_name]"
+               value="<%= @research.research_name %>"
+               placeholder="Ex : Ma vie en bord de mer, Retraite tranquille en montagne…"
+               class="wizard-text-input"
+               required
+               autocomplete="off">
+        <p class="wizard-field-hint">Ce nom vous permettra de retrouver et comparer vos recherches.</p>
+      </div>
+
+      <%# ── B) Filtres géographiques ─────────────────────────────── %>
+      <div class="wizard-field-group">
+        <p class="wizard-field-label">
+          <i class="fas fa-compass wizard-field-icon" aria-hidden="true"></i>
+          Environnement naturel souhaité
+        </p>
+        <p class="wizard-field-hint">Avez-vous une préférence pour le paysage autour de votre future ville ?</p>
+
+        <div class="wizard-geo-group">
+          <% [
+            { value: 'coast',      label: '🌊 Mer',        field: :coast },
+            { value: 'mountain',   label: '⛰️  Montagne',   field: :mountain },
+            { value: 'no_filters', label: '🗺️  Indifférent', field: :no_filters }
+          ].each do |option| %>
+            <%#
+              Pré-coche l'option sauvegardée en base.
+              Pour un nouveau formulaire, "indifférent" est coché par défaut.
+            %>
+            <% geo_checked = (option[:value] == 'coast'      && @research.coast?) ||
+                              (option[:value] == 'mountain'   && @research.mountain?) ||
+                              (option[:value] == 'no_filters' && (@research.new_record? || @research.no_filters?)) %>
+            <input type="radio"
+                   name="geo_filter"
+                   id="geo_<%= option[:value] %>"
+                   value="<%= option[:value] %>"
+                   class="wizard-geo-radio"
+                   data-action="change->wizard-details#updateGeoFilter"
+                   <%= 'checked' if geo_checked %>>
+            <label for="geo_<%= option[:value] %>" class="wizard-geo-label">
+              <%= option[:label] %>
+            </label>
+          <% end %>
+        </div>
+
+        <%# Champs cachés synchronisés par le contrôleur Stimulus wizard-details %>
+        <input type="hidden" name="research[coast]"
+               value="<%= @research.coast? ? '1' : '0' %>"
+               data-wizard-details-target="coastField">
+        <input type="hidden" name="research[mountain]"
+               value="<%= @research.mountain? ? '1' : '0' %>"
+               data-wizard-details-target="mountainField">
+        <input type="hidden" name="research[no_filters]"
+               value="<%= (@research.new_record? || @research.no_filters?) ? '1' : '0' %>"
+               data-wizard-details-target="noFiltersField">
+      </div>
+
+      <%# ── C) Taille minimale de ville ─────────────────────────── %>
+      <div class="wizard-field-group">
+        <div class="wizard-slider-header">
+          <p class="wizard-field-label">
+            <i class="fas fa-city wizard-field-icon" aria-hidden="true"></i>
+            Taille minimale de la ville
+          </p>
+          <span class="wizard-slider-value"
+                data-wizard-details-target="populationDisplay">
+            <%# Valeur initiale affichée selon la valeur enregistrée %>
+            <%#
+            Valeur initiale affichée au chargement (avant que Stimulus ne prenne la main).
+            number_with_delimiter formate le nombre avec des espaces fines insécables (\u202f).
+          %>
+          <%= @research.density.to_i == 0 ? 'Toutes tailles' : "#{number_with_delimiter(@research.density, delimiter: "\u202f")}\u202fhab." %>
+          </span>
+        </div>
+        <input type="range"
+               name="research[density]"
+               min="0"
+               max="2000000"
+               step="5000"
+               value="<%= @research.density || 0 %>"
+               class="wizard-slider"
+               data-action="input->wizard-details#updatePopulation">
+        <div class="wizard-slider-extremes">
+          <span>Toutes tailles</span>
+          <span>2 000 000 hab.</span>
+        </div>
+      </div>
+
+      <%# Bouton "Suivant" — unique, pas de "Précédent" à la première étape %>
+      <div class="wizard-nav wizard-nav--right">
+        <button type="submit" class="btn-wizard-next">
+          Suivant
+          <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
+
+    <% end %>
+  </div>
+</div>

@@ -12,25 +12,35 @@
   height: 64px;
   padding: 0 48px;
 
-  // Lien logo : icône SVG + texte "Move On" bicolore
+  // Lien logo : icône SVG + texte "Move On" bicolore.
+  // overflow: visible permet au logo agrandi de légèrement déborder de la navbar
+  // sans modifier la hauteur de celle-ci (effet de profondeur subtil).
   .navbar-brand {
     display: flex;
     align-items: center;
     gap: 10px;
     text-decoration: none;
+    overflow: visible;
   }
 
   .nav-logo-icon {
     // Le SVG est carré (viewBox 843×842) : on fixe une hauteur et width:auto
     // pour respecter les proportions sans distorsion.
-    // 40px = taille standard pour un logo dans une navbar de 64px (laisse 12px de marge haut/bas)
-    height: 40px;
+    // 58px ≈ 1.45× l'ancienne taille (40px), légèrement débordant du header de 64px.
+    // Cela donne un effet "logo en avant-plan" sans changer la hauteur du header.
+    height: 58px;
     width: auto;
     // Empêche l'icône de se réduire sur petits écrans
     flex-shrink: 0;
     // mix-blend-mode: multiply rend le fond quasi-blanc (rgb 253,253,253) du SVG
     // transparent sur le fond blanc de la navbar, sans modifier le fichier SVG.
     mix-blend-mode: multiply;
+    // Légère transition pour un survol fluide
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.06);
+    }
   }
 
   // Liens de navigation centraux – présents pour tous, connecté ou non

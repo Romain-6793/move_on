@@ -1,0 +1,128 @@
+<%#
+  Wizard invité – Étape 1 : Détails de la recherche
+  ───────────────────────────────────────────────────
+  Identique à search_steps/details.html.erb, mais :
+    - utilise @guest_search (GuestSearch) au lieu de @research
+    - les champs sont nommés guest_search[...] pour le contrôleur invité
+    - wizard_path est automatiquement résolu vers /guest_search_steps/:step par Wicked
+%>
+<div class="search-wizard-page search-background">
+  <%# Barre de progression partagée avec le wizard utilisateur connecté %>
+  <%= render 'search_steps/progress_bar',
+        current_step: 1,
+        total_steps:  4,
+        step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+
+  <div class="wizard-card" data-controller="wizard-details">
+    <div class="wizard-card-header">
+      <h1 class="wizard-card-title">
+        <i class="fas fa-map-marker-alt wizard-title-icon" aria-hidden="true"></i>
+        Décrivez votre projet
+      </h1>
+      <p class="wizard-card-subtitle">
+        Donnez un nom à votre recherche et précisez vos préférences géographiques.
+      </p>
+    </div>
+
+    <%#
+      wizard_path résout automatiquement vers /guest_search_steps/:step
+      grâce à Wicked::Wizard inclus dans GuestSearchStepsController.
+    %>
+    <%= form_with url: wizard_path, method: :patch, html: { class: 'wizard-form' } do |f| %>
+
+      <%# ── A) Nom de la recherche ───────────────────────────────── %>
+      <div class="wizard-field-group">
+        <label for="guest_search_research_name" class="wizard-field-label">
+          <i class="fas fa-pen wizard-field-icon" aria-hidden="true"></i>
+          Nom de la recherche
+        </label>
+        <input type="text"
+               id="guest_search_research_name"
+               name="guest_search[research_name]"
+               value="<%= @guest_search.research_name %>"
+               placeholder="Ex : Ma vie en bord de mer, Retraite tranquille en montagne…"
+               class="wizard-text-input"
+               required
+               autocomplete="off">
+        <p class="wizard-field-hint">Ce nom vous permettra de retrouver et comparer vos recherches.</p>
+      </div>
+
+      <%# ── B) Filtres géographiques ─────────────────────────────── %>
+      <div class="wizard-field-group">
+        <p class="wizard-field-label">
+          <i class="fas fa-compass wizard-field-icon" aria-hidden="true"></i>
+          Environnement naturel souhaité
+        </p>
+        <p class="wizard-field-hint">Avez-vous une préférence pour le paysage autour de votre future ville ?</p>
+
+        <div class="wizard-geo-group">
+          <% [
+            { value: 'coast',      label: '🌊 Mer',        field: :coast },
+            { value: 'mountain',   label: '⛰️  Montagne',   field: :mountain },
+            { value: 'no_filters', label: '🗺️  Indifférent', field: :no_filters }
+          ].each do |option| %>
+            <% geo_checked = (option[:value] == 'coast'      && @guest_search.coast?) ||
+                              (option[:value] == 'mountain'   && @guest_search.mountain?) ||
+                              (option[:value] == 'no_filters' && (@guest_search.new_record? || @guest_search.no_filters?)) %>
+            <input type="radio"
+                   name="geo_filter"
+                   id="geo_<%= option[:value] %>"
+                   value="<%= option[:value] %>"
+                   class="wizard-geo-radio"
+                   data-action="change->wizard-details#updateGeoFilter"
+                   <%= 'checked' if geo_checked %>>
+            <label for="geo_<%= option[:value] %>" class="wizard-geo-label">
+              <%= option[:label] %>
+            </label>
+          <% end %>
+        </div>
+
+        <%# Champs cachés synchronisés par le contrôleur Stimulus wizard-details %>
+        <input type="hidden" name="guest_search[coast]"
+               value="<%= @guest_search.coast? ? '1' : '0' %>"
+               data-wizard-details-target="coastField">
+        <input type="hidden" name="guest_search[mountain]"
+               value="<%= @guest_search.mountain? ? '1' : '0' %>"
+               data-wizard-details-target="mountainField">
+        <input type="hidden" name="guest_search[no_filters]"
+               value="<%= (@guest_search.new_record? || @guest_search.no_filters?) ? '1' : '0' %>"
+               data-wizard-details-target="noFiltersField">
+      </div>
+
+      <%# ── C) Taille minimale de ville ─────────────────────────── %>
+      <div class="wizard-field-group">
+        <div class="wizard-slider-header">
+          <p class="wizard-field-label">
+            <i class="fas fa-city wizard-field-icon" aria-hidden="true"></i>
+            Taille minimale de la ville
+          </p>
+          <span class="wizard-slider-value"
+                data-wizard-details-target="populationDisplay">
+            <%= @guest_search.density.to_i == 0 ? 'Toutes tailles' : "#{number_with_delimiter(@guest_search.density, delimiter: "\u202f")}\u202fhab." %>
+          </span>
+        </div>
+        <input type="range"
+               name="guest_search[density]"
+               min="0"
+               max="2000000"
+               step="5000"
+               value="<%= @guest_search.density || 0 %>"
+               class="wizard-slider"
+               data-action="input->wizard-details#updatePopulation">
+        <div class="wizard-slider-extremes">
+          <span>Toutes tailles</span>
+          <span>2 000 000 hab.</span>
+        </div>
+      </div>
+
+      <%# Bouton "Suivant" — pas de "Précédent" à la première étape %>
+      <div class="wizard-nav wizard-nav--right">
+        <button type="submit" class="btn-wizard-next">
+          Suivant
+          <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
+
+    <% end %>
+  </div>
+</div>

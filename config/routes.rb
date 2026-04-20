@@ -40,7 +40,14 @@ end
   # ne l'interprète comme show avec id="new" (ce qui lèverait un RecordNotFound).
   get 'researches/new', to: redirect('/recherche/nouveau')
 
-  resources :researches, only: [:show, :edit, :update, :destroy]
+  # member do...end permet d'ajouter une action custom sur une ressource existante.
+  # `get 'export_pdf'` génère : GET /researches/:id/export_pdf → researches#export_pdf
+  # et le helper export_pdf_research_path(@research).
+  resources :researches, only: [:show, :edit, :update, :destroy] do
+    member do
+      get 'export_pdf'
+    end
+  end
   resources :maps, only: [:index, :show]
   resources :guest_searches, only: [:new, :create] do
     get 'results', on: :collection, to: 'guest_searches#results'
@@ -48,5 +55,9 @@ end
 
   resources :chats, only: [:index, :show, :destroy, :update]
 
-  resources :messages, only: [:create, :destroy]
+  resources :messages, only: [:create, :destroy] do
+    collection do
+      post :stream
+    end
+  end
 end

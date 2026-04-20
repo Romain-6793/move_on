@@ -8,9 +8,9 @@ PointOfInterest.destroy_all
 City.destroy_all
 
 # ── Import des communes depuis BD_MOVE_ON_V4.csv ────────────────────────────
-puts "📊 Import des communes depuis BD_MOVE_ON_V4.csv..."
+puts "📊 Import des communes depuis BD_MOVE_ON_20260415.csv..."
 
-csv_file = Rails.root.join('db', 'BD_MOVE_ON_V4.csv')
+csv_file = Rails.root.join('db', 'BD_MOVE_ON_20260417.csv')
 count = 0
 errors = 0
 
@@ -57,10 +57,13 @@ CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
       paysage: row['paysage'],
       latitude: parse_float(row['latitude']),
       longitude: parse_float(row['longitude']),
+      latitude_centre: parse_float(row['latitude_centre']),
+      longitude_centre: parse_float(row['longitude_centre']),
       
       # Démographie
       population: parse_int(row['population']),
       chom_24: parse_float(row['chom_24']),
+      taille_unite_urbaine: parse_int(row['taille_unite_urbaine']),
       
       # Santé
       APL2023: parse_float(row['APL2023']),
@@ -72,6 +75,10 @@ CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
       count_lyce: parse_int(row['count_lyce']),
       nb_creche: parse_int(row['nb_creche']),
       
+
+      # Économie
+      rev_median: parse_int(row['rev_median']),
+
       # Équipements
       nb_comm: parse_int(row['nb_comm']),
       nb_cultu: parse_int(row['nb_cultu']),
@@ -79,6 +86,7 @@ CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
       nb_gd_surf: parse_int(row['nb_gd_surf']),
       nb_loisirs: parse_int(row['nb_loisirs']),
       nb_sport: parse_int(row['nb_sport']),
+      sport_ext_nombre: parse_int(row['sport_ext_Nombre']),
       
       # Transports
       BUS_valeur: parse_float(row['BUS_valeur']),
@@ -89,7 +97,14 @@ CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
       METRO_val_1: parse_float(row['METRO_val_1']),
       TRAM_valeur: parse_float(row['TRAM_valeur']),
       TRAM_val_1: parse_float(row['TRAM_val_1']),
-      
+
+      # Pluviométrie
+      moy_cumul: parse_int(row['moy_cumul_']),
+      moy_nb_jou: parse_int(row['moy_nb_jou']),
+
+      # Vie grand air
+      eq_gd_air: parse_int(row['eq_gd_air']),
+
       # Immobilier
       avg_price_sqm: parse_float(row['avg_price_sqm']),
       median_price_sqm: parse_float(row['median_price_sqm']),
@@ -100,6 +115,10 @@ CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
       avg_rent_sqm: parse_float(row['avg_rent_sqm']),
       rent_quality: parse_float(row['rent_quality']),
       nb_obs_commune: parse_float(row['nb_obs_commune']),
+
+      # Liens
+      url_wikipedia: fix_encoding(row['url_wikipedia']),
+      url_villedereve: fix_encoding(row['url_villedereve']),
       
       # 8 scores pré-calculés (0-100)
       first_deg_score: parse_float(row['score_1deg']),
@@ -109,7 +128,9 @@ CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
       commercial_life_score: parse_float(row['score_economique']),
       leisures_sports_score: parse_float(row['score_sport_loisirs']),
       cultural_heritage_score: parse_float(row['score_culture']),
-      real_estate_score: parse_float(row['score_immo'])
+      real_estate_score: parse_float(row['score_immo']),
+      outdoor_living_score: parse_float(row['score_grand_air']), 
+      sunshine_score: parse_float(row['score_pluviometrie']),
     )
     
     count += 1

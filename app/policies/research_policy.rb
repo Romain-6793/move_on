@@ -29,6 +29,12 @@ class ResearchPolicy < ApplicationPolicy
     record.user == user
   end
 
+  # L'export PDF expose les mêmes données que show → même règle d'accès :
+  # seul le propriétaire de la recherche peut générer le PDF.
+  def export_pdf?
+    show?
+  end
+
 
   class Scope < ApplicationPolicy::Scope
     # NOTE: Be explicit about which records you allow access to!

@@ -1,0 +1,44 @@
+<%#
+  Layout dédié à l'export PDF.
+  Contrairement à application.html.erb, il n'y a ni navbar ni footer applicatif.
+  WickedPDF rend ce template en HTML, puis wkhtmltopdf le convertit en PDF.
+%>
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <title><%= @research&.research_name.presence || "Résultats Move On" %></title>
+
+    <%#
+      wicked_pdf_stylesheet_link_tag inline le contenu du CSS dans une balise <style>.
+      C'est indispensable car wkhtmltopdf ne charge pas les assets Sprockets via URL
+      relative — il a besoin du CSS en ligne ou via un chemin absolu fichier.
+    %>
+    <%= wicked_pdf_stylesheet_link_tag "pdf" %>
+
+    <%#
+      Import de la police Poppins depuis Google Fonts.
+      wkhtmltopdf fait une requête HTTP pour la récupérer lors du rendu.
+      En cas d'indisponibilité réseau, on retombe sur la pile de polices système.
+    %>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    </style>
+  </head>
+
+  <body>
+    <%# Zone de contenu principale — injectée par la vue export_pdf.html.erb %>
+    <div class="pdf-wrapper">
+      <%= yield %>
+    </div>
+
+    <%#
+      Copyright en bas de chaque page via position: fixed bottom.
+      On affiche la date de génération pour traçabilité du document.
+    %>
+    <footer class="pdf-copyright">
+      &copy; <%= Date.today.year %> Move On – Tous droits réservés &middot;
+      Document généré le <%= Date.today.strftime('%d/%m/%Y') %>
+    </footer>
+  </body>
+</html>

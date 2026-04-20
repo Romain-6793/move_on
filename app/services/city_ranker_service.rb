@@ -26,7 +26,6 @@ class CityRankerService
     health:              "health_score",
     commercial_life:     "commercial_life_score",
     leisures_and_sports: "leisures_sports_score",
-    sunshine:            "sunshine_score",
     outdoor_living:      "outdoor_living_score"
   }.freeze
 
@@ -47,8 +46,17 @@ class CityRankerService
   def top_cities(limit: 5)
     # On génère la partie SQL du score éducation (ou "0" si aucun niveau choisi)
     education_part = education_sql || "0"
+    sunshine_part = normalized_sunshine_sql || "0"
+    job_market_part = normalized_job_market_sql || "0"
+    proximity_part = normalized_proximity_sql || "0"
+    
 
-    City.select("cities.*, (#{score_expression}) AS computed_score, (#{education_part}) AS education_score")
+    City.select("cities.*, (#{score_expression}) AS computed_score, 
+    (#{education_part}) AS education_score, 
+    (#{sunshine_part}) AS sunshine_score, 
+    (#{job_market_part}) AS job_market_score,
+    (#{proximity_part}) AS nearest_big_city_score 
+    ") 
       .order("computed_score DESC")
       .limit(limit)
   end
@@ -67,6 +75,9 @@ class CityRankerService
     # On ne peut pas utiliser la colonne statique cities.education_score ici,
     # car elle ne reflète pas ces sous-critères.
     parts << education_score_part if education_score_part
+    parts << sunshine_score_part if sunshine_score_part
+    parts << job_market_score_part if job_market_score_part
+    parts << proximity_score_part if proximity_score_part
 
     # Si aucun filtre ni critère n'est actif, toutes les villes ont un score de 0
     # et seront renvoyées dans l'ordre de la base (acceptable pour le cas d'usage).
@@ -88,6 +99,46 @@ class CityRankerService
     @education_score_part = if weight.positive? && edu_sql
       # COALESCE(..., 0) protège contre les villes où nb_creche est NULL
       "(#{weight} * COALESCE(#{edu_sql}, 0))"
+    end
+  end
+
+  def sunshine_score_part
+    return @sunshine_score_part if defined?(@sunshine_score_part)
+
+    weight = @search.sunshine.to_i
+    sunshine_sql = normalized_sunshine_sql
+
+    # Si pas de poids ou pas de niveaux sélectionnés, aucune contribution
+    # Attention : bien écrire @sunshine_score_part ici (pas @education_score_part,
+    # qui était la faute de frappe originelle cassant la mémoïsation).
+    @sunshine_score_part = if weight.positive? && sunshine_sql
+      "(#{weight} * COALESCE(#{sunshine_sql}, 0))"
+    end
+  end
+
+  def job_market_score_part
+    return @job_market_score_part if defined?(@job_market_score_part)
+
+    weight = @search.job_market.to_i
+    job_market_sql = normalized_job_market_sql
+
+    # Si pas de poids ou pas de niveaux sélectionnés, aucune contribution
+    @job_market_score_part = if weight.positive? && job_market_sql
+      # COALESCE(..., 0) protège contre les villes où nb_creche est NULL
+      "(#{weight} * COALESCE(#{job_market_sql}, 0))"
+    end
+  end
+
+  def proximity_score_part
+    return @proximity_score_part if defined?(@proximity_score_part)
+
+    weight = @search.near_big_city.to_i
+    proximity_sql = normalized_proximity_sql
+
+    # Si pas de poids ou pas de niveaux sélectionnés, aucune contribution
+    @proximity_score_part = if weight.positive? && proximity_sql
+      # COALESCE(..., 0) protège contre les villes où nb_creche est NULL
+      "(#{weight} * COALESCE(#{proximity_sql}, 0))"
     end
   end
 
@@ -163,6 +214,47 @@ class CityRankerService
           0
         )
       )
+    SQL
+  end
+
+  def normalized_sunshine_sql
+    <<~SQL.squish
+      (
+        100.0 * (
+          (SELECT MAX(moy_nb_jou) FROM cities)
+          - CAST(moy_nb_jou AS INTEGER)
+        ) / NULLIF(
+          (SELECT MAX(moy_nb_jou) FROM cities) -
+          (SELECT MIN(moy_nb_jou) FROM cities),
+          0
+        )
+      )
+    SQL
+  end
+
+  def normalized_job_market_sql
+    <<~SQL.squish
+      (
+        100.0 * (
+          (SELECT MAX(chom_24) FROM cities)
+          - CAST(chom_24 AS INTEGER)
+        ) / NULLIF(
+          (SELECT MAX(chom_24) FROM cities) -
+          (SELECT MIN(chom_24) FROM cities),
+          0
+        )
+      )
+    SQL
+  end
+
+  def normalized_proximity_sql
+    # taille_unite_urbaine va de 0 (commune rurale isolée) à 8 (métropole).
+    # On normalise linéairement sur 0-100 en divisant par 8.
+    # Avant le fix : un CASE qui donnait 0 aux valeurs 0-5 (78 % des communes),
+    # ce qui faisait que toutes les city_cards affichaient 0%.
+    # COALESCE(..., 0) évite NULL pour les communes sans donnée INSEE.
+    <<~SQL.squish
+      (100.0 * COALESCE(cities.taille_unite_urbaine, 0) / 8.0)
     SQL
   end
 

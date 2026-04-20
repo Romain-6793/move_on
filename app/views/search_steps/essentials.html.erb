@@ -15,21 +15,23 @@
   Défini ici (vue) plutôt que dans le contrôleur car c'est purement présentationnel.
 %>
 <% wizard_criteria = [
-  { key: 'real_estate',       title: 'Bons plans immobiliers',        icon: 'fa-house',           color: '#8D6E63' },
-  { key: 'transport_network', title: 'Qualité des transports',        icon: 'fa-train',           color: '#2E9EAD' },
-  { key: 'health',            title: 'Accès aux soins',               icon: 'fa-stethoscope',     color: '#F48FB1' },
-  { key: 'commercial_life',   title: 'Vie commerciale',               icon: 'fa-store',           color: '#FFB74D' },
-  { key: 'cultural_heritage', title: 'Culture et patrimoine',         icon: 'fa-landmark',        color: '#9575CD' },
-  { key: 'education',         title: 'Éducation',                     icon: 'fa-graduation-cap',  color: '#0288D1' },
-  { key: 'leisures_and_sports', title: 'Sports et loisirs',           icon: 'fa-dumbbell',        color: '#E57373' },
+  { key: 'real_estate',         title: 'Bons plans immobiliers',  icon: 'fa-house',           color: '#8D6E63' },
+  { key: 'transport_network',   title: 'Qualité des transports',  icon: 'fa-train',           color: '#2E9EAD' },
+  { key: 'health',              title: 'Accès aux soins',         icon: 'fa-stethoscope',     color: '#F48FB1' },
+  { key: 'commercial_life',     title: 'Vie commerciale',         icon: 'fa-store',           color: '#FFB74D' },
+  { key: 'cultural_heritage',   title: 'Culture et patrimoine',   icon: 'fa-landmark',        color: '#9575CD' },
+  { key: 'leisures_and_sports', title: 'Sports et loisirs',       icon: 'fa-dumbbell',        color: '#E57373' },
+  { key: 'outdoor_living',      title: 'Vie au grand air',        icon: 'fa-tree',            color: '#558B2F' },
+  { key: 'sunshine',            title: 'Ville ensoleillée',       icon: 'fa-sun',             color: '#FFCA28' },
+  { key: 'job_market',          title: 'Ville d\'emploi',         icon: 'fa-briefcase',       color: '#B3E5FC' },
+  { key: 'near_big_city',       title: 'Proche d\'une métropole', icon: 'fa-city',            color: '#D7CCC8' },
+  { key: 'education',           title: 'Éducation',               icon: 'fa-graduation-cap',  color: '#0288D1' },
 ] %>
-
 <div class="search-wizard-page search-background">
   <%= render 'progress_bar',
         current_step: 2,
         total_steps:  4,
         step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
-
   <div class="wizard-card"
        data-controller="wizard-essentials"
        data-wizard-essentials-limit-value="3">
@@ -54,7 +56,6 @@
         Limite de 3 critères essentiels atteinte. Décochez-en un pour en sélectionner un autre.
       </div>
     </div>
-
     <%= form_with url: wizard_path, method: :patch, html: { class: 'wizard-form' } do |f| %>
       <div class="wizard-criteria-grid">
         <% wizard_criteria.each do |criterion| %>
@@ -76,7 +77,6 @@
                    aria-hidden="true"></i>
                 <p class="wizard-criterion-title"><%= criterion[:title] %></p>
               </div>
-
               <%# Bloc spécifique Éducation : choix des niveaux scolaires %>
               <% if criterion[:key] == 'education' %>
                 <div class="wizard-education-block"
@@ -106,49 +106,46 @@
                          name="research[education_levels]"
                          value="<%= (@research.education_levels || []).to_json %>"
                          data-wizard-essentials-target="educationHidden">
-                </div>
-              <% end %>
-            </div>
-
-            <%# Footer : checkbox de sélection "Essentiel" %>
-            <div class="wizard-criterion-footer">
-              <label class="wizard-checkbox-label <%= 'wizard-checkbox-disabled' if criterion[:key] == 'education' && (@research.education_levels || []).empty? %>">
-                <input type="checkbox"
+                      </div>
+                    <% end %>
+                  </div>
+                  <%# Footer : checkbox de sélection "Essentiel" %>
+                  <div class="wizard-criterion-footer">
+                    <label class="wizard-checkbox-label <%= 'wizard-checkbox-disabled' if criterion[:key] == 'education' && (@research.education_levels || []).empty? %>">
+                      <input type="checkbox"
                        class="wizard-criterion-checkbox"
                        data-action="change->wizard-essentials#toggleEssential"
-                       data-criterion="<%= criterion[:key] %>"
-                       <%= 'checked' if is_essential %>
-                       <%= 'disabled' if criterion[:key] == 'education' && (@research.education_levels || []).empty? %>
-                       data-wizard-essentials-target="<%= 'educationCheckbox' if criterion[:key] == 'education' %>">
-                <span class="wizard-checkbox-text">Essentiel pour moi</span>
-              </label>
-            </div>
-
-            <%#
+                      data-criterion="<%= criterion[:key] %>"
+                      <%= 'checked' if is_essential %>
+                      <%= 'disabled' if criterion[:key] == 'education' && (@research.education_levels || []).empty? %>
+                      data-wizard-essentials-target="<%= 'educationCheckbox' if criterion[:key] == 'education' %>">
+                      <span class="wizard-checkbox-text">Essentiel pour moi</span>
+                    </label>
+                  </div>
+                  <%#
               Champ caché soumis avec le formulaire.
               Valeur 3 si essentiel, 0 sinon.
               Le contrôleur Stimulus met à jour cette valeur à chaque clic.
             %>
-            <input type="hidden"
+                  <input type="hidden"
                    name="research[<%= criterion[:key] %>]"
                    value="<%= is_essential ? 3 : 0 %>"
                    data-wizard-essentials-target="hiddenField"
                    data-criterion="<%= criterion[:key] %>">
-          </div>
-        <% end %>
+                </div>
+              <% end %>
+            </div>
+            <div class="wizard-nav">
+              <%# "Précédent" : lien GET vers l'étape précédente (pas de soumission) %>
+              <%= link_to wizard_path(:details), class: "btn-wizard-prev" do %>
+                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                Précédent
+              <% end %>
+              <button type="submit" class="btn-wizard-next">
+                Suivant
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          <% end %>
+        </div>
       </div>
-
-      <div class="wizard-nav">
-        <%# "Précédent" : lien GET vers l'étape précédente (pas de soumission) %>
-        <%= link_to wizard_path(:details), class: "btn-wizard-prev" do %>
-          <i class="fas fa-arrow-left" aria-hidden="true"></i>
-          Précédent
-        <% end %>
-        <button type="submit" class="btn-wizard-next">
-          Suivant
-          <i class="fas fa-arrow-right" aria-hidden="true"></i>
-        </button>
-      </div>
-    <% end %>
-  </div>
-</div>

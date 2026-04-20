@@ -21,10 +21,29 @@ resources :users, only: [] do
   end
 end
 
+  # Wizard de création de recherche (gem wicked, 4 étapes) — utilisateur connecté.
+  # GET  /recherche/nouveau    → démarre un nouveau wizard (vide la session wizard)
+  # GET  /search_steps/:id     → affiche l'étape courante (:id = nom de l'étape)
+  # PATCH /search_steps/:id   → sauvegarde l'étape et avance
+  get 'recherche/nouveau', to: 'search_steps#new_wizard', as: :new_research_wizard
+  resources :search_steps, only: [:show, :update]
+
+  # Wizard de création de recherche (gem wicked, 4 étapes) — visiteur non connecté.
+  # Même parcours que le wizard utilisateur mais sans authentification.
+  # GET  /recherche/invite/nouveau → démarre un nouveau wizard invité
+  # GET  /guest_search_steps/:id  → affiche l'étape courante
+  # PATCH /guest_search_steps/:id → sauvegarde l'étape et avance
+  get 'recherche/invite/nouveau', to: 'guest_search_steps#new_wizard', as: :new_guest_wizard
+  resources :guest_search_steps, only: [:show, :update]
+
+  # Redirige /researches/new vers le wizard Wicked pour éviter que Rails
+  # ne l'interprète comme show avec id="new" (ce qui lèverait un RecordNotFound).
+  get 'researches/new', to: redirect('/recherche/nouveau')
+
   # member do...end permet d'ajouter une action custom sur une ressource existante.
   # `get 'export_pdf'` génère : GET /researches/:id/export_pdf → researches#export_pdf
   # et le helper export_pdf_research_path(@research).
-  resources :researches, only: [:new, :create, :show, :edit, :update, :destroy] do
+  resources :researches, only: [:show, :edit, :update, :destroy] do
     member do
       get 'export_pdf'
     end

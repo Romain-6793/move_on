@@ -24,15 +24,16 @@
         <li><%= link_to "Trouver sur la carte", maps_path %></li>
         <% if user_signed_in? %>
           <%# Connecté : accès direct au profil, pas de doublon connexion/inscription %>
-          <li><%= link_to "Nouvelle recherche", new_research_path %></li>
+          <%# Le wizard démarre via la route dédiée (vide la session wizard) %>
+          <li><%= link_to "Nouvelle recherche", new_research_wizard_path %></li>
           <li><%= link_to "Mon profil",          edit_user_registration_path %></li>
           <li>
             <%= link_to "Se déconnecter", destroy_user_session_path,
                         data: { turbo_method: :delete } %>
           </li>
         <% else %>
-          <%# Visiteur : formulaire invité + incitation à rejoindre l'application %>
-          <li><%= link_to "Nouvelle recherche", new_guest_search_path %></li>
+          <%# Visiteur : wizard invité (même parcours que l'utilisateur connecté) %>
+          <li><%= link_to "Nouvelle recherche", new_guest_wizard_path %></li>
           <li><%= link_to "S'inscrire",          new_user_registration_path %></li>
           <li><%= link_to "Se connecter",        new_user_session_path %></li>
         <% end %>

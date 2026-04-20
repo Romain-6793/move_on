@@ -1,0 +1,285 @@
+<%#
+  Wizard – Étape 3 : Pondération des critères
+  ─────────────────────────────────────────────
+  L'utilisateur assigne une importance aux critères non-essentiels.
+  Les critères déjà marqués "essentiel" (valeur 3 en base) sont affichés
+  en haut avec un badge verrouillé — ils ne peuvent pas être modifiés ici.
+
+  Les critères non-essentiels sont répartis dans deux grilles de cards :
+    - "Critères importants" → checkbox "Important pour moi" → valeur 2 en base
+    - "Critères bonus"      → checkbox "Bonus pour moi"    → valeur 1 en base
+
+  Règles gérées par le contrôleur Stimulus "wizard-priorities" :
+    - Cocher "Important" pour un critère masque ce critère dans la grille "Bonus" (et inversement).
+    - La card Éducation exige la sélection d'au moins un niveau scolaire avant d'activer la checkbox.
+    - Sélectionner 3 niveaux d'éducation ne vaut qu'UN seul critère (valeur 2 ou 1, jamais 6).
+%>
+<% wizard_criteria = [
+  { key: 'real_estate',         title: 'Bons plans immobiliers',  icon: 'fa-house',           color: '#8D6E63' },
+  { key: 'transport_network',   title: 'Qualité des transports',  icon: 'fa-train',           color: '#2E9EAD' },
+  { key: 'health',              title: 'Accès aux soins',         icon: 'fa-stethoscope',     color: '#F48FB1' },
+  { key: 'commercial_life',     title: 'Vie commerciale',         icon: 'fa-store',           color: '#FFB74D' },
+  { key: 'cultural_heritage',   title: 'Culture et patrimoine',   icon: 'fa-landmark',        color: '#9575CD' },
+  { key: 'education',           title: 'Éducation',               icon: 'fa-graduation-cap',  color: '#0288D1' },
+  { key: 'leisures_and_sports', title: 'Sports et loisirs',       icon: 'fa-dumbbell',        color: '#E57373' },
+] %>
+
+<%# Sépare les critères essentiels (verrouillés) des autres dès le rendu ERB %>
+<% essential_criteria     = wizard_criteria.select { |c| @research.send(c[:key]).to_i == 3 } %>
+<% non_essential_criteria = wizard_criteria.reject { |c| @research.send(c[:key]).to_i == 3 } %>
+
+<%# État initial des niveaux d'éducation : détermine si la checkbox est active au rendu %>
+<% education_has_levels = (@research.education_levels || []).any? %>
+
+<div class="search-wizard-page search-background">
+  <%= render 'progress_bar',
+        current_step: 3,
+        total_steps:  4,
+        step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+
+  <%#
+    data-controller connecte le contrôleur Stimulus "wizard-priorities"
+    à toute la carte. Il intercepte les changements de checkboxes et gère
+    la synchronisation entre les deux grilles.
+  %>
+  <div class="wizard-card"
+       data-controller="wizard-priorities">
+    <div class="wizard-card-header">
+      <h1 class="wizard-card-title">
+        <i class="fas fa-sliders-h wizard-title-icon" aria-hidden="true"></i>
+        Affinez vos priorités
+      </h1>
+      <p class="wizard-card-subtitle">
+        Parmi les critères restants, indiquez lesquels sont <strong>importants</strong>
+        ou <strong>bonus</strong> pour vous.
+      </p>
+    </div>
+
+    <%= form_with url: wizard_path, method: :patch, html: { class: 'wizard-form' } do |f| %>
+
+      <%# ── Bloc 1 : essentiels en lecture seule ───────────────────────────── %>
+      <% if essential_criteria.any? %>
+        <div class="wizard-priorities-section">
+          <p class="wizard-confirm-group-label badge-essential">
+            <i class="fas fa-star" aria-hidden="true"></i>
+            Critères essentiels (verrouillés)
+          </p>
+          <div class="wizard-criteria-grid">
+            <% essential_criteria.each do |criterion| %>
+              <%# Card en lecture seule : même visuel que les autres mais footer badge %>
+              <div class="wizard-criterion-card wizard-criterion-card--locked"
+                   style="--card-color: <%= criterion[:color] %>">
+                <div class="wizard-criterion-band"></div>
+                <div class="wizard-criterion-body">
+                  <div class="wizard-criterion-header">
+                    <i class="fas <%= criterion[:icon] %> wizard-criterion-icon"
+                       style="color: <%= criterion[:color] %>"
+                       aria-hidden="true"></i>
+                    <p class="wizard-criterion-title"><%= criterion[:title] %></p>
+                  </div>
+                </div>
+                <div class="wizard-criterion-footer">
+                  <span class="wizard-essential-badge">
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    Essentiel
+                  </span>
+                </div>
+                <%# Champ caché : maintient la valeur 3 à la soumission %>
+                <input type="hidden" name="research[<%= criterion[:key] %>]" value="3">
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# ── Bloc 2 : grille "Critères importants" ──────────────────────────── %>
+      <div class="wizard-priorities-section">
+        <p class="wizard-confirm-group-label badge-important">
+          <i class="fas fa-circle-dot" aria-hidden="true"></i>
+          Critères importants
+        </p>
+        <div class="wizard-criteria-grid">
+          <% non_essential_criteria.each do |criterion| %>
+            <% is_important = @research.send(criterion[:key]).to_i == 2 %>
+            <%# Masqué si le critère est déjà coché "Bonus" (cohérence avec le comportement Stimulus) %>
+            <% already_bonus = @research.send(criterion[:key]).to_i == 1 %>
+            <%#
+              data-wizard-priorities-target="importantCard" : permet au contrôleur de
+              masquer/afficher cette card quand la checkbox "Bonus" du même critère est cochée.
+            %>
+            <div class="wizard-criterion-card"
+                 data-wizard-priorities-target="importantCard"
+                 data-criterion="<%= criterion[:key] %>"
+                 style="--card-color: <%= criterion[:color] %>"
+                 <%= 'hidden' if already_bonus %>>
+              <div class="wizard-criterion-band"></div>
+              <div class="wizard-criterion-body">
+                <div class="wizard-criterion-header">
+                  <i class="fas <%= criterion[:icon] %> wizard-criterion-icon"
+                     style="color: <%= criterion[:color] %>"
+                     aria-hidden="true"></i>
+                  <p class="wizard-criterion-title"><%= criterion[:title] %></p>
+                </div>
+
+                <%#
+                  Spécificité Éducation : sélecteur de niveaux scolaires.
+                  Identique à l'étape 2 (critères essentiels).
+                  L'utilisateur doit choisir au moins un niveau avant de pouvoir cocher.
+                  Peu importe le nombre de niveaux choisis : Éducation vaut toujours 1 critère.
+                %>
+                <% if criterion[:key] == 'education' %>
+                  <div class="wizard-education-block">
+                    <p class="wizard-education-label">Niveaux scolaires souhaités</p>
+                    <%# Zone injectée dynamiquement par Stimulus avec les tags de niveaux choisis %>
+                    <div class="wizard-education-tags"
+                         data-wizard-priorities-target="educationTagsDisplay">
+                    </div>
+                    <div class="wizard-education-controls">
+                      <select data-wizard-priorities-target="educationSelect"
+                              class="wizard-education-select">
+                        <option value="">Choisir un niveau…</option>
+                        <option value="Petite enfance">Petite enfance (crèches, EAJE)</option>
+                        <option value="Premier degré">Premier degré (écoles maternelles et élémentaires)</option>
+                        <option value="Second degré">Second degré (collèges et lycées)</option>
+                      </select>
+                      <button type="button"
+                              class="wizard-education-add-btn"
+                              data-action="click->wizard-priorities#addEducationLevel">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Ajouter
+                      </button>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="wizard-criterion-footer">
+                <%#
+                  Pour Éducation : la checkbox est grisée jusqu'à l'ajout d'un niveau.
+                  La classe wizard-checkbox-disabled et l'attribut disabled sont gérés
+                  ensuite par Stimulus (updateEducationCheckboxes).
+                %>
+                <label class="wizard-checkbox-label <%= 'wizard-checkbox-disabled' if criterion[:key] == 'education' && !education_has_levels %>">
+                  <input type="checkbox"
+                         class="wizard-criterion-checkbox"
+                         data-action="change->wizard-priorities#toggleImportant"
+                         data-criterion="<%= criterion[:key] %>"
+                         data-wizard-priorities-target="importantCheckbox"
+                         <%= 'checked' if is_important %>
+                         <%= 'disabled' if criterion[:key] == 'education' && !education_has_levels %>>
+                  <span class="wizard-checkbox-text">Important pour moi</span>
+                </label>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%# ── Bloc 3 : grille "Critères bonus" ──────────────────────────────── %>
+      <div class="wizard-priorities-section">
+        <p class="wizard-confirm-group-label badge-bonus">
+          <i class="fas fa-plus" aria-hidden="true"></i>
+          Critères bonus
+        </p>
+        <div class="wizard-criteria-grid">
+          <% non_essential_criteria.each do |criterion| %>
+            <% is_bonus = @research.send(criterion[:key]).to_i == 1 %>
+            <%# Masqué dès le rendu si le critère est déjà "Important" %>
+            <% already_important = @research.send(criterion[:key]).to_i == 2 %>
+            <%#
+              data-wizard-priorities-target="bonusCard" : le contrôleur Stimulus masque
+              cette card dès que l'utilisateur coche "Important pour moi" pour ce critère.
+            %>
+            <div class="wizard-criterion-card"
+                 data-wizard-priorities-target="bonusCard"
+                 data-criterion="<%= criterion[:key] %>"
+                 style="--card-color: <%= criterion[:color] %>"
+                 <%= 'hidden' if already_important %>>
+              <div class="wizard-criterion-band"></div>
+              <div class="wizard-criterion-body">
+                <div class="wizard-criterion-header">
+                  <i class="fas <%= criterion[:icon] %> wizard-criterion-icon"
+                     style="color: <%= criterion[:color] %>"
+                     aria-hidden="true"></i>
+                  <p class="wizard-criterion-title"><%= criterion[:title] %></p>
+                </div>
+
+                <%# Même bloc éducation que dans la grille "Important" — synchronisé par Stimulus %>
+                <% if criterion[:key] == 'education' %>
+                  <div class="wizard-education-block">
+                    <p class="wizard-education-label">Niveaux scolaires souhaités</p>
+                    <div class="wizard-education-tags"
+                         data-wizard-priorities-target="educationTagsDisplay">
+                    </div>
+                    <div class="wizard-education-controls">
+                      <select data-wizard-priorities-target="educationSelect"
+                              class="wizard-education-select">
+                        <option value="">Choisir un niveau…</option>
+                        <option value="Petite enfance">Petite enfance (crèches, EAJE)</option>
+                        <option value="Premier degré">Premier degré (écoles maternelles et élémentaires)</option>
+                        <option value="Second degré">Second degré (collèges et lycées)</option>
+                      </select>
+                      <button type="button"
+                              class="wizard-education-add-btn"
+                              data-action="click->wizard-priorities#addEducationLevel">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Ajouter
+                      </button>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="wizard-criterion-footer">
+                <label class="wizard-checkbox-label <%= 'wizard-checkbox-disabled' if criterion[:key] == 'education' && !education_has_levels %>">
+                  <input type="checkbox"
+                         class="wizard-criterion-checkbox"
+                         data-action="change->wizard-priorities#toggleBonus"
+                         data-criterion="<%= criterion[:key] %>"
+                         data-wizard-priorities-target="bonusCheckbox"
+                         <%= 'checked' if is_bonus %>
+                         <%= 'disabled' if criterion[:key] == 'education' && !education_has_levels %>>
+                  <span class="wizard-checkbox-text">Bonus pour moi</span>
+                </label>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%#
+        Champs cachés — un seul par critère non-essentiel.
+        Le contrôleur Stimulus met à jour leur valeur avant soumission :
+          2 = important | 1 = bonus | 0 = non retenu
+      %>
+      <% non_essential_criteria.each do |criterion| %>
+        <input type="hidden"
+               name="research[<%= criterion[:key] %>]"
+               value="<%= @research.send(criterion[:key]).to_i %>"
+               data-wizard-priorities-target="hiddenField"
+               data-criterion="<%= criterion[:key] %>">
+      <% end %>
+
+      <%#
+        Champ caché JSON pour les niveaux d'éducation.
+        Unique dans le formulaire — Stimulus le met à jour via educationHiddenTarget.
+        Valeur initiale : les niveaux déjà enregistrés à l'étape 2 (ou tableau vide).
+      %>
+      <input type="hidden"
+             name="research[education_levels]"
+             value="<%= (@research.education_levels || []).to_json %>"
+             data-wizard-priorities-target="educationHidden">
+
+      <div class="wizard-nav">
+        <%= link_to wizard_path(:essentials), class: "btn-wizard-prev" do %>
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+          Précédent
+        <% end %>
+        <button type="submit" class="btn-wizard-next">
+          Voir le récapitulatif
+          <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    <% end %>
+  </div>
+</div>

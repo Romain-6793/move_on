@@ -1,0 +1,129 @@
+<%#
+  Wizard invité – Étape 4 : Récapitulatif avant lancement
+  ─────────────────────────────────────────────────────────
+  Identique à search_steps/confirm.html.erb, mais :
+    - utilise @guest_search (GuestSearch) au lieu de @research
+    - le lien "Recommencer" pointe vers new_guest_wizard_path
+    - finish_wizard_path redirige vers results_guest_searches_path
+%>
+<% wizard_criteria = [
+  { key: 'real_estate',         title: 'Bons plans immobiliers',  icon: 'fa-house',           color: '#8D6E63' },
+  { key: 'transport_network',   title: 'Qualité des transports',  icon: 'fa-train',           color: '#2E9EAD' },
+  { key: 'health',              title: 'Accès aux soins',         icon: 'fa-stethoscope',     color: '#F48FB1' },
+  { key: 'commercial_life',     title: 'Vie commerciale',         icon: 'fa-store',           color: '#FFB74D' },
+  { key: 'cultural_heritage',   title: 'Culture et patrimoine',   icon: 'fa-landmark',        color: '#9575CD' },
+  { key: 'education',           title: 'Éducation',               icon: 'fa-graduation-cap',  color: '#0288D1' },
+  { key: 'leisures_and_sports', title: 'Sports et loisirs',       icon: 'fa-dumbbell',        color: '#E57373' },
+] %>
+
+<% criteria_by_level = {
+  3 => { label: 'Critères essentiels',  badge_class: 'badge-essential',  icon: 'fa-star'       },
+  2 => { label: 'Critères importants',  badge_class: 'badge-important',  icon: 'fa-circle-dot' },
+  1 => { label: 'Critères bonus',       badge_class: 'badge-bonus',      icon: 'fa-plus'       }
+} %>
+
+<% geo_label = if @guest_search.coast?      then '🌊 Mer'
+               elsif @guest_search.mountain? then '⛰️  Montagne'
+               else '🗺️ Indifférent' end %>
+
+<% density_label = @guest_search.density.to_i == 0 ? 'Toutes tailles' : "#{number_with_delimiter(@guest_search.density, delimiter: "\u202f")} hab. minimum" %>
+
+<div class="search-wizard-page search-background">
+  <%= render 'search_steps/progress_bar',
+        current_step: 4,
+        total_steps:  4,
+        step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+
+  <div class="wizard-card wizard-card--confirm">
+    <div class="wizard-card-header">
+      <h1 class="wizard-card-title">
+        <i class="fas fa-clipboard-check wizard-title-icon" aria-hidden="true"></i>
+        Récapitulatif de votre recherche
+      </h1>
+      <p class="wizard-card-subtitle">
+        Vérifiez votre configuration avant de lancer le calcul.
+      </p>
+    </div>
+
+    <%# ── Bloc : informations générales ──────────────────────────── %>
+    <section class="wizard-confirm-section">
+      <h2 class="wizard-confirm-section-title">
+        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+        Votre projet
+      </h2>
+      <dl class="wizard-confirm-dl">
+        <dt>Nom de la recherche</dt>
+        <dd><strong><%= @guest_search.research_name.presence || '—' %></strong></dd>
+        <dt>Environnement</dt>
+        <dd><%= geo_label %></dd>
+        <dt>Taille minimale de ville</dt>
+        <dd><%= density_label %></dd>
+      </dl>
+    </section>
+
+    <%# ── Blocs : critères par niveau ────────────────────────────── %>
+    <section class="wizard-confirm-section">
+      <h2 class="wizard-confirm-section-title">
+        <i class="fas fa-sliders-h" aria-hidden="true"></i>
+        Vos critères
+      </h2>
+
+      <% criteria_by_level.each do |level, meta| %>
+        <% selected = wizard_criteria.select { |c| @guest_search.send(c[:key]).to_i == level } %>
+        <% next if selected.empty? %>
+
+        <div class="wizard-confirm-criteria-group">
+          <p class="wizard-confirm-group-label <%= meta[:badge_class] %>">
+            <i class="fas <%= meta[:icon] %>" aria-hidden="true"></i>
+            <%= meta[:label] %>
+          </p>
+          <ul class="wizard-confirm-criteria-list">
+            <% selected.each do |criterion| %>
+              <li style="--card-color: <%= criterion[:color] %>">
+                <i class="fas <%= criterion[:icon] %>"
+                   style="color: <%= criterion[:color] %>"
+                   aria-hidden="true"></i>
+                <%= criterion[:title] %>
+                <% if criterion[:key] == 'education' && (@guest_search.education_levels || []).any? %>
+                  <span class="wizard-confirm-education-levels">
+                    (<%= (@guest_search.education_levels || []).join(', ') %>)
+                  </span>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% all_selected = wizard_criteria.any? { |c| @guest_search.send(c[:key]).to_i > 0 } %>
+      <% unless all_selected %>
+        <p class="wizard-confirm-warning">
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+          Aucun critère sélectionné — les résultats seront basés uniquement sur les filtres géographiques.
+        </p>
+      <% end %>
+    </section>
+
+    <%# ── Formulaire de soumission finale ────────────────────────── %>
+    <%= form_with url: wizard_path, method: :patch, html: { class: 'wizard-form' } do %>
+      <div class="wizard-nav">
+        <%= link_to wizard_path(:priorities), class: "btn-wizard-prev" do %>
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+          Précédent
+        <% end %>
+        <button type="submit" class="btn-wizard-launch">
+          <i class="fas fa-rocket" aria-hidden="true"></i>
+          Lancer ma recherche
+        </button>
+      </div>
+    <% end %>
+
+    <%# Lien pour recommencer depuis le début du wizard invité %>
+    <p class="wizard-restart-link">
+      <%= link_to new_guest_wizard_path do %>
+        <i class="fas fa-rotate-left" aria-hidden="true"></i>
+        Recommencer depuis le début
+      <% end %>
+    </p>
+  </div>
+</div>

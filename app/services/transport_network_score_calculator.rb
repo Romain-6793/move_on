@@ -13,7 +13,6 @@
 # Normalisation : min–max sur le scope, score élevé = meilleure offre relative (comme l'immobilier).
 # Le README mentionne aussi des rangs centiles côté pipeline données ; l'API carte utilise ici
 # min–max pour rester cohérent avec RealEstateScoreCalculator et explicite mathématiquement.
-module Scoring
   class TransportNetworkScoreCalculator
     WEIGHTS = {
       train: 4,
@@ -79,4 +78,3 @@ module Scoring
         "tram ×#{WEIGHTS[:tram]}, bus ×#{WEIGHTS[:bus]} (stations / 1000 hab.), puis normalisation."
     end
   end
-end

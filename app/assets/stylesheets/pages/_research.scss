@@ -2,42 +2,8 @@
 // On utilise des CSS custom properties (var(--xxx)) pour les couleurs dynamiques
 // injectées via style inline (--card-color, --tag-color) depuis la vue ERB.
 
-// ─── Fond "silhouette de France" ──────────────────────────────────────────
-//
-// Classe utilitaire appliquée aux pages de recherche (formulaire wizard ET résultats).
-// Un pseudo-élément ::before affiche la silhouette SVG de la France en watermark
-// très discret (opacité 0.04) — juste assez visible pour rappeler le thème géographique.
-//
-// Pourquoi ::before et non background-image directement sur le conteneur ?
-// → Pour ne pas empêcher les enfants de recevoir des clics (pointer-events: none)
-//   et pour pouvoir positionner la carte indépendamment du scroll du contenu.
-
 .search-background {
   position: relative;
-  overflow: hidden; // empêche la silhouette de créer un scrollbar horizontal
-
-  &::before {
-    content: '';
-    position: fixed;   // reste centré même quand l'utilisateur scrolle
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    // calc() force sassc/LibSass à traiter min() comme une fonction CSS native
-    // et non comme la fonction Sass min() qui refuse les unités incompatibles (vw ≠ px)
-    width: calc(min(55vw, 480px));  // proportionnel à la fenêtre, plafond à 480px
-    height: auto;
-    aspect-ratio: 0.875;     // ratio approx de la France (420×480 viewBox)
-    background-image: url('france_silhouette.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    opacity: 0.05;            // TRÈS discret — watermark, pas illustration
-    pointer-events: none;     // la silhouette ne capture aucun événement souris
-    z-index: 0;               // derrière tout le contenu
-  }
-
-  // Le contenu doit être au-dessus du fond (z-index: 1)
-  > * { position: relative; z-index: 1; }
 }
 
 // ─── Mise en page générale ─────────────────────────────────────────────────

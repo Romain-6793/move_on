@@ -115,6 +115,31 @@
         </div>
       </div>
 
+      <%# ── D) Filtre par région ─────────────────────────────────── %>
+      <%#
+        Même logique que search_steps/details.html.erb.
+        @regions est peuplé par GuestSearchStepsController#show à l'étape :details.
+        L'option vide "Toute la France" laisse region = nil → aucun bonus dans CityRankerService.
+      %>
+      <div class="wizard-field-group">
+        <label for="guest_search_region" class="wizard-field-label">
+          <i class="fas fa-map wizard-field-icon" aria-hidden="true"></i>
+          Région souhaitée
+        </label>
+        <p class="wizard-field-hint">Vous concentrer sur une région favorise les villes qui s'y trouvent.</p>
+        <select id="guest_search_region"
+                name="guest_search[region]"
+                class="wizard-select">
+          <option value="">Toute la France</option>
+          <% @regions.each do |region| %>
+            <option value="<%= region %>"
+                    <%= 'selected' if @guest_search.region == region %>>
+              <%= region %>
+            </option>
+          <% end %>
+        </select>
+      </div>
+
       <%# Bouton "Suivant" — pas de "Précédent" à la première étape %>
       <div class="wizard-nav wizard-nav--right">
         <button type="submit" class="btn-wizard-next">

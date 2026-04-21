@@ -67,7 +67,8 @@ class CityRankerService
   # On filtre les parties nil (critères inactifs ou filtres non sélectionnés)
   # et on les joint par addition.
   def score_expression
-    parts = [landscape_sql, population_sql].compact
+    # region_sql vient en premier : il est de poids 4, comme landscape et population.
+    parts = [region_sql, landscape_sql, population_sql].compact
     parts.concat(criteria_sql_parts)
 
     # L'éducation est ajoutée séparément car son calcul est dynamique :
@@ -140,6 +141,21 @@ class CityRankerService
       # COALESCE(..., 0) protège contre les villes où nb_creche est NULL
       "(#{weight} * COALESCE(#{proximity_sql}, 0))"
     end
+  end
+
+  # +400 si la région de la ville correspond à la région sélectionnée.
+  # Renvoie nil si aucune région n'est choisie → pas de bonus.
+  # La comparaison utilise = avec un placeholder pour éviter toute injection SQL.
+  # On passe par Arel.sql uniquement pour la valeur littérale injectée via sanitize_sql.
+  def region_sql
+    region = @search.region.presence
+    return nil unless region
+
+    # ActiveRecord::Base.sanitize_sql_like protège la valeur contre l'injection SQL.
+    # On utilise une comparaison exacte (pas ILIKE) car nom_reg est une valeur contrôlée
+    # issue d'un dropdown peuplé depuis la base elle-même.
+    sanitized = ActiveRecord::Base.connection.quote(region)
+    "CASE WHEN nom_reg = #{sanitized} THEN #{GEOGRAPHY_BONUS} ELSE 0 END"
   end
 
   # +400 si le type de paysage de la ville correspond au filtre choisi.

@@ -51,12 +51,20 @@ class GuestSearchesController < ApplicationController
 
   # Même périmètre que research_params : les critères actifs + les filtres géographiques.
   # Pas de user_id : les GuestSearch n'appartiennent à aucun compte.
-  def guest_search_params
-    params.require(:guest_search).permit(
+  def research_params
+    rp = params.require(:guest_search).permit(
       :research_name,
-      :coast, :mountain, :no_filters, :density,
+      :coast, :mountain, :no_filters, :density, :region,
       :real_estate, :transport_network, :cultural_heritage,
-      :health, :commercial_life, :leisures_and_sports
+      :health, :commercial_life, :leisures_and_sports, :outdoor_living, 
+      :sunshine, :job_market, :near_big_city, :education, :education_levels
     )
+
+    # Convertit le JSON string → Array Ruby
+    if rp[:education_levels].present?
+      rp[:education_levels] = JSON.parse(rp[:education_levels])
+    end
+
+    rp
   end
 end

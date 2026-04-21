@@ -134,6 +134,33 @@
         </div>
       </div>
 
+      <%# ── D) Filtre par région ─────────────────────────────────── %>
+      <%#
+        Ce dropdown est peuplé depuis la liste des régions effectivement
+        présentes dans la table cities (pas une liste statique codée en dur).
+        La sélection enregistre la propriété `region` de Research.
+        Dans CityRankerService, region_sql accorde +400 aux villes de cette région.
+        L'option vide "Toute la France" équivaut à aucun filtre (region = nil).
+      %>
+      <div class="wizard-field-group">
+        <label for="research_region" class="wizard-field-label">
+          <i class="fas fa-map wizard-field-icon" aria-hidden="true"></i>
+          Région souhaitée
+        </label>
+        <p class="wizard-field-hint">Vous concentrer sur une région favorise les villes qui s'y trouvent.</p>
+        <select id="research_region"
+                name="research[region]"
+                class="wizard-select">
+          <option value="">Toute la France</option>
+          <% @regions.each do |region| %>
+            <option value="<%= region %>"
+                    <%= 'selected' if @research.region == region %>>
+              <%= region %>
+            </option>
+          <% end %>
+        </select>
+      </div>
+
       <%# Bouton "Suivant" — unique, pas de "Précédent" à la première étape %>
       <div class="wizard-nav wizard-nav--right">
         <button type="submit" class="btn-wizard-next">

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_18_105452) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_20_190139) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "unaccent"
@@ -127,6 +127,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_18_105452) do
     t.datetime "updated_at", null: false
     t.integer "leisures_and_sports", default: 0
     t.string "education_levels", default: [], array: true
+    t.string "region"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -178,6 +179,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_18_105452) do
     t.string "chosen_nearest_big_city"
     t.integer "leisures_and_sports", default: 0
     t.string "education_levels", default: [], array: true
+    t.string "region"
     t.index ["user_id"], name: "index_researches_on_user_id"
   end
 

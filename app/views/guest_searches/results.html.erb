@@ -3,12 +3,25 @@
 <div class="results-page container search-background">
 
   <div class="results-page-header">
-    <h1 class="results-page-title">
-      <%= @guest_search.research_name.presence || "Vos résultats" %>
-    </h1>
-    <p class="results-page-subtitle">
-      Les 5 villes qui correspondent le mieux à vos critères
-    </p>
+    <div class="results-page-header__text">
+      <h1 class="results-page-title">
+        <%= @guest_search.research_name.presence || "Vos résultats" %>
+      </h1>
+      <p class="results-page-subtitle">
+        Les 5 villes qui correspondent le mieux à vos critères
+      </p>
+    </div>
+    <%#
+      Bouton "Afficher sur la carte" : maps#results lira la GuestSearch depuis la session
+      (session[:guest_search_id]) — pas besoin de passer l'id en paramètre ici.
+    %>
+    <%= link_to results_maps_path, class: "results-page__map-cta" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+      </svg>
+      Afficher sur la carte
+    <% end %>
   </div>
 
   <div class="city-cards-grid">

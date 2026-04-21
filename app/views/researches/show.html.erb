@@ -3,13 +3,27 @@
 <div class="results-page container search-background">
 
   <div class="results-page-header">
-    <%# presence renvoie nil si la chaîne est vide, ce qui déclenche le || %>
-    <h1 class="results-page-title">
-      <%= @research.research_name.presence || "Mes résultats" %>
-    </h1>
-    <p class="results-page-subtitle">
-      Les 5 villes qui correspondent le mieux à votre recherche
-    </p>
+    <div class="results-page-header__text">
+      <%# presence renvoie nil si la chaîne est vide, ce qui déclenche le || %>
+      <h1 class="results-page-title">
+        <%= @research.research_name.presence || "Mes résultats" %>
+      </h1>
+      <p class="results-page-subtitle">
+        Les 5 villes qui correspondent le mieux à votre recherche
+      </p>
+    </div>
+    <%#
+      Bouton "Afficher sur la carte" : ouvre une carte dédiée aux 5 villes classées.
+      results_maps_path transmet l'id de la recherche pour que maps#results
+      recalcule les villes et applique les critères essentiels.
+    %>
+    <%= link_to results_maps_path(research_id: @research.id), class: "results-page__map-cta" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+      </svg>
+      Afficher sur la carte
+    <% end %>
   </div>
 
   <%# each_with_index démarre à 0 ; on ajoute 1 pour afficher #1, #2… %>

@@ -143,6 +143,21 @@ end
 
 puts "\n\n✅ Seeds terminées : #{City.count} communes importées (#{errors} erreurs)"
 
+# Normalisation des kinds de POI : le CSV BPE24 utilise des libellés français longs,
+# mais le reste de l'app (map_controller.js, MapsController) attend des identifiants
+# courts en anglais pour les couleurs et les filtres de recherche.
+# Ce mapping doit être mis à jour si de nouveaux types sont importés.
+POI_KIND_NORMALIZATION = {
+  "Equipements culturels et socioculturels" => "culture",
+  "Equipements de loisirs"                 => "sport"
+  # Ajouter ici les autres types au fur et à mesure de leur import :
+  # "Equipements de santé"   => "health",
+  # "Equipements de transport" => "transport",
+  # "Equipements d'éducation" => "education",
+  # "Equipements commerciaux" => "commerce",
+  # "Equipements de nature"  => "nature"
+}.freeze
+
 puts "📍 Import des Points d'Intérêt (POI)..."
 print "❓ Souhaitez-vous importer les Points d'Intérêt (POI.csv) ? Cela peut prendre du temps. (y/n) : "
 reponse = STDIN.gets.chomp.downcase
@@ -178,7 +193,9 @@ else
           longitude:   row['LONGITUDE'].to_s.gsub(',', '.').to_f,
           postal_code: row['CODPOS'],
           category:    row['BPE24_varmod.LIB_MOD'],
-          kind:        row['BPE24_varmod.LIB_MOD.1'],
+          # On normalise le kind vers un identifiant court anglais pour la cohérence
+          # avec map_controller.js et les filtres de recherche.
+          kind:        POI_KIND_NORMALIZATION.fetch(row['BPE24_varmod.LIB_MOD.1'], row['BPE24_varmod.LIB_MOD.1']),
           public:      true
         )
 

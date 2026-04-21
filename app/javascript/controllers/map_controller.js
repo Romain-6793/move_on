@@ -15,7 +15,11 @@ export default class extends Controller {
     dataUrl: String, // URL de l'endpoint GeoJSON (passée via data-map-data-url-value)
     geolocate: Boolean,
     // cityName permet d'afficher le nom dans le popup du marqueur de ville unique (vue show)
-    cityName: String
+    cityName: String,
+    // pois : features GeoJSON pré-filtrés passés en inline par maps#show.
+    // Quand ce tableau est non vide, on n'appelle PAS loadMapData() (pas de fetch vers /maps.json)
+    // et on affiche uniquement ces POIs — vue centrée sur une ville spécifique.
+    pois: { type: Array, default: [] }
   }
 
   // ── Couleurs par kind de POI — cohérentes avec la palette Move On ──────────
@@ -67,7 +71,17 @@ export default class extends Controller {
       // Si une ville précise est ciblée (vue show), on pose un marqueur à ses coordonnées.
       if (this.cityNameValue) this.addCityMarker()
 
-      this.loadMapData()
+      if (this.poisValue.length > 0) {
+        // Vue show : les POIs ont été pré-filtrés et sérialisés côté serveur (maps#show).
+        // On les affiche directement sans appel réseau supplémentaire.
+        // On construit une FeatureCollection GeoJSON valide à partir du tableau de features.
+        this.addPoisLayer({ type: "FeatureCollection", features: this.poisValue })
+      } else if (this.dataUrlValue) {
+        // Vue index : chargement de l'ensemble des villes + POIs depuis l'endpoint /maps.json.
+        this.loadMapData()
+      }
+      // Si aucune des deux conditions n'est vraie (pas de POIs ET pas de dataUrl),
+      // la carte affiche uniquement le marqueur de la ville sans couche de données.
     })
   }
 

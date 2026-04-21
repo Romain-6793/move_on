@@ -22,4 +22,7 @@
       <%= render 'shared/city_card', city: city, index: i + 1, search: @research %>
     <% end %>
   </div>
+  <div class="d-flex justify-content-center">
+    <%= link_to "J'exporte ma recherche maintenant !", export_pdf_research_path, class: "btn-hero-primary" %>
+  </div>
 </div>

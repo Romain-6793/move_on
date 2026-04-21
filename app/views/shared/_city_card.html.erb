@@ -107,6 +107,65 @@
      end
      city_map_url = essential_kinds.any? ? map_path(city.id, kinds: essential_kinds.join(",")) : map_path(city.id) %>
 
+  <%# ── Accordéon "En savoir plus" ──────────────────────────────────────
+    Affiche les liens vers des sources d'informations externes sur la ville
+    (Wikipedia et Ville de Rêve). Les URLs sont stockées en base via les
+    colonnes `url_wikipedia` et `url_villedereve` de la table cities.
+
+    Le bloc n'est rendu que si au moins une URL est présente : inutile
+    d'afficher un bouton qui ouvrirait une liste vide.
+
+    Le comportement de repli/déploiement est géré par le Stimulus controller
+    dédié `city-card` (même logique que l'accordéon "En savoir plus" des
+    criterion-cards dans le formulaire de recherche, mais isolé dans son
+    propre contrôleur pour respecter la séparation des responsabilités).
+  %>
+  <% if city.url_wikipedia.present? || city.url_villedereve.present? %>
+    <div class="city-card__info" data-controller="city-card">
+      <%# data-action relie le clic du bouton à la méthode toggleAccordion du contrôleur.
+          data-city-card-target désigne ce bouton comme cible Stimulus pour pouvoir
+          en modifier le texte depuis le JS (▾ / ▴). %>
+      <button class="city-card__info-btn"
+              type="button"
+              data-action="click->city-card#toggleAccordion"
+              data-city-card-target="toggleButton">
+        En savoir plus ▾
+      </button>
+      <%# L'attribut `hidden` (HTML natif) remplace un display:none CSS :
+          il est sémantique et interprété par les lecteurs d'écran. %>
+      <div class="city-card__accordion"
+           data-city-card-target="accordion"
+           hidden>
+        <ul class="city-card__info-list">
+          <% if city.url_wikipedia.present? %>
+            <li>
+              <%#
+                target="_blank" + rel="noopener noreferrer" pour les liens externes :
+                - _blank : ouvre dans un nouvel onglet (on ne perd pas la page Move On)
+                - noopener : la page cible ne peut pas accéder à window.opener (sécurité)
+                - noreferrer : ne transmet pas l'URL d'origine (confidentialité)
+              %>
+              <%= link_to "Page Wikipédia",
+                          city.url_wikipedia,
+                          target: "_blank",
+                          rel:    "noopener noreferrer",
+                          class:  "city-card__info-link" %>
+            </li>
+          <% end %>
+          <% if city.url_villedereve.present? %>
+            <li>
+              <%= link_to "Fiche Ville de Rêve",
+                          city.url_villedereve,
+                          target: "_blank",
+                          rel:    "noopener noreferrer",
+                          class:  "city-card__info-link" %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
   <%# ── Actions ──────────────────────────────────────────────────────── %>
   <div class="city-card__actions">
     <%# Bouton "Trouver sur la carte" – ouvre la carte centrée sur cette ville

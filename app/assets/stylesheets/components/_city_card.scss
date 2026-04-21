@@ -180,6 +180,65 @@
     color: var(--gray-800);
   }
 
+  // ─── Accordéon "En savoir plus" ─────────────────────────────────────────
+
+  // Conteneur du bloc : placé entre les jauges et les actions.
+  // Padding horizontal cohérent avec les autres sections de la carte (20px).
+  &__info {
+    padding: 0 20px 14px;
+  }
+
+  // Bouton déclencheur : style discret (pas de fond, pas de bordure) pour rester
+  // secondaire face aux CTA principaux (Trouver sur la carte, SeLoger).
+  // Couleur verte Move On pour rappeler la charte graphique du produit.
+  &__info-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--green-dark);
+    font-family: "Poppins", sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover {
+      color: var(--green-primary);
+      text-decoration: underline;
+    }
+  }
+
+  // Panneau déroulant : l'attribut HTML `hidden` gère déjà display:none,
+  // donc pas de règle de visibilité ici — uniquement la mise en page.
+  &__accordion {
+    margin-top: 10px;
+  }
+
+  // Liste des liens externes : on supprime la puce par défaut pour un rendu
+  // épuré, cohérent avec le reste de la carte.
+  &__info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  // Lien externe : teal (cohérent avec le ton "navigation secondaire" du site).
+  &__info-link {
+    color: var(--blue-teal);
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover {
+      color: var(--green-dark);
+      text-decoration: underline;
+    }
+  }
+
   // ─── Actions ────────────────────────────────────────────────────────────
 
   &__actions {

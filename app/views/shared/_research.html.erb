@@ -97,7 +97,7 @@
                  'voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.'
   },
   {
-    key: 'nearest_big_city',
+    key: 'near_big_city',
     title: 'Proche d\'une métropole',
     color: '#FF8A65',
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
@@ -283,7 +283,8 @@
               %>
               <%= render 'shared/criterion_card',
                     criterion: criterion,
-                    section:   section[:key] %>
+                    section:   section[:key],
+                    research:  research %>
             <% end %>
           </div>
           <%#

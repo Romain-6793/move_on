@@ -71,23 +71,25 @@
   <%#
     Les jauges utilisent des styles inline pour la largeur et la couleur :
     c'est la technique la plus fiable en PDF car elle ne dépend pas du CSS externe.
-    .to_f.round protège contre un éventuel nil en base.
+    Si le score brut est nil (donnée absente en seed), la barre est grisée et "?" s'affiche.
   %>
   <div class="city-card__scores">
     <% city_criteria.each do |criterion| %>
-      <% score = city.public_send(criterion[:score_method]).to_f.round %>
+      <%# Même logique que _city_card.html.erb : nil en base → barre grisée + "?" %>
+      <% raw_score = city.public_send(criterion[:score_method]) %>
+      <% score     = raw_score&.round %>
       <div class="city-card__score-row">
         <span class="city-card__score-label"><%= criterion[:title] %></span>
         <div class="city-card__gauge-track">
           <div class="city-card__gauge-fill"
-               style="width: <%= score %>%; background-color: <%= criterion[:color] %>;"
+               style="width: <%= score ? "#{score}%" : '0%' %>; background-color: <%= score ? criterion[:color] : '#BDBDBD' %>;"
                role="progressbar"
-               aria-valuenow="<%= score %>"
+               aria-valuenow="<%= score || 0 %>"
                aria-valuemin="0"
                aria-valuemax="100">
           </div>
         </div>
-        <span class="city-card__score-value"><%= score %>%</span>
+        <span class="city-card__score-value"><%= score ? "#{score}%" : '?' %></span>
       </div>
     <% end %>
   </div>

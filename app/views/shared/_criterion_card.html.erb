@@ -2,13 +2,14 @@
   Partial : carte d'un critère de recherche.
 
   Ce composant est affiché dans chacune des 3 sous-sections (essentiel, important, bonus),
-  soit 21 instances au total pour 7 critères.
+  soit 33 instances au total pour 11 critères.
   Le contrôleur Stimulus "research-form" masque automatiquement toutes les copies d'un
   critère dès qu'il est sélectionné, quelle que soit la sous-section.
 
   Locals attendus :
     criterion  – Hash { key:, title:, color:, description: }
     section    – String : 'essential' | 'important' | 'bonus'
+    research   – instance de Research ou GuestSearch (pour pré-remplir l'état éducation)
 %>
 <%#
   Mapping critère → classe Font Awesome (free solid tier).
@@ -25,11 +26,17 @@
   'outdoor_living'      => 'fa-tree',
   'sunshine'            => 'fa-sun',
   'job_market'          => 'fa-briefcase',
-  'nearest_big_city'    => 'fa-city',
+  'near_big_city'       => 'fa-city',
   'education'           => 'fa-graduation-cap',
 } %>
 <%# On compose l'id unique de la checkbox pour relier le <label> (accessibilité) %>
 <% checkbox_id = "criterion_#{criterion[:key]}_#{section}" %>
+<%#
+  saved_levels : niveaux d'éducation déjà en base (array en mode édition, [] sinon).
+  Défini ici (hors du bloc if education) pour être accessible dans le footer également.
+  Pour tous les critères hors éducation, c'est simplement [] — sans impact.
+%>
+<% saved_levels = criterion[:key] == 'education' ? (research.education_levels || []) : [] %>
 <div class="criterion-card"
      data-research-form-target="card"
      data-criterion="<%= criterion[:key] %>"
@@ -76,48 +83,49 @@
       <div class="education-inner-tags"
            data-research-form-target="educationTagsDisplay">
       </div>
-      <div class="education-selector-controls">
-        <%# Le select liste les 5 niveaux scolaires disponibles.
-            Les options déjà sélectionnées sont désactivées par Stimulus. %>
-        <select data-research-form-target="educationSelect">
+      <div class="education-selector-controls wizard-education-controls">
+        <%# Les options déjà sauvegardées sont désactivées dès le rendu HTML.
+            Stimulus (updateEducationCards) maintient cet état synchronisé dynamiquement. %>
+        <select data-research-form-target="educationSelect" class="wizard-education-select">
           <option value="">Choisir un niveau…</option>
-          <option value="Petite enfance">Petite enfance (crèches, EAJE)</option>
-          <option value="Premier degré">Premier degré (écoles maternelles et élémentaires)</option>
-          <option value="Second degré">Second degré (collèges et lycées)</option>
+          <option value="Petite enfance"   <%= 'disabled' if saved_levels.include?('Petite enfance') %>>Petite enfance (crèches, EAJE)</option>
+          <option value="Premier degré"    <%= 'disabled' if saved_levels.include?('Premier degré') %>>Premier degré (écoles maternelles et élémentaires)</option>
+          <option value="Second degré"     <%= 'disabled' if saved_levels.include?('Second degré') %>>Second degré (collèges et lycées)</option>
         </select>
         <button type="button"
-                class="education-add-btn"
-                data-action="click->research-form#addEducationTag">
-          +
+          class="wizard-education-add-btn"
+          data-action="click->research-form#addEducationTag">
+          <i class="fas fa-plus" aria-hidden="true"></i>
+          Ajouter
         </button>
       </div>
     </div>
   <% end %>
   <%# Pied de carte : checkbox de sélection du critère dans cette sous-section %>
   <div class="criterion-card-footer">
-    <%# Le wrapper .checkbox-disabled est ajouté/retiré dynamiquement par Stimulus.
-        Pour Éducation, il est présent dès le départ (checkbox grisée au rendu initial). %>
-    <div class="criterion-card-checkbox-wrapper <%= 'checkbox-disabled' if criterion[:key] == 'education' %>">
-      <input type="checkbox"
+            <%#
+      Pour Éducation : la checkbox est grisée si aucun niveau n'est encore choisi.
+      En mode édition, saved_levels contient les niveaux déjà en base → checkbox active dès le rendu.
+      Stimulus (updateEducationCheckboxes) maintient cet état synchronisé dynamiquement.
+    %>
+            <% education_can_select = criterion[:key] != 'education' || saved_levels.any? %>
+            <div class="criterion-card-checkbox-wrapper <%= 'checkbox-disabled' unless education_can_select %>">
+              <input type="checkbox"
              id="<%= checkbox_id %>"
              data-action="change->research-form#selectCriterion"
-      data-criterion="<%= criterion[:key] %>"
-      data-section="<%= section %>"
-      <%# Pour Éducation : cible Stimulus + désactivé jusqu'à ajout de tags %>
-      <% if criterion[:key] == 'education' %>
-        data-research-form-target="educationCheckbox"
-        disabled
-      <% end %>>
-      <%#
-        Label dynamique selon la section : cohérence visuelle avec le wizard.
-        "Essentiel pour moi" / "Important pour moi" / "Bonus pour moi"
-      %>
-      <% section_labels = {
+              data-criterion="<%= criterion[:key] %>"
+              data-section="<%= section %>"
+              <% if criterion[:key] == 'education' %>
+                data-research-form-target="educationCheckbox"
+                <%= 'disabled' unless education_can_select %>
+              <% end %>>
+              <%# Label dynamique selon la section %>
+              <% section_labels = {
            'essential' => 'Essentiel pour moi',
            'important' => 'Important pour moi',
            'bonus'     => 'Bonus pour moi'
          } %>
-      <label for="<%= checkbox_id %>"><%= section_labels[section] || 'Sélectionner' %></label>
-    </div>
-  </div>
-</div>
+              <label for="<%= checkbox_id %>"><%= section_labels[section] || 'Sélectionner' %></label>
+            </div>
+          </div>
+        </div>

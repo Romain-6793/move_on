@@ -1,7 +1,6 @@
 <%# Page de résultats pour un visiteur anonyme (GuestSearch). %>
 <%# search-background : silhouette SVG de la France en watermark discret (opacity 0.05) %>
 <div class="results-page container search-background">
-
   <div class="results-page-header">
     <h1 class="results-page-title">
       <%= @guest_search.research_name.presence || "Vos résultats" %>
@@ -10,11 +9,15 @@
       Les 5 villes qui correspondent le mieux à vos critères
     </p>
   </div>
-
+  <div class="disclaimer">
+    <p>ATTENTION</p>
+    <p>Nos scores sont globalement fiables mais certaines données sont encore manquantes, 
+      c'est pourquoi vous pouvez voir des "?" après certaines jauges. Ou des scores bas sur des données 
+      que nous avons partiellement agrégées (notamment concernant la culture, les sports et la santé).</p>
+  </div>
   <div class="city-cards-grid">
     <% @ranked_cities.each_with_index do |city, i| %>
       <%= render 'shared/city_card', city: city, index: i + 1, search: @guest_search %>
     <% end %>
   </div>
-
 </div>

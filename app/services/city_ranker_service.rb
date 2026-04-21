@@ -45,25 +45,30 @@ class CityRankerService
   # Le calcul en SQL évite de charger toutes les villes en mémoire Ruby.
   # On insère dans la requête les calculs particuliers comme education_score
   def top_cities(limit: 5)
-    # Colonnes calculées dynamiquement exposées à la vue pour l'affichage des jauges.
-    # "|| '0'" : fallback si la méthode SQL retourne nil (jamais le cas ici, garde-fou).
-    # L'éducation garde ses COALESCE internes car elle combine plusieurs sous-critères
-    # (crèches, premier degré, second degré) dont l'un peut être NULL indépendamment.
     education_part   = education_sql             || "0"
     sunshine_part    = normalized_sunshine_sql   || "0"
     job_market_part  = normalized_job_market_sql || "0"
     proximity_part   = normalized_proximity_sql  || "0"
 
+    base_select = <<~SQL.squish
+      cities.*,
+      (#{education_part})   AS education_score,
+      (#{sunshine_part})    AS sunshine_score,
+      (#{job_market_part})  AS job_market_score,
+      (#{proximity_part})   AS nearest_big_city_score
+    SQL
 
-    # Si la donnée est NULL en base, la colonne SQL retourne NULL → la vue affiche "?".
-    City.select("cities.*, (#{score_expression}) AS computed_score,
-    (#{education_part}) AS education_score,
-    (#{sunshine_part}) AS sunshine_score,
-    (#{job_market_part}) AS job_market_score,
-    (#{proximity_part}) AS nearest_big_city_score
-    ")
-      # NULLS LAST : si un score composite est NULL (données manquantes en base),
-      # la ville est reléguée en fin de classement plutôt qu'en tête.
+    # 🎯 MODE ALÉATOIRE : score_expression n’a AUCUNE part active
+    if no_score_parts?
+      return City
+        .select(base_select)
+        .order(Arel.sql("RANDOM()"))
+        .limit(limit)
+    end
+
+    # 🎯 MODE NORMAL : au moins un critère ou filtre actif
+    City
+      .select("#{base_select}, (#{score_expression}) AS computed_score")
       .order("computed_score DESC NULLS LAST")
       .limit(limit)
   end
@@ -260,7 +265,7 @@ class CityRankerService
       (
         100.0 * (
           (SELECT MAX(chom_24) FROM cities)
-          - CAST(chom_24 AS INTEGER)
+          - chom_24
         ) / NULLIF(
           (SELECT MAX(chom_24) FROM cities) -
           (SELECT MIN(chom_24) FROM cities),
@@ -290,5 +295,9 @@ class CityRankerService
 
       "(#{weight} * #{column})"
     end
+  end
+
+  def no_score_parts?
+    score_expression == "0"
   end
 end

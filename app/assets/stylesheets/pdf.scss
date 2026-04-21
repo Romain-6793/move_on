@@ -63,6 +63,21 @@ body {
 //
 // On utilise display: flex + flex-wrap pour placer 2 cards côte à côte.
 // CSS Grid n'est pas fiable dans wkhtmltopdf (support limité de WebKit embarqué).
+.disclaimer {
+  //background: var(--orange-warm);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  padding: 10px;
+  font-weight: 500;
+  overflow: hidden;
+  display: flex;
+  flex-flow: column wrap;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: 10px;
+}
+
 
 .pdf-city-cards-grid {
   display: flex;

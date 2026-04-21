@@ -26,6 +26,7 @@ class ResearchesController < ApplicationController
     # On retrouve la recherche par son id et on vérifie que l'utilisateur connecté
     # en est bien le propriétaire (Pundit → ResearchPolicy#edit?).
     @research = Research.find(params[:id])
+    @regions = City.distinct.order(:nom_reg).pluck(:nom_reg).compact 
     authorize @research
   end
 

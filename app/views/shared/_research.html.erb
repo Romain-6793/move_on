@@ -235,14 +235,14 @@
         %>
         <%= f.range_field :density,
               min: 0,
-              max: 2_000_000,
+              max: 250_000,
               step: 5_000,
               value: research.density || 0,
               class: 'population-slider',
               data: { action: 'input->research-form#updatePopulation' } %>
         <div class="population-slider-extremes">
           <span>Toutes tailles</span>
-          <span>2 000 000 hab.</span>
+          <span>250 000 hab.</span>
         </div>
       </div>
       <div class="wizard-field-group">

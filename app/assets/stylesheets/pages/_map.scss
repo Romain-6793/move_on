@@ -117,6 +117,52 @@
   }
 }
 
+// ── Pastilles des critères essentiels (carte show) ────────────────────────
+// Ces pastilles sont posées autour du centre-ville par map_controller.js
+// (méthode addEssentialDots) pour matérialiser les 3 critères "must-have"
+// du user directement sur la carte, indépendamment des POIs disponibles en BD.
+//
+// pointer-events: none sur le parent : les pastilles sont purement décoratives
+// et ne doivent pas bloquer les interactions Mapbox (drag, zoom, clic POI).
+.essential-dot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  // Animation d'apparition : légère pulsation à l'ouverture de la carte
+  // pour attirer l'œil sur les critères sans être intrusive.
+  animation: essential-dot-appear 0.4s ease-out;
+
+  &__circle {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    flex-shrink: 0;
+  }
+
+  // Badge blanc contenant le nom du critère (ex: "Santé"), bord coloré
+  // assorti à la pastille pour renforcer le lien visuel.
+  &__label {
+    background: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1.5px solid transparent;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+}
+
+@keyframes essential-dot-appear {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
 // ── Marqueurs personnalisés — carte résultats (5 villes) ─────────────────
 // Ces marqueurs sont des éléments DOM créés par results_map_controller.js.
 // L'épingle est une forme CSS (carré pivoté de 45°), le label est un badge blanc.

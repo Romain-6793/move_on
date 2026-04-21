@@ -93,7 +93,7 @@ export default class extends Controller {
 
     el.innerHTML = `
       <div class="results-marker__pin" style="background:${color}">
-        <span class="results-marker__rank">#${rank}</span>
+        <span class="results-marker__rank">${rank}</span>
       </div>
       <span class="results-marker__label">${city.nom_com}</span>
     `
@@ -121,7 +121,7 @@ export default class extends Controller {
 
     return `
       <div class="map-popup map-popup--result">
-        <div class="map-popup__rank-badge" style="background:${color}">#${rank}</div>
+        <div class="map-popup__rank-badge" style="background:${color}">${rank}</div>
         <h3 class="map-popup__title">${city.nom_com}</h3>
         ${location}
         <a href="${href}" class="map-popup__cta">

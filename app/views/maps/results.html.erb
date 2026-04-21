@@ -33,7 +33,16 @@
      "transport"  => "#0288D1",
      "education"  => "#8D6E63",
      "health"     => "#2E9EAD"
-   } %>
+   }
+   %>
+
+<%#
+  Couleurs par rang de ville — cohérentes avec RANK_COLORS de results_map_controller.js.
+  Ordre : #1 (meilleur) → #5. On duplique ici côté vue car Rails n'a pas
+  directement accès à la constante JS ; tout écart serait visuellement flagrant
+  (la pastille sidebar doit correspondre au marqueur carte).
+%>
+<% rank_colors = ["#558B2F", "#2E9EAD", "#0288D1", "#FFB74D", "#E57373"] %>
 
 <div class="map-page">
   <%# ── Sidebar ─────────────────────────────────────────────────────────── %>
@@ -45,10 +54,12 @@
     <div class="map-results-list">
       <% @ranked_cities.each_with_index do |city, i| %>
         <% rank = i + 1 %>
+        <%# Couleur identique au marqueur de la carte pour ce rang %>
+        <% rank_color = rank_colors[rank - 1] || "#757575" %>
         <%# On passe les kinds sélectionnés pour que la carte show filtre les POIs %>
         <% city_map_path = @poi_kinds.any? ? map_path(city.id, kinds: @poi_kinds.join(",")) : map_path(city.id) %>
         <a href="<%= city_map_path %>" class="map-results-item">
-          <span class="map-results-item__rank">#<%= rank %></span>
+          <span class="map-results-item__rank" style="background: <%= rank_color %>"><%= rank %></span>
           <div class="map-results-item__info">
             <span class="map-results-item__name"><%= city.nom_com %></span>
             <span class="map-results-item__location">

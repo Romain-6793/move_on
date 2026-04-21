@@ -6,66 +6,12 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.js"></script>
 <% end %>
 
-<%#
-  Labels et couleurs des kinds de POI — cohérents avec map_controller.js (static POI_COLORS)
-  et avec la palette Move On (_colors.scss). Définis ici car c'est présentationnel (légende).
-%>
-<% poi_kind_labels = {
-     "transport" => "Transports",
-     "culture"   => "Culture et patrimoine",
-     "health"    => "Santé",
-     "commerce"  => "Vie commerciale",
-     "sport"     => "Sports et loisirs",
-     "education" => "Éducation",
-     "nature"    => "Nature"
-   }
-   poi_kind_colors = {
-     "sport"      => "#7CB342",
-     "culture"    => "#4FC3F7",
-     "nature"     => "#558B2F",
-     "commerce"   => "#FFCA28",
-     "transport"  => "#0288D1",
-     "education"  => "#8D6E63",
-     "health"     => "#2E9EAD"
-   } %>
-
 <div class="map-page">
   <div class="map-page__sidebar">
     <h1 class="map-page__title"><%= @city.nom_com %></h1>
     <p class="map-page__description">
       <%= [@city.nom_dep, @city.nom_reg].compact.join(" · ") %>
     </p>
-
-    <div class="map-legend">
-      <h2 class="map-legend__title">Points d'intérêt</h2>
-      <section class="map-legend__section">
-        <% if @poi_kinds.any? %>
-          <%# Mode filtré : on n'affiche que les kinds correspondant aux critères essentiels %>
-          <p class="map-legend__note">
-            Affichage limité à vos critères essentiels.
-          </p>
-          <ul class="map-legend__list">
-            <% @poi_kinds.each do |kind| %>
-              <li>
-                <span class="map-legend__dot" style="background:<%= poi_kind_colors[kind] %>"></span>
-                <%= poi_kind_labels[kind] || kind.capitalize %>
-              </li>
-            <% end %>
-          </ul>
-        <% else %>
-          <%# Mode non filtré : on affiche la légende complète (tous les kinds) %>
-          <ul class="map-legend__list">
-            <% poi_kind_colors.each do |kind, color| %>
-              <li>
-                <span class="map-legend__dot" style="background:<%= color %>"></span>
-                <%= poi_kind_labels[kind] %>
-              </li>
-            <% end %>
-          </ul>
-        <% end %>
-        <p class="map-legend__note">Cliquez sur un point pour en savoir plus.</p>
-      </section>
-    </div>
 
     <%# Lien retour — history.back() permet de revenir à la page précédente (résultats ou carte résultats) %>
     <a href="javascript:history.back()" class="map-page__back-link">
@@ -74,10 +20,11 @@
   </div>
 
   <%#
-    data-map-pois-value : tableau de features GeoJSON des POIs de cette ville.
-    Pré-filtré par @poi_kinds côté serveur (maps#show) et sérialisé en JSON inline.
-    Le controller Stimulus lit ce tableau via this.poisValue et appelle addPoisLayer()
-    sans faire de requête réseau supplémentaire vers /maps.json.
+    Conteneur Mapbox — piloté par map_controller.js.
+
+    Choix produit : on n'affiche plus les pastilles des critères essentiels autour de
+    la ville ni la légende associée — la carte reste visuellement épurée et ne montre
+    que le marqueur de la ville ciblée.
   %>
   <div
     id="map"
@@ -88,7 +35,6 @@
     data-map-lng-value="<%= @city.longitude %>"
     data-map-zoom-value="13"
     data-map-city-name-value="<%= @city.nom_com %>"
-    data-map-pois-value="<%= @pois_features.to_json %>"
     data-map-geolocate-value="false"
   ></div>
 </div>

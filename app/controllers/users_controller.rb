@@ -41,7 +41,8 @@ class UsersController < ApplicationController
       :lastname,
       :date_of_birth,
       :situation,
-      :relocation_project
+      :relocation_project,
+      :avatar  # fichier image uploadé via Active Storage
     )
   end
 end

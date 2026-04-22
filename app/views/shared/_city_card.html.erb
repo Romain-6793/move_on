@@ -112,6 +112,11 @@
      # + numéroté que sur la carte des 5 résultats.
      map_query_params = { rank: index }
      map_query_params[:kinds] = essential_kinds.join(",") if essential_kinds.any?
+     # Pour les utilisateurs connectés, on propage research_id afin que maps#show
+     # puisse recharger le contexte de la recherche et afficher les 4 autres
+     # villes classées sur la carte (visibles au dézoom). Les visiteurs se
+     # reposent sur session[:guest_search_id] → aucune propagation URL nécessaire.
+     map_query_params[:research_id] = search.id if search.is_a?(Research)
      city_map_url = map_path(city.id, map_query_params) %>
 
   <%# ── Actions ──────────────────────────────────────────────────────── %>

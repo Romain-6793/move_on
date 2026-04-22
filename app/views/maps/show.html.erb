@@ -32,6 +32,17 @@
     personnalisé (pastille colorée + chiffre) identique à celui de la carte
     des 5 résultats. Sans rang → marqueur Mapbox par défaut (fallback).
   %>
+  <%#
+    data-map-other-cities-value : tableau JSON des 4 autres villes classées
+    (avec id, nom, coordonnées, rang). Affichées par map_controller.js comme
+    marqueurs colorés + numérotés — visibles dès que l'utilisateur dézoome
+    pour englober les autres villes du top 5.
+    data-map-poi-kinds-value : critères essentiels, propagés dans les liens
+    des popups des autres villes (pour conserver le filtre ?kinds=…).
+    data-map-research-id-value : identifiant de la recherche (utilisateurs
+    connectés uniquement), propagé dans les popups pour préserver le contexte
+    au fil de la navigation d'une carte ville-unique à l'autre.
+  %>
   <div
     id="map"
     class="map-page__map"
@@ -43,5 +54,8 @@
     data-map-city-name-value="<%= @city.nom_com %>"
     data-map-rank-value="<%= @city_rank || 0 %>"
     data-map-geolocate-value="false"
+    data-map-other-cities-value="<%= @other_cities_data.to_json %>"
+    data-map-poi-kinds-value="<%= @poi_kinds.to_json %>"
+    data-map-research-id-value="<%= @research_id_param %>"
   ></div>
 </div>

@@ -64,7 +64,11 @@
             On construit le hash progressivement pour éviter un ?kinds= vide dans l'URL.
         %>
         <% city_map_params = { rank: rank }
-           city_map_params[:kinds] = @poi_kinds.join(",") if @poi_kinds.any? %>
+           city_map_params[:kinds] = @poi_kinds.join(",") if @poi_kinds.any?
+           # Pour les utilisateurs connectés, on propage research_id afin que
+           # maps#show puisse recharger la recherche et afficher les 4 autres
+           # villes classées sur la carte (visibles au dézoom).
+           city_map_params[:research_id] = @research.id if @research.present? %>
         <% city_map_path = map_path(city.id, city_map_params) %>
         <a href="<%= city_map_path %>" class="map-results-item">
           <span class="map-results-item__rank" style="background: <%= rank_color %>"><%= rank %></span>

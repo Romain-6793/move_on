@@ -37,7 +37,21 @@ class ChatsController < ApplicationController
   def destroy
     authorize @chat
     @chat.destroy
-    redirect_to root_path, notice: "Conversation supprimée"
+
+    # On réinitialise aussi les clés de session liées à l'assistant : sans ça,
+    # le prochain message utiliserait encore l'ID du chat supprimé côté serveur
+    # (fallback dans MessagesController#chat_for_authorization) et les villes
+    # suggérées resteraient celles de l'ancienne conversation.
+    session.delete(UrbanAssist::SendMessage::SESSION_CHAT_KEY)
+    session.delete(UrbanAssist::SendMessage::SESSION_SUGGESTED_CITIES_KEY)
+
+    respond_to do |format|
+      # HTML conservé pour les usages existants (liste des conversations).
+      format.html { redirect_to root_path, notice: "Conversation supprimée" }
+      # JSON pour le widget chatbot : pas de contenu à renvoyer, le client
+      # se charge de vider son DOM et sa sessionStorage.
+      format.json { head :no_content }
+    end
   end
 
   private

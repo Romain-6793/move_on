@@ -1,9 +1,7 @@
 <%# Footer sombre affiché sur toutes les pages via le layout application.html.erb. %>
 <%# Structure : colonne marque (gauche) + Navigation + Légal (droite). %>
-
 <footer class="site-footer">
   <div class="footer-grid">
-
     <%# Colonne marque : logo bicolore, tagline et description de l'application %>
     <div>
       <div class="footer-brand-name">
@@ -15,7 +13,6 @@
         selon vos critères personnels et professionnels.
       </p>
     </div>
-
     <%# Colonne Navigation – liens principaux de l'application %>
     <div class="footer-col">
       <h4>Navigation</h4>
@@ -38,19 +35,7 @@
         <% end %>
       </ul>
     </div>
-
-    <%# Colonne Légal – pages obligatoires (à créer via des routes dédiées si besoin) %>
-    <div class="footer-col">
-      <h4>Légal</h4>
-      <ul>
-        <li><a href="#">Mentions légales</a></li>
-        <li><a href="#">Politique de confidentialité</a></li>
-        <li><a href="#">CGU</a></li>
-      </ul>
-    </div>
-
   </div>
-
   <%# Année générée dynamiquement pour ne jamais avoir à mettre à jour la date %>
   <div class="footer-bottom">
     &copy; <%= Time.current.year %> Move On. Tous droits réservés.

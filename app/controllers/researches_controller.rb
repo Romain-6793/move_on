@@ -26,6 +26,7 @@ class ResearchesController < ApplicationController
     # On retrouve la recherche par son id et on vérifie que l'utilisateur connecté
     # en est bien le propriétaire (Pundit → ResearchPolicy#edit?).
     @research = Research.find(params[:id])
+    @regions = City.distinct.order(:nom_reg).pluck(:nom_reg).compact 
     authorize @research
   end
 
@@ -145,9 +146,10 @@ class ResearchesController < ApplicationController
   def research_params
     rp = params.require(:research).permit(
       :research_name,
-      :coast, :mountain, :no_filters, :density,
+      :coast, :mountain, :no_filters, :density, :region,
       :real_estate, :transport_network, :cultural_heritage,
-      :health, :commercial_life, :leisures_and_sports, :education, :education_levels
+      :health, :commercial_life, :leisures_and_sports, :outdoor_living, 
+      :sunshine, :job_market, :near_big_city, :education, :education_levels
     )
 
     # Convertit le JSON string → Array Ruby

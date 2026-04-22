@@ -17,13 +17,17 @@
   de _colors.scss (limitation de wkhtmltopdf / WebKit embarqué).
 %>
 <% city_criteria = [
-  { key: :real_estate,         title: 'Immobilier',       color: '#8D6E63', score_method: :real_estate_score },
-  { key: :transport_network,   title: 'Transports',       color: '#2E9EAD', score_method: :transport_network_score },
-  { key: :health,              title: 'Santé',            color: '#F48FB1', score_method: :health_score },
-  { key: :commercial_life,     title: 'Commerce',         color: '#FFB74D', score_method: :commercial_life_score },
-  { key: :cultural_heritage,   title: 'Culture',          color: '#9575CD', score_method: :cultural_heritage_score },
-  { key: :leisures_and_sports, title: 'Sports & loisirs', color: '#E57373', score_method: :leisures_sports_score },
-  { key: :education,           title: 'Education',        color: '#0288D1', score_method: :education_score }
+  { key: :real_estate,         title: 'Immobilier',                 color: '#8D6E63', score_method: :real_estate_score },
+  { key: :transport_network,   title: 'Transports',                 color: '#2E9EAD', score_method: :transport_network_score },
+  { key: :health,              title: 'Santé',                      color: '#F48FB1', score_method: :health_score },
+  { key: :commercial_life,     title: 'Commerce',                   color: '#FFB74D', score_method: :commercial_life_score },
+  { key: :cultural_heritage,   title: 'Culture',                    color: '#9575CD', score_method: :cultural_heritage_score },
+  { key: :leisures_and_sports, title: 'Sports & loisirs',           color: '#E57373', score_method: :leisures_sports_score },
+  { key: :outdoor_living,      title: 'Vie au grand air',           color: '#558B2F', score_method: :outdoor_living_score },
+  { key: :sunshine,            title: 'Ville ensoleillée',          color: '#FFCA28', score_method: :sunshine_score},
+  { key: :job_market,          title: 'Ville d\'emploi',            color: '#B3E5FC', score_method: :job_market_score },
+  { key: :nearest_big_city,    title: 'Métropole',                  color: '#FF8A65', score_method: :nearest_big_city_score},
+  { key: :education,           title: 'Éducation',                  color: '#0288D1', score_method: :education_score }
 ] %>
 <div class="city-card">
   <%# ── En-tête : rang + nom + localisation ─────────────────────────── %>
@@ -67,23 +71,25 @@
   <%#
     Les jauges utilisent des styles inline pour la largeur et la couleur :
     c'est la technique la plus fiable en PDF car elle ne dépend pas du CSS externe.
-    .to_f.round protège contre un éventuel nil en base.
+    Si le score brut est nil (donnée absente en seed), la barre est grisée et "?" s'affiche.
   %>
   <div class="city-card__scores">
     <% city_criteria.each do |criterion| %>
-      <% score = city.public_send(criterion[:score_method]).to_f.round %>
+      <%# Même logique que _city_card.html.erb : nil en base → barre grisée + "?" %>
+      <% raw_score = city.public_send(criterion[:score_method]) %>
+      <% score     = raw_score&.round %>
       <div class="city-card__score-row">
         <span class="city-card__score-label"><%= criterion[:title] %></span>
         <div class="city-card__gauge-track">
           <div class="city-card__gauge-fill"
-               style="width: <%= score %>%; background-color: <%= criterion[:color] %>;"
+               style="width: <%= score ? "#{score}%" : '0%' %>; background-color: <%= score ? criterion[:color] : '#BDBDBD' %>;"
                role="progressbar"
-               aria-valuenow="<%= score %>"
+               aria-valuenow="<%= score || 0 %>"
                aria-valuemin="0"
                aria-valuemax="100">
           </div>
         </div>
-        <span class="city-card__score-value"><%= score %>%</span>
+        <span class="city-card__score-value"><%= score ? "#{score}%" : '?' %></span>
       </div>
     <% end %>
   </div>

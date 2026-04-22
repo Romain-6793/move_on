@@ -27,6 +27,9 @@ class SearchStepsController < ApplicationController
   def show
     @research = load_research
     authorize @research, :update?
+    # On charge les régions uniquement à l'étape 1 pour alimenter le dropdown.
+    # distinct + order + compact évite les doublons, trie alphabétiquement et exclut les NULL.
+    @regions = City.distinct.order(:nom_reg).pluck(:nom_reg).compact if step == :details
     render_wizard
   end
 
@@ -116,7 +119,8 @@ class SearchStepsController < ApplicationController
     params.require(:research).permit(
       :research_name,
       :coast, :mountain, :no_filters,
-      :density
+      :density,
+      :region
     )
   end
 
@@ -129,9 +133,13 @@ class SearchStepsController < ApplicationController
       :health,
       :commercial_life,
       :cultural_heritage,
-      :education,
       :leisures_and_sports,
-      :education_levels   # String JSON — converti dans parse_education_levels
+      :outdoor_living,
+      :sunshine,
+      :job_market,
+      :near_big_city,
+      :education,
+      :education_levels
     )
   end
 

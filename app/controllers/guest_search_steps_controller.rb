@@ -22,6 +22,8 @@ class GuestSearchStepsController < ApplicationController
 
   def show
     @guest_search = load_guest_search
+    # Idem SearchStepsController : régions uniquement à l'étape 1.
+    @regions = City.distinct.order(:nom_reg).pluck(:nom_reg).compact if step == :details
     render_wizard
   end
 
@@ -101,7 +103,8 @@ class GuestSearchStepsController < ApplicationController
     params.require(:guest_search).permit(
       :research_name,
       :coast, :mountain, :no_filters,
-      :density
+      :density,
+      :region
     )
   end
 
@@ -113,8 +116,12 @@ class GuestSearchStepsController < ApplicationController
       :health,
       :commercial_life,
       :cultural_heritage,
-      :education,
       :leisures_and_sports,
+      :outdoor_living,
+      :sunshine,
+      :job_market,
+      :near_big_city,
+      :education,
       :education_levels
     )
   end

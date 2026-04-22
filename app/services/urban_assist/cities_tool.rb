@@ -47,16 +47,36 @@ module UrbanAssist
       - avg_price_sqm, median_price_sqm, total_transactions, transactions_last_year
       - price_evolution_1y, price_evolution_3y
       - avg_rent_sqm, rent_quality, nb_obs_commune
-      - population, population_density
+      - population
 
       SÉLECTION :
-      Pour département ou région, retourne au plus 5 villes les plus pertinentes après tri.
+      Pour département ou région, retourne au plus 5 communes représentatives
+      (tri par nombre de transactions décroissant, communes peu fiables exclues).
+
+      STRUCTURE DE LA RÉPONSE :
+      - "data"    : liste de communes (détaillées par commune).
+      - "summary" : présent pour zone_type ∈ {department, departement, region, national}.
+                    Contient un prix de référence de la zone :
+                      • median_price_sqm (médiane des médianes des communes fiables)
+                      • weighted_avg_price_sqm (moyenne des médianes pondérée par
+                        le nombre de transactions — plus fidèle au "prix réel")
+                      • reliable_cities_count (nombre de communes utilisées).
+                    ⚠️ Pour toute question au niveau département/région/national,
+                    utilise `summary.weighted_avg_price_sqm` (ou à défaut
+                    `summary.median_price_sqm`) comme prix de référence plutôt
+                    que de prendre une commune extrême.
     DESC
 
     param :zone_type, desc: "commune, departement, region ou national"
     param :zone_name, desc: "Nom de la zone (optionnel)", required: false
     param :sort_by, desc: "Critère de tri : price_asc, price_desc, transactions, evolution (optionnel)", required: false
     param :min_population, desc: "Population minimum (optionnel)", required: false
+
+    # Seuil de fiabilité : une commune avec moins de transactions que ce seuil
+    # produit des prix médian/moyen très bruités (une vente unique à 1 100 €/m²
+    # ne reflète pas un marché). 5 est un compromis entre fiabilité statistique
+    # et couverture (on exclut surtout les hameaux).
+    RELIABILITY_MIN_TRANSACTIONS = 5
 
     def execute(zone_type:, zone_name: nil, sort_by: nil, min_population: nil)
       scope = resolve_scope(zone_type, zone_name)
@@ -77,8 +97,21 @@ module UrbanAssist
       end
 
       data = records.map { |c| city_payload(c) }
+      payload = { "data" => data }
+
+      # Agrégat de marché pour les requêtes de zone : on fournit au LLM un prix
+      # de référence calculé sur TOUTES les communes fiables de la zone, pas
+      # seulement sur l'échantillon renvoyé dans `data`. Sans ce summary, le
+      # LLM avait tendance à prendre la ville la moins chère de l'échantillon
+      # comme "prix de la région" → résultats aberrants (ex : 1 174 €/m² en
+      # PACA alors que le marché réel est à ~2 500-3 000 €/m²).
+      if %w[department departement region national].include?(zone_type)
+        summary = zone_summary(zone_type, zone_name)
+        payload["summary"] = summary if summary
+      end
+
       Rails.logger.info("[UrbanAssist::CitiesTool] #{data.size} ville(s)")
-      { "data" => data }
+      payload
     end
 
     private
@@ -86,6 +119,9 @@ module UrbanAssist
     def resolve_scope(zone_type, zone_name)
       case zone_type
       when "commune"
+        # Pour une commune demandée explicitement, on n'applique pas le filtre
+        # de fiabilité : si l'utilisateur cite une commune précise, on lui
+        # renvoie ses données telles quelles (à lui de juger).
         return nil if zone_name.blank?
 
         z = zone_name.to_s.strip
@@ -96,20 +132,101 @@ module UrbanAssist
         return nil if zone_name.blank?
 
         code = department_code_for(zone_name)
-        rel = City.where(dep: code).order(Arel.sql("RANDOM()")).limit(15)
-        rel = City.where("unaccent(lower(nom_dep)) = unaccent(lower(?))", zone_name.to_s.strip).order(Arel.sql("RANDOM()")).limit(15) if rel.none?
+        # Tri par transactions DESC (remplace RANDOM()) : on remonte d'abord
+        # les communes représentatives (préfectures, grandes villes) plutôt
+        # que de tirer au hasard des hameaux aux statistiques bruitées.
+        rel = reliable_cities.where(dep: code).order(transactions_last_year: :desc).limit(15)
+        if rel.none?
+          rel = reliable_cities
+            .where("unaccent(lower(nom_dep)) = unaccent(lower(?))", zone_name.to_s.strip)
+            .order(transactions_last_year: :desc)
+            .limit(15)
+        end
         rel
       when "region"
         return nil if zone_name.blank?
 
         z = zone_name.to_s.strip
-        City.where("unaccent(lower(nom_reg)) = unaccent(lower(?))", z)
-            .order(Arel.sql("RANDOM()"))
-            .limit(15)
+        reliable_cities
+          .where("unaccent(lower(nom_reg)) = unaccent(lower(?))", z)
+          .order(transactions_last_year: :desc)
+          .limit(15)
       when "national"
-        City.order(Arel.sql("RANDOM()")).limit(15)
+        reliable_cities.order(transactions_last_year: :desc).limit(15)
       else
         nil
+      end
+    end
+
+    # Scope "fiable" : exclut les communes sans prix médian ou avec trop peu
+    # de transactions l'année passée. Utilisé pour toutes les requêtes hors
+    # commune précise (département/région/national).
+    # NB : `transactions_last_year IS NULL` est aussi exclu via l'opérateur `>=`
+    # (comparaison avec NULL → UNKNOWN en SQL → ligne rejetée).
+    def reliable_cities
+      City
+        .where.not(median_price_sqm: nil)
+        .where("transactions_last_year >= ?", RELIABILITY_MIN_TRANSACTIONS)
+    end
+
+    # Agrégats de marché sur l'ensemble d'une zone (pas seulement l'échantillon
+    # renvoyé dans `data`). Donne au LLM un prix de référence représentatif.
+    #
+    # - median_price_sqm : médiane des median_price_sqm des communes fiables.
+    #   Robuste aux valeurs extrêmes (outliers).
+    # - weighted_avg_price_sqm : moyenne des median_price_sqm pondérée par
+    #   transactions_last_year. Plus proche du "prix du marché réel" car les
+    #   communes à forte activité (grandes villes) pèsent davantage que les
+    #   petites communes.
+    def zone_summary(zone_type, zone_name)
+      relation = full_zone_relation(zone_type, zone_name)
+      return nil if relation.nil?
+
+      reliable = relation
+        .where.not(median_price_sqm: nil)
+        .where("transactions_last_year >= ?", RELIABILITY_MIN_TRANSACTIONS)
+
+      count = reliable.count
+      return nil if count.zero?
+
+      prices = reliable.pluck(:median_price_sqm).compact.sort
+      median = prices.any? ? prices[prices.size / 2].round : nil
+
+      total_tx = reliable.sum(:transactions_last_year).to_i
+      # On calcule la moyenne pondérée en SQL pour éviter de charger toute la
+      # relation en mémoire (régions volumineuses, jusqu'à des milliers de communes).
+      weighted = if total_tx.positive?
+                   sum = reliable.sum(Arel.sql("median_price_sqm * transactions_last_year")).to_f
+                   (sum / total_tx).round
+                 end
+
+      {
+        "zone_type" => zone_type,
+        "zone_name" => zone_name,
+        "reliable_cities_count" => count,
+        "median_price_sqm" => median,
+        "weighted_avg_price_sqm" => weighted
+      }
+    end
+
+    # Périmètre complet d'une zone (non échantillonné, non filtré). Utilisé
+    # pour le calcul du summary — on agrège sur l'ensemble, pas sur l'échantillon.
+    def full_zone_relation(zone_type, zone_name)
+      case zone_type
+      when "department", "departement"
+        return nil if zone_name.blank?
+
+        code = department_code_for(zone_name)
+        rel = City.where(dep: code)
+        return rel if rel.exists?
+
+        City.where("unaccent(lower(nom_dep)) = unaccent(lower(?))", zone_name.to_s.strip)
+      when "region"
+        return nil if zone_name.blank?
+
+        City.where("unaccent(lower(nom_reg)) = unaccent(lower(?))", zone_name.to_s.strip)
+      when "national"
+        City.all
       end
     end
 
@@ -148,7 +265,10 @@ module UrbanAssist
         "avg_rent_sqm" => c.avg_rent_sqm&.round(2),
         "rent_quality" => c.rent_quality&.round(2),
         "nb_obs_commune" => c.nb_obs_commune&.round,
-        "population" => c.population,
+        "population" => c.population
+        # `population_density` retiré : la colonne n'existe pas dans le schéma
+        # `cities` (voir db/schema.rb). Appeler `c.population_density` levait
+        # un NoMethodError qui remontait en "erreur technique" côté UI.
       }
     end
 

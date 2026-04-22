@@ -209,6 +209,33 @@
   }
 }
 
+// ─── Dropdown générique (étape 1 : filtre région) ────────────────────────
+// Même gabarit que .wizard-text-input pour rester cohérent visuellement.
+// appearance: none + chevron SVG permettent un rendu uniforme cross-browser.
+
+.wizard-select {
+  width: 100%;
+  padding: 14px 40px 14px 18px;
+  border: 2px solid var(--gray-300);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: "Poppins", sans-serif;
+  color: var(--gray-800);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")
+    no-repeat right 16px center,
+    var(--white-soft);
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--green-primary);
+    background-color: var(--white-main);
+  }
+}
+
 // ─── Filtres géographiques (étape 1) ─────────────────────────────────────
 
 .wizard-geo-group {

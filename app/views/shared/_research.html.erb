@@ -82,8 +82,24 @@
   },
   {
     key: 'sunshine',
-    title: 'Villes ensoleillées',
+    title: 'Ville ensoleillée',
     color: '#FFCA28',  
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Itaque earum rerum hic tenetur a sapiente delectus ut aut reiciendis ' \
+                 'voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.'
+  },
+  {
+    key: 'job_market',
+    title: 'Ville d\'emploi',
+    color: '#B3E5FC',  
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
+                 'Itaque earum rerum hic tenetur a sapiente delectus ut aut reiciendis ' \
+                 'voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.'
+  },
+  {
+    key: 'near_big_city',
+    title: 'Proche d\'une métropole',
+    color: '#FF8A65',
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ' \
                  'Itaque earum rerum hic tenetur a sapiente delectus ut aut reiciendis ' \
                  'voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.'
@@ -219,58 +235,77 @@
         %>
         <%= f.range_field :density,
               min: 0,
-              max: 2_000_000,
+              max: 250_000,
               step: 5_000,
               value: research.density || 0,
               class: 'population-slider',
               data: { action: 'input->research-form#updatePopulation' } %>
         <div class="population-slider-extremes">
           <span>Toutes tailles</span>
-          <span>2 000 000 hab.</span>
+          <span>250 000 hab.</span>
         </div>
       </div>
-    </div>
-    <%# ═══════════════════════════════════════════════════════
+      <div class="wizard-field-group">
+        <label for="research_region" class="wizard-field-label">
+          <i class="fas fa-map wizard-field-icon" aria-hidden="true"></i>
+          Région souhaitée
+        </label>
+        <p class="wizard-field-hint">Vous concentrer sur une région favorise les villes qui s'y trouvent.</p>
+        <select id="research_region"
+                name="research[region]"
+                class="wizard-select">
+          <option value="">Toute la France</option>
+          <% @regions.each do |region| %>
+            <option value="<%= region %>"
+                    <%= 'selected' if @research.region == region %>>
+              <%= region %>
+            </option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+      <%# ═══════════════════════════════════════════════════════
         C) CRITÈRES DE SÉLECTION
         ═══════════════════════════════════════════════════════ %>
-    <div class="research-section-block">
-      <p class="research-section-label">Critères de sélection</p>
-      <p class="research-section-hint">
-        Répartissez vos critères selon leur importance pour vous.
-        <strong>Maximum 3 critères par niveau.</strong>
-        Cocher un critère le retire de la grille et crée un tag de résumé ci-dessous.
-        Pour le retirer, cliquez le <strong>×</strong> sur son tag.
-      </p>
-      <%#
+      <div class="research-section-block">
+        <p class="research-section-label">Critères de sélection</p>
+        <p class="research-section-hint">
+          Répartissez vos critères selon leur importance pour vous.
+          <strong>Maximum 3 critères par niveau.</strong>
+          Cocher un critère le retire de la grille et crée un tag de résumé ci-dessous.
+          Pour le retirer, cliquez le <strong>×</strong> sur son tag.
+        </p>
+        <%#
         On itère sur les 3 sous-sections.
         Chaque sous-section affiche la MÊME grille de 7 cartes,
         mais l'état de sélection est indépendant par section (géré par Stimulus).
       %>
-      <% sections.each do |section| %>
-        <%#
+        <% sections.each do |section| %>
+          <%#
           data-section-key est utilisé par animateLimitReached() dans le contrôleur
           pour cibler la sous-section qui doit s'animer quand la limite est atteinte.
         %>
-        <div class="criteria-subsection"
+          <div class="criteria-subsection"
              data-section-key="<%= section[:key] %>">
-          <div class="criteria-subsection-title">
-            <span><%= section[:icon] %></span>
-            <span><%= section[:label] %></span>
-          </div>
-          <%# Grille des cartes disponibles (non encore sélectionnées) %>
-          <div class="criterion-cards-grid">
-            <% criteria.each do |criterion| %>
-              <%#
+            <div class="criteria-subsection-title">
+              <span><%= section[:icon] %></span>
+              <span><%= section[:label] %></span>
+            </div>
+            <%# Grille des cartes disponibles (non encore sélectionnées) %>
+            <div class="criterion-cards-grid">
+              <% criteria.each do |criterion| %>
+                <%#
                 On passe le critère ET la section au partial.
                 Chaque combinaison (critère × section) génère une instance distincte.
                 Le target "card" sur chaque div permet à Stimulus de les retrouver toutes.
               %>
-              <%= render 'shared/criterion_card',
+                <%= render 'shared/criterion_card',
                     criterion: criterion,
-                    section:   section[:key] %>
-            <% end %>
-          </div>
-          <%#
+                    section:   section[:key],
+                    research:  research %>
+              <% end %>
+            </div>
+            <%#
             Résumé de la sous-section : affiche le nombre de critères sélectionnés
             et les tags correspondants. Tout le contenu des tags-list est injecté
             dynamiquement par le contrôleur Stimulus (updateTagsLists).
@@ -279,19 +314,19 @@
               "essentialCount", "importantCount", "bonusCount"
               "essentialTagsList", "importantTagsList", "bonusTagsList"
           %>
-          <div class="criteria-summary">
-            <span class="criteria-summary-label">
-              <%= section[:summary_label] %>
-              (<span data-research-form-target="<%= section[:key] %>Count">0</span>/3)
-            </span>
-            <div class="criteria-tags-list"
+            <div class="criteria-summary">
+              <span class="criteria-summary-label">
+                <%= section[:summary_label] %>
+                (<span data-research-form-target="<%= section[:key] %>Count">0</span>/3)
+              </span>
+              <div class="criteria-tags-list"
                  data-research-form-target="<%= section[:key] %>TagsList">
+              </div>
             </div>
           </div>
-        </div>
-      <% end %>
-    </div>
-    <%#
+        <% end %>
+      </div>
+      <%#
       Champs cachés pour les critères de sélection.
       Chaque champ est initialisé à 0 (critère non choisi) par défaut.
       Le contrôleur Stimulus (updateCriterionFields) met à jour ces valeurs
@@ -299,18 +334,18 @@
         essentiel = 3 | important = 2 | bonus = 1 | non choisi = 0
       data-criterion-field permet à Stimulus de retrouver le bon champ par clé.
     %>
-    <%#
+      <%#
       En mode édition, on injecte la valeur sauvegardée (3/2/1/0) dans chaque
       champ caché. Le contrôleur Stimulus lira ces valeurs au connect() pour
       reconstruire l'état visuel des cartes de critères.
       .to_i garantit 0 si la valeur est nil (nouveau formulaire sans défaut BDD).
     %>
-    <% criteria.each do |criterion| %>
-      <%= f.hidden_field criterion[:key].to_sym,
+      <% criteria.each do |criterion| %>
+        <%= f.hidden_field criterion[:key].to_sym,
             value: research.send(criterion[:key]).to_i,
             data: { criterion_field: criterion[:key] } %>
-    <% end %>
-    <%#
+      <% end %>
+      <%#
       Champ caché pour les niveaux scolaires du critère Éducation.
       Placé ICI (une seule fois dans le formulaire) plutôt que dans le partial
       _criterion_card, car ce partial est rendu 3 fois (une par section), ce qui
@@ -319,17 +354,17 @@
       Le contrôleur Stimulus (updateEducationHiddenField) cible ce champ via
       data-research-form-target="educationHiddenField" et le remplit au format JSON.
     %>
-    <%#
+      <%#
       En mode édition, on sérialise le tableau PostgreSQL en JSON pour que le
       contrôleur Stimulus puisse le lire et reconstruire les tags d'éducation.
       Pour un nouvel enregistrement, education_levels vaut [] → JSON donne '[]'.
     %>
-    <%= f.hidden_field :education_levels,
+      <%= f.hidden_field :education_levels,
           value: (research.education_levels || []).to_json,
           data: { research_form_target: 'educationHiddenField' } %>
-    <div class="research-submit-wrapper">
-      <%= f.submit(research.new_record? ? 'Lancer ma recherche →' : 'Mettre à jour →',
+      <div class="research-submit-wrapper">
+        <%= f.submit(research.new_record? ? 'Lancer ma recherche →' : 'Mettre à jour →',
                    class: 'btn-research-submit') %>
-    </div>
-  <% end %>
-</div>
+      </div>
+    <% end %>
+  </div>

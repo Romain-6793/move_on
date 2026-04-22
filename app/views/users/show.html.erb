@@ -18,13 +18,9 @@
     <%# Contenu de l'onglet "Mon profil" %>
     <section class="profile-content-section">
 
-      <%# Affichage des messages flash (succès, erreur) %>
-      <% flash.each do |type, message| %>
-        <div class="alert alert-<%= type == 'notice' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
-          <%= message %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-        </div>
-      <% end %>
+      <%# Les flash messages sont rendus globalement par le layout application.html.erb
+          via le partial shared/_flashes — inutile (et source de doublons) de les
+          afficher une seconde fois ici. %>
 
       <h2 class="profile-section-title">Mes recherches</h2>
 

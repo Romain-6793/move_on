@@ -6,9 +6,17 @@
   <%# ── MODE AFFICHAGE (visible par défaut) ───────────────────────────────── %>
   <div data-profile-target="displayMode">
 
-    <%# Avatar circulaire placeholder — à remplacer par Active Storage si upload ajouté plus tard %>
+    <%# Avatar : on affiche la photo uploadée si elle existe, sinon l'icône placeholder.
+        On utilise l'URL directe (sans variant) pour éviter toute dépendance à libvips/ImageMagick.
+        Le recadrage circulaire est géré par CSS (object-fit: cover). %>
     <div class="profile-avatar">
-      <i class="fa-solid fa-user"></i>
+      <% if current_user.avatar.attached? %>
+        <%= image_tag url_for(current_user.avatar),
+                      alt: "Photo de profil de #{current_user.firstname}",
+                      class: "profile-avatar-img" %>
+      <% else %>
+        <i class="fa-solid fa-user"></i>
+      <% end %>
     </div>
 
     <h2 class="profile-username">
@@ -59,13 +67,37 @@
   <%# form_with model: current_user génère les champs avec le nommage user[champ]
       et déduit automatiquement la méthode PATCH (l'objet est déjà persisté en base).
       On surcharge l'URL car notre route est /users/:id/profile et non /users/:id. %>
+  <%# multipart: true est obligatoire pour que Rails transmette le fichier binaire (upload).
+      Sans cela, le fichier serait ignoré silencieusement. %>
   <%= form_with model: current_user,
                 url: profile_user_path(current_user),
+                multipart: true,
                 data: { profile_target: "editMode" },
                 class: "d-none" do |f| %>
 
-    <div class="profile-avatar">
-      <i class="fa-solid fa-user"></i>
+    <%# Aperçu de l'avatar en mode édition + label cliquable pour déclencher l'input file %>
+    <div class="profile-avatar-edit">
+      <div class="profile-avatar" id="avatar-preview-wrapper">
+        <% if current_user.avatar.attached? %>
+          <%= image_tag url_for(current_user.avatar),
+                        alt: "Photo de profil",
+                        class: "profile-avatar-img",
+                        id: "avatar-preview" %>
+        <% else %>
+          <i class="fa-solid fa-user" id="avatar-preview-icon"></i>
+        <% end %>
+      </div>
+      <%# Le label est un bouton visuel qui ouvre le sélecteur de fichier via "for" %>
+      <label for="avatar-file-input" class="btn profile-btn-avatar">
+        <i class="fa-solid fa-camera"></i> Changer la photo
+      </label>
+      <%# L'input file est caché — on le déclenche via le label ci-dessus.
+          data-action appelle previewAvatar() dans le Stimulus controller pour aperçu instantané. %>
+      <%= f.file_field :avatar,
+                       id: "avatar-file-input",
+                       accept: "image/jpeg,image/png,image/webp,image/gif",
+                       class: "d-none",
+                       data: { action: "change->profile#previewAvatar" } %>
     </div>
 
     <div class="mb-3">

@@ -69,6 +69,21 @@ module UrbanAssist
       - Si la demande est floue, fais l'interprétation la plus logique sans poser trop de questions.
       - Ne propose pas de location.
 
+      PRIX DE RÉFÉRENCE POUR UNE ZONE (département / région / national)
+      - Quand la question porte sur une zone entière (et non sur une commune précise),
+        la réponse du tool contient un objet "summary" avec :
+          • summary.weighted_avg_price_sqm : moyenne pondérée par les transactions
+            (à utiliser en priorité comme "prix du marché" de la zone)
+          • summary.median_price_sqm : médiane des médianes des communes fiables
+        Utilise `weighted_avg_price_sqm` (ou à défaut `median_price_sqm`) comme
+        prix de référence pour tes calculs de budget → surface.
+      - ❌ NE PRENDS JAMAIS la commune la moins chère de "data" comme prix de
+        référence d'une zone : c'est une valeur extrême non représentative.
+      - Les communes listées dans "data" servent d'exemples illustratifs, pas
+        de base de calcul pour l'ensemble de la zone.
+      - Pour une commune précise (zone_type = "commune"), il n'y a pas de
+        summary : utilise directement median_price_sqm de la commune.
+
       IMPORTANT - FORMAT DE RÉPONSE:
       - Utilise des titres clairs
       - Liste les communes avec le format exact :
@@ -77,6 +92,18 @@ module UrbanAssist
       - Utilise une structure claire
       - Pour la vente:
        - donner des informations sur l'estimation du prix dans cette commune uniquement
+
+      MISE EN VALEUR DES INFORMATIONS CLÉS (markdown gras)
+      - Encadre TOUJOURS avec `**...**` les informations essentielles que
+        l'utilisateur doit retenir en priorité, notamment :
+          • les prix au m² (ex : `**2 450 €/m²**`)
+          • les surfaces et budgets (ex : `**60 m²**`, `**150 000 €**`)
+          • les noms de commune / département / région cités en conclusion
+          • les estimations chiffrées (prix de vente total, etc.)
+      - Objectif : permettre à l'utilisateur de repérer d'un coup d'œil les
+        chiffres et lieux importants sans relire tout le paragraphe.
+      - Ne mets PAS en gras des mots de liaison, des verbes, ou des phrases
+        entières : réserve le gras aux données factuelles clés.
 
       Exemple de réponse attendue :
           "Voici les communes recommandées dans le Doubs :

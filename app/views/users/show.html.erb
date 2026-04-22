@@ -12,19 +12,14 @@
     <nav class="profile-tabs" aria-label="Navigation du profil">
       <a href="#" class="profile-tab profile-tab--active">Mon profil</a>
       <a href="<%= new_research_wizard_path %>" class="profile-tab">Nouvelle recherche</a>
-      <a href="<%= maps_path %>" class="profile-tab">Trouver sur la carte</a>
     </nav>
 
     <%# Contenu de l'onglet "Mon profil" %>
     <section class="profile-content-section">
 
-      <%# Affichage des messages flash (succès, erreur) %>
-      <% flash.each do |type, message| %>
-        <div class="alert alert-<%= type == 'notice' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
-          <%= message %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-        </div>
-      <% end %>
+      <%# Les flash messages sont rendus globalement par le layout application.html.erb
+          via le partial shared/_flashes — inutile (et source de doublons) de les
+          afficher une seconde fois ici. %>
 
       <h2 class="profile-section-title">Mes recherches</h2>
 

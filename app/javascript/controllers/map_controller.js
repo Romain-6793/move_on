@@ -15,7 +15,29 @@ export default class extends Controller {
     dataUrl: String, // URL de l'endpoint GeoJSON (passée via data-map-data-url-value)
     geolocate: Boolean,
     // cityName permet d'afficher le nom dans le popup du marqueur de ville unique (vue show)
-    cityName: String
+    cityName: String,
+    // pois : features GeoJSON pré-filtrés passés en inline par maps#show.
+    // Quand ce tableau est non vide, on n'appelle PAS loadMapData() (pas de fetch vers /maps.json)
+    // et on affiche uniquement ces POIs — vue centrée sur une ville spécifique.
+    pois: { type: Array, default: [] },
+    // essentialKinds : les 3 critères essentiels du user (ex: ["transport", "health", "culture"]).
+    // Chaque kind donne lieu à une pastille colorée autour du centre-ville (voir addEssentialDots).
+    // Permet au user de voir immédiatement ses critères sur la carte, même si la BD
+    // ne contient pas (encore) de POIs pour tous les kinds.
+    essentialKinds: { type: Array, default: [] }
+  }
+
+  // ── Labels FR par kind — affichés au survol des pastilles essentielles ────
+  // Cohérents avec maps/show.html.erb (même table). Centralisés ici pour éviter
+  // la duplication côté JS.
+  static POI_LABELS = {
+    sport: "Sports et loisirs",
+    culture: "Culture et patrimoine",
+    nature: "Nature",
+    commerce: "Vie commerciale",
+    transport: "Transports",
+    education: "Éducation",
+    health: "Santé"
   }
 
   // ── Couleurs par kind de POI — cohérentes avec la palette Move On ──────────
@@ -67,7 +89,21 @@ export default class extends Controller {
       // Si une ville précise est ciblée (vue show), on pose un marqueur à ses coordonnées.
       if (this.cityNameValue) this.addCityMarker()
 
-      this.loadMapData()
+      // Pastilles des critères essentiels — matérialisent les 3 critères "must-have"
+      // du user directement sur la carte, quel que soit l'état des données POI.
+      if (this.essentialKindsValue.length > 0) this.addEssentialDots()
+
+      if (this.poisValue.length > 0) {
+        // Vue show : les POIs ont été pré-filtrés et sérialisés côté serveur (maps#show).
+        // On les affiche directement sans appel réseau supplémentaire.
+        // On construit une FeatureCollection GeoJSON valide à partir du tableau de features.
+        this.addPoisLayer({ type: "FeatureCollection", features: this.poisValue })
+      } else if (this.dataUrlValue) {
+        // Vue index : chargement de l'ensemble des villes + POIs depuis l'endpoint /maps.json.
+        this.loadMapData()
+      }
+      // Si aucune des deux conditions n'est vraie (pas de POIs ET pas de dataUrl),
+      // la carte affiche uniquement le marqueur de la ville sans couche de données.
     })
   }
 
@@ -102,6 +138,52 @@ export default class extends Controller {
       .setLngLat([this.lngValue, this.latValue])
       .setPopup(popup)
       .addTo(this.map)
+  }
+
+  // ── Pastilles des critères essentiels (vue show uniquement) ───────────────
+  //
+  // Pourquoi cette méthode ?
+  // Les POIs (voir addPoisLayer) affichent les équipements réels — mais la base
+  // ne contient aujourd'hui que les kinds "culture" et "sport". Si le user a choisi
+  // "santé" ou "transport" comme critère essentiel, aucun point ne s'afficherait.
+  // Ces pastilles garantissent que les 3 critères essentiels sont TOUJOURS visibles
+  // sur la carte, sous forme de repères colorés autour du centre-ville.
+  //
+  // Implémentation : des mapboxgl.Marker avec élément DOM custom. On accepte le
+  // surcoût DOM car on a au plus 3 pastilles (contrairement aux layers WebGL
+  // utilisés pour les POIs qui peuvent se compter en milliers).
+  addEssentialDots() {
+    const kinds = this.essentialKindsValue
+    // Distribution en cercle autour du centre-ville : chaque kind est placé à
+    // angle régulier (360° / nombre de kinds). Le rayon est petit (~0.004°)
+    // pour que les pastilles restent visibles au zoom 13 sans masquer la ville.
+    const radius = 0.004
+    const center = { lng: this.lngValue, lat: this.latValue }
+
+    kinds.forEach((kind, index) => {
+      // -Math.PI/2 place la première pastille en haut (12h), sens horaire
+      const angle = (index / kinds.length) * 2 * Math.PI - Math.PI / 2
+      // Correction de la longitude par cos(lat) pour éviter que le cercle
+      // soit écrasé aux latitudes élevées (projection Web Mercator).
+      const lng   = center.lng + (radius * Math.cos(angle)) / Math.cos(center.lat * Math.PI / 180)
+      const lat   = center.lat + radius * Math.sin(angle)
+
+      const color = this.constructor.POI_COLORS[kind] || "#757575"
+      const label = this.constructor.POI_LABELS[kind] || kind
+
+      const el = document.createElement("div")
+      el.className = "essential-dot"
+      // title : tooltip natif du navigateur au survol — gratuit et accessible.
+      el.title = label
+      el.innerHTML = `
+        <span class="essential-dot__circle" style="background:${color}"></span>
+        <span class="essential-dot__label" style="border-color:${color}">${label}</span>
+      `
+
+      new mapboxgl.Marker({ element: el, anchor: "center" })
+        .setLngLat([lng, lat])
+        .addTo(this.map)
+    })
   }
 
   // ── Layer VILLES ──────────────────────────────────────────────────────────

@@ -35,6 +35,12 @@ class ResearchPolicy < ApplicationPolicy
     show?
   end
 
+  # La carte des résultats expose les mêmes 5 villes que la page show →
+  # seul le propriétaire peut y accéder.
+  def results?
+    show?
+  end
+
 
   class Scope < ApplicationPolicy::Scope
     # NOTE: Be explicit about which records you allow access to!

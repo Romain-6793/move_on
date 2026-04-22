@@ -47,5 +47,8 @@
     <%# Footer commun à toutes les pages %>
     <%= render "shared/footer" %>
     <%= render "shared/chatbot_widget" %>
+    <%# Modale de confirmation Move On — remplace le window.confirm natif du navigateur.
+        Placée ici pour être disponible sur toutes les pages sans duplication. %>
+    <%= render "shared/confirm_delete_modal" %>
   </body>
 </html>

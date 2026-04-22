@@ -1,37 +1,31 @@
 <% content_for :head do %>
-  <%# Turbo Drive injecte les scripts <head> dynamiquement lors des navigations,
-      ce qui crée une race condition : Stimulus se connecte avant que mapboxgl soit chargé.
-      "reload" force un rechargement complet de la page, garantissant l'ordre d'exécution
-      synchrone : Mapbox se charge avant que le module Stimulus ne s'initialise. %>
+  <%# Même stratégie que maps/index.html.erb : reload complet pour éviter la race condition
+      entre le script Mapbox (CDN synchrone) et l'initialisation Stimulus. %>
   <meta name="turbo-visit-control" content="reload">
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.css" rel="stylesheet" />
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.js"></script>
 <% end %>
+
 <div class="map-page">
   <div class="map-page__sidebar">
-    <h1 class="map-page__title">Trouver sur la carte</h1>
+    <h1 class="map-page__title"><%= @city.nom_com %></h1>
     <p class="map-page__description">
-      Voici la ville que vous cherchez
+      <%= [@city.nom_dep, @city.nom_reg].compact.join(" · ") %>
     </p>
-    <%# Légende des layers ─────────────────────────────────────────────────── %>
-    <div class="map-legend">
-      <h2 class="map-legend__title">Légende</h2>
-      <section class="map-legend__section">
-        <h3 class="map-legend__subtitle">Points d'intérêt</h3>
-        <ul class="map-legend__list">
-          <li><span class="map-legend__dot" style="background:#8D6E63"></span> Equipements de loisirs</li>
-          <li><span class="map-legend__dot" style="background:#2E9EAD"></span> Qualité des transports</li>
-          <li><span class="map-legend__dot" style="background:#9575CD"></span> Culture et patrimoine</li>
-          <li><span class="map-legend__dot" style="background:#0288D1"></span> Éducation</li>
-          <li><span class="map-legend__dot" style="background:#F48FB1"></span> Santé</li>
-          <li><span class="map-legend__dot" style="background:#FFB74D"></span> Vie Commerciale</li>
-          <li><span class="map-legend__dot" style="background:#E57373"></span> Sports et loisirs</li>
-        </ul>
-      </section>
-    </div>
+
+    <%# Lien retour — history.back() permet de revenir à la page précédente (résultats ou carte résultats) %>
+    <a href="javascript:history.back()" class="map-page__back-link">
+      ← Retour
+    </a>
   </div>
-  <%# data-map-data-url-value : URL de l'endpoint JSON, construite par Rails pour éviter tout hardcoding.
-      Le Stimulus controller la lit via this.dataUrlValue et y fait un fetch(). %>
+
+  <%#
+    Conteneur Mapbox — piloté par map_controller.js.
+
+    Choix produit : on n'affiche plus les pastilles des critères essentiels autour de
+    la ville ni la légende associée — la carte reste visuellement épurée et ne montre
+    que le marqueur de la ville ciblée.
+  %>
   <div
     id="map"
     class="map-page__map"
@@ -39,9 +33,8 @@
     data-map-token-value="<%= ENV.fetch('MAPBOX_API_KEY', '') %>"
     data-map-lat-value="<%= @city.latitude %>"
     data-map-lng-value="<%= @city.longitude %>"
-    data-map-zoom-value="12"
+    data-map-zoom-value="13"
     data-map-city-name-value="<%= @city.nom_com %>"
-    data-map-data-url-value="<%= maps_path(format: :json) %>"
     data-map-geolocate-value="false"
   ></div>
 </div>

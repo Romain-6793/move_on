@@ -1,12 +1,23 @@
-<% if notice %>
-  <div class="alert alert-info alert-dismissible fade show m-1" role="alert">
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    <%= notice %>
-  </div>
-<% end %>
+<%# Flash messages : auto-fermeture via le controller Stimulus `flash`. %>
+<%# On n'affiche qu'un seul flash à la fois : les deux étaient positionnés en %>
+<%# fixed/bottom/right et se superposaient visuellement quand `notice` et %>
+<%# `alert` étaient définis simultanément (cas Devise notamment). %>
+<%# Priorité à `alert` car une erreur/avertissement est plus critique %>
+<%# à porter à l'attention de l'utilisateur qu'un simple message de succès. %>
 <% if alert %>
-  <div class="alert alert-warning alert-dismissible fade show m-1" role="alert">
+  <div class="alert alert-warning alert-dismissible fade show m-1"
+       role="alert"
+       data-controller="flash"
+       data-flash-delay-value="2500">
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     <%= alert %>
+  </div>
+<% elsif notice %>
+  <div class="alert alert-info alert-dismissible fade show m-1"
+       role="alert"
+       data-controller="flash"
+       data-flash-delay-value="1500">
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <%= notice %>
   </div>
 <% end %>

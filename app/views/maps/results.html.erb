@@ -1,0 +1,114 @@
+<%#
+  Vue carte des 5 villes de résultats.
+  Rendue depuis maps#results, accessible via le bouton "Afficher sur la carte"
+  dans l'en-tête de la page de résultats (researches/show ou guest_searches/results).
+%>
+<% content_for :head do %>
+  <%# Même stratégie de chargement que maps/index.html.erb :
+      turbo-visit-control=reload force un rechargement complet pour éviter
+      la race condition entre le script Mapbox et l'initialisation Stimulus. %>
+  <meta name="turbo-visit-control" content="reload">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.css" rel="stylesheet" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.js"></script>
+<% end %>
+
+<%#
+  Labels et couleurs des kinds de POI — cohérents avec map_controller.js et la palette Move On.
+  Définis ici car c'est une donnée purement présentationnelle (légende sidebar).
+%>
+<% poi_kind_labels = {
+     "transport" => "Transports",
+     "culture"   => "Culture et patrimoine",
+     "health"    => "Santé",
+     "commerce"  => "Vie commerciale",
+     "sport"     => "Sports et loisirs",
+     "education" => "Éducation",
+     "nature"    => "Nature"
+   }
+   poi_kind_colors = {
+     "sport"      => "#7CB342",
+     "culture"    => "#4FC3F7",
+     "nature"     => "#558B2F",
+     "commerce"   => "#FFCA28",
+     "transport"  => "#0288D1",
+     "education"  => "#8D6E63",
+     "health"     => "#2E9EAD"
+   }
+   %>
+
+<%#
+  Couleurs par rang de ville — cohérentes avec RANK_COLORS de results_map_controller.js.
+  Ordre : #1 (meilleur) → #5. On duplique ici côté vue car Rails n'a pas
+  directement accès à la constante JS ; tout écart serait visuellement flagrant
+  (la pastille sidebar doit correspondre au marqueur carte).
+%>
+<% rank_colors = ["#558B2F", "#2E9EAD", "#0288D1", "#FFB74D", "#E57373"] %>
+
+<div class="map-page">
+  <%# ── Sidebar ─────────────────────────────────────────────────────────── %>
+  <div class="map-page__sidebar">
+    <h1 class="map-page__title">Vos 5 meilleures villes</h1>
+    <p class="map-page__description"><%= @search_name %></p>
+
+    <%# Liste cliquable des 5 villes – chaque lien ouvre la carte POI de la ville %>
+    <div class="map-results-list">
+      <% @ranked_cities.each_with_index do |city, i| %>
+        <% rank = i + 1 %>
+        <%# Couleur identique au marqueur de la carte pour ce rang %>
+        <% rank_color = rank_colors[rank - 1] || "#757575" %>
+        <%# On passe les kinds sélectionnés pour que la carte show filtre les POIs %>
+        <% city_map_path = @poi_kinds.any? ? map_path(city.id, kinds: @poi_kinds.join(",")) : map_path(city.id) %>
+        <a href="<%= city_map_path %>" class="map-results-item">
+          <span class="map-results-item__rank" style="background: <%= rank_color %>"><%= rank %></span>
+          <div class="map-results-item__info">
+            <span class="map-results-item__name"><%= city.nom_com %></span>
+            <span class="map-results-item__location">
+              <%= [city.nom_dep, city.nom_reg].compact.join(" · ") %>
+            </span>
+          </div>
+          <%# Chevron SVG inline — pas de dépendance à Font Awesome ici %>
+          <svg class="map-results-item__arrow" width="14" height="14" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </a>
+      <% end %>
+    </div>
+
+    <%# Légende des POI — uniquement si des critères essentiels ont été sélectionnés %>
+    <% if @poi_kinds.any? %>
+      <div class="map-legend">
+        <h2 class="map-legend__title">Points d'intérêt</h2>
+        <section class="map-legend__section">
+          <p class="map-legend__note">
+            Cliquez sur une ville pour voir ses points d'intérêt essentiels.
+          </p>
+          <ul class="map-legend__list">
+            <% @poi_kinds.each do |kind| %>
+              <li>
+                <span class="map-legend__dot" style="background:<%= poi_kind_colors[kind] %>"></span>
+                <%= poi_kind_labels[kind] || kind.capitalize %>
+              </li>
+            <% end %>
+          </ul>
+        </section>
+      </div>
+    <% end %>
+  </div>
+
+  <%#
+    Conteneur Mapbox — piloté par results_map_controller.js.
+    Les données des 5 villes sont passées en inline JSON via data-results-map-cities-value
+    pour éviter un appel réseau supplémentaire (les villes sont déjà calculées côté serveur).
+    data-results-map-poi-kinds-value : kinds sélectionnés, utilisés pour construire
+    les liens vers la vue show avec le bon filtre ?kinds=…
+  %>
+  <div
+    id="map"
+    class="map-page__map"
+    data-controller="results-map"
+    data-results-map-token-value="<%= ENV.fetch('MAPBOX_API_KEY', '') %>"
+    data-results-map-cities-value="<%= @cities_data.to_json %>"
+    data-results-map-poi-kinds-value="<%= @poi_kinds.to_json %>"
+  ></div>
+</div>

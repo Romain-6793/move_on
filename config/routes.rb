@@ -47,7 +47,13 @@ end
       get 'export_pdf'
     end
   end
-  resources :maps, only: [:index, :show]
+  resources :maps, only: [:index, :show] do
+    # Route collection : /maps/results – affiche les 5 villes d'une recherche sur la carte.
+    # Doit être une collection (pas un member) pour ne pas être confondue avec /maps/:id.
+    collection do
+      get 'results'
+    end
+  end
   resources :guest_searches, only: [:new, :create] do
     get 'results', on: :collection, to: 'guest_searches#results'
   end

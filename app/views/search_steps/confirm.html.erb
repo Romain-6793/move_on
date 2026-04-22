@@ -38,11 +38,11 @@
 %>
   <% density_label = @research.density.to_i == 0 ? 'Toutes tailles' : "#{number_with_delimiter(@research.density, delimiter: "\u202f")} hab. minimum" %>
   <div class="search-wizard-page search-background map-background">
-    <%= render 'progress_bar',
+    <div class="wizard-card wizard-card--confirm">
+      <%= render 'progress_bar',
         current_step: 4,
         total_steps:  4,
         step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
-    <div class="wizard-card wizard-card--confirm">
       <div class="wizard-card-header">
         <h1 class="wizard-card-title">
           <i class="fas fa-clipboard-check wizard-title-icon" aria-hidden="true"></i>

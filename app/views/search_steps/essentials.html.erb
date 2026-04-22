@@ -28,13 +28,13 @@
   { key: 'education',           title: 'Éducation',               icon: 'fa-graduation-cap',  color: '#0288D1' },
 ] %>
 <div class="search-wizard-page search-background map-background">
-  <%= render 'progress_bar',
-        current_step: 2,
-        total_steps:  4,
-        step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
   <div class="wizard-card"
        data-controller="wizard-essentials"
        data-wizard-essentials-limit-value="3">
+    <%= render 'progress_bar',
+        current_step: 2,
+        total_steps:  4,
+        step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
     <div class="wizard-card-header">
       <h1 class="wizard-card-title">
         <i class="fas fa-star wizard-title-icon" aria-hidden="true"></i>

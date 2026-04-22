@@ -24,16 +24,33 @@
          hidden>
       <div class="chatbot-widget__header">
         <h2 id="chatbot-title" class="chatbot-widget__title">Assistant immobilier</h2>
-        <button type="button" id="chatbot-close" class="chatbot-widget__close" aria-label="Fermer le chat">
-          &times;
-        </button>
+        <%# Groupe d'actions à droite du titre : effacer + fermer.
+            Le bouton "effacer" est hidden par défaut et n'apparaît que lorsque
+            la conversation contient au moins une bulle (géré côté JS). %>
+        <div class="chatbot-widget__header-actions">
+          <button type="button"
+                  id="chatbot-clear"
+                  class="chatbot-widget__clear"
+                  title="Effacer la conversation"
+                  aria-label="Effacer la conversation et recommencer"
+                  hidden>
+            Effacer
+          </button>
+          <button type="button" id="chatbot-close" class="chatbot-widget__close" aria-label="Fermer le chat">
+            &times;
+          </button>
+        </div>
       </div>
       <div id="chatbot-messages" class="chatbot-widget__messages" aria-live="polite"></div>
       <form id="chatbot-form" class="chatbot-widget__form">
         <label for="chatbot-input" class="visually-hidden">Votre message</label>
+        <%# rows=1 : le textarea démarre sur une seule ligne pour un rendu
+            compact. Il s'agrandit automatiquement au fil de la saisie (gestion
+            côté JS : `autoGrowInput`), plafonné à une hauteur max pour ne pas
+            envahir le panneau. %>
         <textarea id="chatbot-input"
                   class="chatbot-widget__input"
-                  rows="2"
+                  rows="1"
                   placeholder="Posez votre question…"
                   autocomplete="off"></textarea>
         <button type="submit" class="chatbot-widget__send">Envoyer</button>

@@ -33,6 +33,43 @@
   margin: 0 auto 16px;
   font-size: 32px;
   color: var(--gray-600);
+  // overflow hidden pour que l'image respecte le border-radius
+  overflow: hidden;
+}
+
+// Image réelle quand un avatar est uploadé
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; // recadre l'image sans la déformer
+}
+
+// Zone upload en mode édition : avatar + bouton empilés
+.profile-avatar-edit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+// Bouton "Changer la photo" — discret, secondaire
+.profile-btn-avatar {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  background-color: transparent;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:hover {
+    background-color: var(--gray-100);
+    color: var(--gray-800);
+    border-color: var(--gray-600);
+  }
 }
 
 .profile-username {

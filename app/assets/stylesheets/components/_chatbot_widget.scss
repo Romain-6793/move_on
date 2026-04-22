@@ -63,6 +63,14 @@
   color: var(--gray-800);
 }
 
+// Groupe "actions" à droite du titre (effacer + fermer).
+// Flexbox simple pour aligner les boutons avec un petit espacement.
+.chatbot-widget__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .chatbot-widget__close {
   border: none;
   background: transparent;
@@ -74,6 +82,32 @@
 
   &:hover {
     color: var(--gray-800);
+  }
+}
+
+// Bouton "effacer la conversation" : libellé textuel explicite pour lever
+// toute ambiguïté. Style volontairement discret (petit, gris) pour ne pas
+// inciter au clic accidentel ; hover rouge doux pour signaler le côté destructif.
+.chatbot-widget__clear {
+  border: 1px solid var(--gray-300);
+  background: transparent;
+  cursor: pointer;
+  color: var(--gray-700);
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 6px;
+  line-height: 1.2;
+
+  &:hover {
+    color: var(--red-soft);
+    border-color: var(--red-soft);
+    background: var(--gray-100);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--blue-soft);
+    outline-offset: 1px;
   }
 }
 
@@ -122,14 +156,125 @@
     a {
       color: var(--blue-dark);
     }
+
+    // Mise en valeur des informations clés retournées par le LLM : le prompt
+    // lui demande d'encadrer prix, surfaces, budgets et communes avec `**...**`,
+    // Redcarpet convertit ça en <strong>. On renforce visuellement avec un
+    // poids 700 et la couleur d'accent Move On pour que l'œil les repère
+    // immédiatement sans relire le paragraphe.
+    strong, b {
+      font-weight: 700;
+      color: var(--green-dark);
+    }
   }
 }
 
+// Indicateur "l'assistant rédige" : bulle alignée comme les réponses de
+// l'assistant (marge droite pour laisser respirer), contenant 3 points qui
+// rebondissent avec un décalage temporel pour donner l'illusion d'une vague.
 .chatbot-widget__typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 16px 10px 0;
+  padding: 12px 14px;
+  background: var(--white-main);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.chatbot-widget__typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gray-500);
+  // `both` : l'état initial et final de l'animation sont appliqués → pas
+  // de saut visuel au démarrage ni à la fin de chaque cycle.
+  animation: chatbot-typing-bounce 1.2s infinite ease-in-out both;
+
+  // Décalages temporels : 2e point 0.15s après le 1er, 3e point 0.3s après.
+  // Donne un effet de vague plutôt que 3 points synchronisés.
+  &:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.30s;
+  }
+}
+
+// Animation de rebond : au repos les points sont petits et semi-transparents,
+// au sommet du cycle ils grossissent et deviennent opaques → sensation de vie.
+@keyframes chatbot-typing-bounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Respect des préférences système : si l'utilisateur a demandé à réduire les
+// animations (prefers-reduced-motion), on remplace le rebond par une simple
+// pulsation d'opacité, bien moins intrusive.
+@media (prefers-reduced-motion: reduce) {
+  .chatbot-widget__typing-dot {
+    animation: chatbot-typing-pulse 1.6s infinite ease-in-out;
+    transform: none;
+  }
+
+  @keyframes chatbot-typing-pulse {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 1;   }
+  }
+}
+
+// Hint d'utilisation affiché à l'ouverture quand la conversation est vide.
+// Style volontairement discret : fond légèrement teinté, filet coloré à gauche
+// pour se différencier des bulles de message sans détourner l'attention.
+.chatbot-widget__hint {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--green-primary);
+  background: var(--white-soft);
+  color: var(--gray-800);
   font-size: 0.85rem;
-  color: var(--gray-600);
-  font-style: italic;
-  margin-bottom: 8px;
+  line-height: 1.45;
+
+  p {
+    margin: 0 0 0.35em;
+  }
+
+  ul {
+    margin: 0.25em 0 0.5em;
+    padding-left: 1.2rem;
+  }
+
+  .chatbot-widget__hint-title {
+    font-weight: 600;
+    color: var(--green-dark);
+  }
+
+  // Étiquette "Exemple :" — discrète, pour introduire l'exemple ci-dessous.
+  .chatbot-widget__hint-example-label {
+    margin-top: 0.6em;
+    font-weight: 600;
+    color: var(--gray-700);
+  }
+
+  // Exemple de question concret : italique + filet gauche vert pour le
+  // démarquer visuellement du reste du message d'accueil sans alourdir.
+  .chatbot-widget__hint-example {
+    margin: 0.2em 0 0;
+    padding-left: 10px;
+    border-left: 3px solid var(--green-primary);
+    font-style: italic;
+    color: var(--gray-700);
+  }
 }
 
 .chatbot-widget__bubble--streaming {
@@ -154,11 +299,17 @@
 
 .chatbot-widget__input {
   width: 100%;
+  // `resize: none` : la textarea ne se redimensionne pas manuellement — sa
+  // hauteur est pilotée par `autoGrowInput` côté JS pour coller au contenu.
   resize: none;
   border: 1px solid var(--gray-300);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 0.9rem;
+  // `line-height` stable et `overflow-y: hidden` par défaut : le JS activera
+  // le scroll uniquement si le contenu dépasse le plafond (`INPUT_MAX_HEIGHT_PX`).
+  line-height: 1.4;
+  overflow-y: hidden;
 
   &:focus {
     border-color: var(--blue-primary);

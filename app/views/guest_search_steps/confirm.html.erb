@@ -28,7 +28,7 @@
                elsif @guest_search.mountain? then '⛰️  Montagne'
                else '🗺️ Indifférent' end %>
   <% density_label = @guest_search.density.to_i == 0 ? 'Toutes tailles' : "#{number_with_delimiter(@guest_search.density, delimiter: "\u202f")} hab. minimum" %>
-  <div class="search-wizard-page search-background">
+  <div class="search-wizard-page search-background map-background">
     <%= render 'search_steps/progress_bar',
         current_step: 4,
         total_steps:  4,

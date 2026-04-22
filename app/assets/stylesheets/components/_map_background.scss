@@ -1,0 +1,22 @@
+.map-background {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url('/assets/map-background.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.15; // opacité uniquement sur l'image
+    z-index: 0;
+  }
+
+  // Le contenu reste au-dessus et opaque
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}

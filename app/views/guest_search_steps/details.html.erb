@@ -6,7 +6,7 @@
     - les champs sont nommés guest_search[...] pour le contrôleur invité
     - wizard_path est automatiquement résolu vers /guest_search_steps/:step par Wicked
 %>
-<div class="search-wizard-page search-background">
+<div class="search-wizard-page search-background map-background">
   <%# Barre de progression partagée avec le wizard utilisateur connecté %>
   <%= render 'search_steps/progress_bar',
         current_step: 1,

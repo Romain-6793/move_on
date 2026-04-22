@@ -37,7 +37,7 @@
   de milliers. On utilise "\u202f" (espace fine insécable) comme séparateur, idiomatique en français.
 %>
   <% density_label = @research.density.to_i == 0 ? 'Toutes tailles' : "#{number_with_delimiter(@research.density, delimiter: "\u202f")} hab. minimum" %>
-  <div class="search-wizard-page search-background">
+  <div class="search-wizard-page search-background map-background">
     <%= render 'progress_bar',
         current_step: 4,
         total_steps:  4,

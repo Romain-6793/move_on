@@ -21,7 +21,7 @@
 <% essential_criteria     = wizard_criteria.select { |c| @guest_search.send(c[:key]).to_i == 3 } %>
 <% non_essential_criteria = wizard_criteria.reject { |c| @guest_search.send(c[:key]).to_i == 3 } %>
 <% education_has_levels = (@guest_search.education_levels || []).any? %>
-<div class="search-wizard-page search-background">
+<div class="search-wizard-page search-background map-background">
   <%= render 'search_steps/progress_bar',
         current_step: 3,
         total_steps:  4,

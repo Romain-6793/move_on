@@ -1,1 +1,17 @@
 // Specific CSS for your home-page
+
+.home-logo {
+    // Le SVG est carré (viewBox 843×842) : on fixe une hauteur et width:auto
+    // pour respecter les proportions sans distorsion.
+    // 58px ≈ 1.45× l'ancienne taille (40px), légèrement débordant du header de 64px.
+    // Cela donne un effet "logo en avant-plan" sans changer la hauteur du header.
+    height: 300px;
+    width: auto;
+    // Empêche l'icône de se réduire sur petits écrans
+    flex-shrink: 0;
+    // mix-blend-mode: multiply rend le fond quasi-blanc (rgb 253,253,253) du SVG
+    // transparent sur le fond blanc de la navbar, sans modifier le fichier SVG.
+    mix-blend-mode: multiply;
+    margin-bottom: 20px;
+    
+}

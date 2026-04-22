@@ -56,8 +56,16 @@
         <% rank = i + 1 %>
         <%# Couleur identique au marqueur de la carte pour ce rang %>
         <% rank_color = rank_colors[rank - 1] || "#757575" %>
-        <%# On passe les kinds sélectionnés pour que la carte show filtre les POIs %>
-        <% city_map_path = @poi_kinds.any? ? map_path(city.id, kinds: @poi_kinds.join(",")) : map_path(city.id) %>
+        <%#
+          Construction de l'URL vers la carte de la ville :
+          - rank : rang (1..5) pour que maps#show affiche le même marqueur coloré + chiffre
+            que sur la carte des 5 résultats (cohérence visuelle attendue par le user).
+          - kinds : optionnel, uniquement si des critères essentiels ont été sélectionnés.
+            On construit le hash progressivement pour éviter un ?kinds= vide dans l'URL.
+        %>
+        <% city_map_params = { rank: rank }
+           city_map_params[:kinds] = @poi_kinds.join(",") if @poi_kinds.any? %>
+        <% city_map_path = map_path(city.id, city_map_params) %>
         <a href="<%= city_map_path %>" class="map-results-item">
           <span class="map-results-item__rank" style="background: <%= rank_color %>"><%= rank %></span>
           <div class="map-results-item__info">

@@ -46,6 +46,13 @@ class MapsController < ApplicationController
     # L'intersection (&) avec VALID_POI_KINDS élimine toute valeur non autorisée.
     @poi_kinds = params[:kinds].to_s.split(",").map(&:strip) & VALID_POI_KINDS
 
+    # Rang de la ville dans le classement des 5 meilleures, propagé depuis
+    # les city_cards de la page résultats via le query param ?rank=1…5.
+    # On valide la plage [1..5] côté contrôleur (source contrôlée) : toute
+    # valeur hors plage est ignorée et la carte affichera le marqueur par défaut.
+    rank = params[:rank].to_i
+    @city_rank = (1..5).cover?(rank) ? rank : nil
+
     # Si des types sont spécifiés on filtre, sinon on prend tous les POIs de la ville.
     pois = @poi_kinds.any? ? @city.point_of_interests.where(kind: @poi_kinds) : @city.point_of_interests
 

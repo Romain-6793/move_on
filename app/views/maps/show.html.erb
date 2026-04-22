@@ -26,6 +26,12 @@
     la ville ni la légende associée — la carte reste visuellement épurée et ne montre
     que le marqueur de la ville ciblée.
   %>
+  <%#
+    data-map-rank-value : rang (1..5) transmis via le query param ?rank=
+    dans maps#show. Utilisé par map_controller.js pour afficher un marqueur
+    personnalisé (pastille colorée + chiffre) identique à celui de la carte
+    des 5 résultats. Sans rang → marqueur Mapbox par défaut (fallback).
+  %>
   <div
     id="map"
     class="map-page__map"
@@ -35,6 +41,7 @@
     data-map-lng-value="<%= @city.longitude %>"
     data-map-zoom-value="13"
     data-map-city-name-value="<%= @city.nom_com %>"
+    data-map-rank-value="<%= @city_rank || 0 %>"
     data-map-geolocate-value="false"
   ></div>
 </div>

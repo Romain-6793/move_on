@@ -6,6 +6,14 @@ import { Controller } from "@hotwired/stimulus"
 // Avec des centaines ou milliers de points, les markers DOM (HTMLElement) saturent le navigateur.
 // Les layers Mapbox sont dessinés en WebGL : ils restent fluides même avec 10 000 points.
 // Le clustering (regroupement automatique de points proches) est géré nativement par Mapbox.
+
+// Couleurs par rang dans le classement des 5 meilleures villes.
+// Dupliqué depuis results_map_controller.js (RANK_COLORS) pour que le marqueur
+// de la vue show (une seule ville) reprenne exactement la même apparence que
+// sur la carte des 5 résultats. Si la palette évolue, penser à mettre à jour
+// les deux fichiers (pas de dépendance directe entre controllers Stimulus).
+const RANK_COLORS = ["#558B2F", "#2E9EAD", "#0288D1", "#FFB74D", "#E57373"]
+
 export default class extends Controller {
   static values = {
     token: String,
@@ -16,6 +24,11 @@ export default class extends Controller {
     geolocate: Boolean,
     // cityName permet d'afficher le nom dans le popup du marqueur de ville unique (vue show)
     cityName: String,
+    // rank : position de la ville dans le classement des 5 meilleures (1..5).
+    // 0 = pas de rang connu → on retombe sur un marqueur Mapbox par défaut.
+    // Utilisé pour afficher le même marqueur (pastille couleur + chiffre)
+    // que sur la carte des 5 résultats (voir results_map_controller.js).
+    rank: { type: Number, default: 0 },
     // pois : features GeoJSON pré-filtrés passés en inline par maps#show.
     // Quand ce tableau est non vide, on n'appelle PAS loadMapData() (pas de fetch vers /maps.json)
     // et on affiche uniquement ces POIs — vue centrée sur une ville spécifique.
@@ -130,14 +143,48 @@ export default class extends Controller {
   // ── Marqueur de la ville ciblée (vue show uniquement) ────────────────────
   // Contrairement aux layers WebGL, un Marker Mapbox est un élément DOM :
   // c'est acceptable ici car il n'y a qu'un seul point à afficher.
+  //
+  // Si un rang (1..5) est fourni, on crée un marqueur HTML custom identique à
+  // celui de la carte des 5 résultats (pastille colorée + chiffre + label).
+  // Sinon, on retombe sur le marqueur Mapbox par défaut — cohérence visuelle
+  // maximale quand on navigue depuis la city_card vers la vue ville-unique.
   addCityMarker() {
-    const popup = new mapboxgl.Popup({ offset: 25 })
+    const popup = new mapboxgl.Popup({ offset: 30, closeButton: false })
       .setHTML(`<strong class="map-popup__title">${this.cityNameValue}</strong>`)
 
-    new mapboxgl.Marker({ color: "#2E9EAD" })
-      .setLngLat([this.lngValue, this.latValue])
-      .setPopup(popup)
-      .addTo(this.map)
+    if (this.rankValue > 0) {
+      // Marker avec élément DOM personnalisé.
+      // anchor: "bottom" → la pointe de l'épingle pointe exactement sur la ville.
+      const markerEl = this.createRankMarkerElement(this.rankValue, this.cityNameValue)
+      new mapboxgl.Marker({ element: markerEl, anchor: "bottom" })
+        .setLngLat([this.lngValue, this.latValue])
+        .setPopup(popup)
+        .addTo(this.map)
+    } else {
+      // Fallback : marqueur Mapbox standard quand on ne connaît pas le rang
+      // (ex : ville consultée directement via /maps/:id sans ?rank=).
+      new mapboxgl.Marker({ color: "#2E9EAD" })
+        .setLngLat([this.lngValue, this.latValue])
+        .setPopup(popup)
+        .addTo(this.map)
+    }
+  }
+
+  // Construit le DOM du marqueur personnalisé. Structure et classes identiques
+  // à results_map_controller.js#createMarkerElement pour que le CSS soit partagé
+  // (.results-marker / .results-marker__pin / .results-marker__rank / .results-marker__label).
+  createRankMarkerElement(rank, cityName) {
+    const color = RANK_COLORS[rank - 1] || "#757575"
+
+    const el = document.createElement("div")
+    el.className = `results-marker results-marker--rank-${rank}`
+    el.innerHTML = `
+      <div class="results-marker__pin" style="background:${color}">
+        <span class="results-marker__rank">${rank}</span>
+      </div>
+      <span class="results-marker__label">${cityName}</span>
+    `
+    return el
   }
 
   // ── Pastilles des critères essentiels (vue show uniquement) ───────────────

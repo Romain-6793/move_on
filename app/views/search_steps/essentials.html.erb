@@ -77,6 +77,20 @@
                 <p class="wizard-criterion-title"><%= criterion[:title] %></p>
               </div>
 
+              <%# ── Accordéon "En savoir plus" ───────────────────────────────
+                  Explique à l'utilisateur comment le score est calculé pour ce
+                  critère. Utilise l'élément natif <details>/<summary> : pas
+                  besoin de JS, l'ouverture/fermeture est gérée par le navigateur,
+                  et c'est accessible aux lecteurs d'écran par défaut.
+                  La description vient du helper criterion_description (source
+                  unique dans ApplicationHelper) pour éviter la duplication. %>
+              <details class="wizard-criterion-info">
+                <summary class="wizard-criterion-info-btn">En savoir plus</summary>
+                <p class="wizard-criterion-info-description">
+                  <%= criterion_description(criterion[:key]) %>
+                </p>
+              </details>
+
               <%# Bloc spécifique Éducation : choix des niveaux scolaires %>
               <% if criterion[:key] == 'education' %>
                 <div class="wizard-education-block"

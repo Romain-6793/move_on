@@ -46,6 +46,13 @@ class MapsController < ApplicationController
     # L'intersection (&) avec VALID_POI_KINDS élimine toute valeur non autorisée.
     @poi_kinds = params[:kinds].to_s.split(",").map(&:strip) & VALID_POI_KINDS
 
+    # Rang de la ville dans le classement des 5 meilleures, propagé depuis
+    # les city_cards de la page résultats via le query param ?rank=1…5.
+    # On valide la plage [1..5] côté contrôleur (source contrôlée) : toute
+    # valeur hors plage est ignorée et la carte affichera le marqueur par défaut.
+    rank = params[:rank].to_i
+    @city_rank = (1..5).cover?(rank) ? rank : nil
+
     # Si des types sont spécifiés on filtre, sinon on prend tous les POIs de la ville.
     pois = @poi_kinds.any? ? @city.point_of_interests.where(kind: @poi_kinds) : @city.point_of_interests
 
@@ -64,6 +71,42 @@ class MapsController < ApplicationController
           city_name: @city.nom_com
         }
       }
+    end
+
+    # ── Autres villes du classement ──────────────────────────────────────────
+    # Si un contexte de recherche est disponible (Research pour un user connecté
+    # ou GuestSearch en session pour un visiteur), on recalcule le top 5 et on
+    # sérialise les 4 AUTRES villes pour les exposer au Stimulus controller.
+    # Intérêt produit : quand l'utilisateur dézoome depuis la carte ville-unique,
+    # il voit réapparaître les 4 autres marqueurs (mêmes couleurs + chiffres que
+    # sur la carte des 5 résultats), ce qui préserve la continuité visuelle.
+    search = find_search_context
+    @other_cities_data = []
+    # @research_id_param : propagé dans les liens des popups des autres villes
+    # pour que la navigation d'une carte ville-unique à l'autre conserve le contexte.
+    # nil pour les visiteurs → ils retombent sur la session guest_search_id.
+    @research_id_param = search.is_a?(Research) ? search.id : nil
+
+    if search
+      ranked_cities = CityRankerService.new(search).top_cities.to_a
+      # Garde-fou : on n'affiche les 4 autres marqueurs que si la ville courante
+      # fait bien partie du top 5. Sinon, l'utilisateur a atterri sur une ville
+      # hors-classement (URL manuelle, ancien lien…) et mélanger 5 autres villes
+      # à la sienne serait déroutant.
+      if ranked_cities.any? { |c| c.id == @city.id }
+        @other_cities_data = ranked_cities.each_with_index.filter_map do |city, i|
+          next if city.id == @city.id
+          {
+            id:        city.id,
+            nom_com:   city.nom_com,
+            nom_dep:   city.nom_dep.to_s,
+            nom_reg:   city.nom_reg.to_s,
+            latitude:  city.latitude,
+            longitude: city.longitude,
+            rank:      i + 1
+          }
+        end
+      end
     end
   end
 
@@ -110,6 +153,31 @@ class MapsController < ApplicationController
   end
 
   private
+
+  # Retrouve le contexte de recherche de l'utilisateur pour la vue maps#show.
+  #
+  # Deux sources possibles :
+  # - params[:research_id] : propagé depuis les liens des city_cards et de la
+  #   carte des résultats pour les utilisateurs connectés. On vérifie que la
+  #   recherche appartient bien au current_user (équivalent logique de
+  #   ResearchPolicy#show?) — refuse silencieusement sinon.
+  # - session[:guest_search_id] : recherche invitée mémorisée en session pour
+  #   les visiteurs anonymes, comme dans maps#results.
+  #
+  # Retourne nil si aucune source valide n'est disponible (ex : visiteur non
+  # authentifié sans session de recherche, ou research_id d'un autre user).
+  def find_search_context
+    if params[:research_id].present? && user_signed_in?
+      research = Research.find_by(id: params[:research_id])
+      return research if research && research.user == current_user
+    end
+
+    if session[:guest_search_id].present?
+      return GuestSearch.find_by(id: session[:guest_search_id])
+    end
+
+    nil
+  end
 
   # Retourne les types de POI correspondant aux critères "essentiels" (valeur = 3)
   # du user dans sa recherche. Utilisé pour pré-filtrer les POIs sur la carte.

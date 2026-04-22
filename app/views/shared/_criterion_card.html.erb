@@ -66,9 +66,11 @@
       En savoir plus ▾
     </button>
     <%# Contenu déroulant – caché par défaut (hidden = display:none natif HTML).
-        Contiendra les sources de données et la méthode de calcul du score. %>
+        On utilise le helper criterion_description (ApplicationHelper) pour
+        obtenir la vraie description, plutôt que le lorem ipsum du hash local.
+        Si la clé est inconnue côté helper, on retombe sur criterion[:description]. %>
     <div class="criterion-card-accordion" hidden>
-      <p><%= criterion[:description] %></p>
+      <p><%= criterion_description(criterion[:key]).presence || criterion[:description] %></p>
     </div>
   </div>
   <%# ─── Spécificité Éducation ───────────────────────────────────────────

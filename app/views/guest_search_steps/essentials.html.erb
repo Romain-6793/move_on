@@ -61,6 +61,16 @@
                    aria-hidden="true"></i>
                 <p class="wizard-criterion-title"><%= criterion[:title] %></p>
               </div>
+              <%# ── Accordéon "En savoir plus" ───────────────────────────────
+                  Même comportement que dans le wizard utilisateur (voir
+                  search_steps/essentials.html.erb) : <details>/<summary> natif
+                  pour l'accessibilité et pour éviter d'ajouter du JS. %>
+              <details class="wizard-criterion-info">
+                <summary class="wizard-criterion-info-btn">En savoir plus</summary>
+                <p class="wizard-criterion-info-description">
+                  <%= criterion_description(criterion[:key]) %>
+                </p>
+              </details>
               <%# Bloc spécifique Éducation : choix des niveaux scolaires %>
               <% if criterion[:key] == 'education' %>
                 <div class="wizard-education-block"

@@ -422,6 +422,58 @@
   margin: 0;
 }
 
+// ─── Accordéon "En savoir plus" ───────────────────────────────────────────
+//
+// On utilise l'élément natif <details>/<summary> HTML plutôt qu'un bouton +
+// Stimulus : le navigateur gère l'ouverture/fermeture automatiquement, et
+// c'est accessible (lecteurs d'écran, clavier) par défaut.
+// Pas besoin d'état JS → markup plus simple, moins de code à maintenir.
+.wizard-criterion-info {
+  margin-top: 8px;
+
+  // <summary> est stylé comme un lien discret. On masque la flèche native
+  // (la présentation par défaut varie selon les navigateurs) pour pouvoir
+  // ajouter la nôtre via le ::after.
+  .wizard-criterion-info-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--card-color, var(--gray-600));
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    list-style: none;        // Chrome / Firefox : supprime la flèche native
+    padding: 0;
+
+    &::-webkit-details-marker { display: none; } // Safari : pareil
+
+    // Petite flèche injectée via ::after, pivote quand <details> est ouvert.
+    &::after {
+      content: '▾';
+      font-size: 0.7em;
+      transition: transform 0.15s;
+    }
+
+    &:hover { opacity: 0.75; }
+  }
+
+  // État ouvert : on retourne la flèche pour signaler visuellement l'ouverture.
+  &[open] .wizard-criterion-info-btn::after {
+    transform: rotate(180deg);
+  }
+
+  .wizard-criterion-info-description {
+    font-size: 0.78rem;
+    color: var(--gray-600);
+    line-height: 1.55;
+    padding-top: 8px;
+    margin: 6px 0 0;
+    border-top: 1px solid var(--gray-200);
+  }
+}
+
 // Pied de carte : label + checkbox
 .wizard-criterion-footer {
   padding: 10px 16px 14px;

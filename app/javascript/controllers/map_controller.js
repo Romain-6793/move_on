@@ -6,6 +6,14 @@ import { Controller } from "@hotwired/stimulus"
 // Avec des centaines ou milliers de points, les markers DOM (HTMLElement) saturent le navigateur.
 // Les layers Mapbox sont dessinés en WebGL : ils restent fluides même avec 10 000 points.
 // Le clustering (regroupement automatique de points proches) est géré nativement par Mapbox.
+
+// Couleurs par rang dans le classement des 5 meilleures villes.
+// Dupliqué depuis results_map_controller.js (RANK_COLORS) pour que le marqueur
+// de la vue show (une seule ville) reprenne exactement la même apparence que
+// sur la carte des 5 résultats. Si la palette évolue, penser à mettre à jour
+// les deux fichiers (pas de dépendance directe entre controllers Stimulus).
+const RANK_COLORS = ["#558B2F", "#2E9EAD", "#0288D1", "#FFB74D", "#E57373"]
+
 export default class extends Controller {
   static values = {
     token: String,
@@ -16,6 +24,11 @@ export default class extends Controller {
     geolocate: Boolean,
     // cityName permet d'afficher le nom dans le popup du marqueur de ville unique (vue show)
     cityName: String,
+    // rank : position de la ville dans le classement des 5 meilleures (1..5).
+    // 0 = pas de rang connu → on retombe sur un marqueur Mapbox par défaut.
+    // Utilisé pour afficher le même marqueur (pastille couleur + chiffre)
+    // que sur la carte des 5 résultats (voir results_map_controller.js).
+    rank: { type: Number, default: 0 },
     // pois : features GeoJSON pré-filtrés passés en inline par maps#show.
     // Quand ce tableau est non vide, on n'appelle PAS loadMapData() (pas de fetch vers /maps.json)
     // et on affiche uniquement ces POIs — vue centrée sur une ville spécifique.
@@ -24,7 +37,22 @@ export default class extends Controller {
     // Chaque kind donne lieu à une pastille colorée autour du centre-ville (voir addEssentialDots).
     // Permet au user de voir immédiatement ses critères sur la carte, même si la BD
     // ne contient pas (encore) de POIs pour tous les kinds.
-    essentialKinds: { type: Array, default: [] }
+    essentialKinds: { type: Array, default: [] },
+    // otherCities : tableau des 4 AUTRES villes du top 5 (la ville courante
+    // est déjà affichée par addCityMarker). Chaque élément contient id,
+    // nom_com, nom_dep, nom_reg, latitude, longitude et rank (1..5).
+    // Les marqueurs sont placés à leur position réelle : ils restent hors du
+    // cadre au zoom initial (13) et deviennent visibles dès que l'utilisateur
+    // dézoome suffisamment pour englober la région.
+    otherCities: { type: Array, default: [] },
+    // poiKinds : critères essentiels sélectionnés — propagés dans les liens
+    // des popups des autres villes pour conserver le filtre ?kinds=…
+    poiKinds: { type: Array, default: [] },
+    // researchId : identifiant de la recherche utilisateur (connecté uniquement),
+    // transmis dans les liens des popups pour que le prochain maps#show puisse
+    // recharger le contexte et, à son tour, afficher les 4 autres villes.
+    // Vide pour les visiteurs (le fallback se fait via session[:guest_search_id]).
+    researchId: { type: String, default: "" }
   }
 
   // ── Labels FR par kind — affichés au survol des pastilles essentielles ────
@@ -89,6 +117,11 @@ export default class extends Controller {
       // Si une ville précise est ciblée (vue show), on pose un marqueur à ses coordonnées.
       if (this.cityNameValue) this.addCityMarker()
 
+      // Marqueurs des 4 autres villes du top 5 — identiques à ceux de la carte
+      // des résultats (pastille colorée + chiffre). Hors du viewport au zoom
+      // initial, ils réapparaissent naturellement quand le user dézoome.
+      if (this.otherCitiesValue.length > 0) this.addOtherRankedMarkers()
+
       // Pastilles des critères essentiels — matérialisent les 3 critères "must-have"
       // du user directement sur la carte, quel que soit l'état des données POI.
       if (this.essentialKindsValue.length > 0) this.addEssentialDots()
@@ -130,14 +163,108 @@ export default class extends Controller {
   // ── Marqueur de la ville ciblée (vue show uniquement) ────────────────────
   // Contrairement aux layers WebGL, un Marker Mapbox est un élément DOM :
   // c'est acceptable ici car il n'y a qu'un seul point à afficher.
+  //
+  // Si un rang (1..5) est fourni, on crée un marqueur HTML custom identique à
+  // celui de la carte des 5 résultats (pastille colorée + chiffre + label).
+  // Sinon, on retombe sur le marqueur Mapbox par défaut — cohérence visuelle
+  // maximale quand on navigue depuis la city_card vers la vue ville-unique.
   addCityMarker() {
-    const popup = new mapboxgl.Popup({ offset: 25 })
+    const popup = new mapboxgl.Popup({ offset: 30, closeButton: false })
       .setHTML(`<strong class="map-popup__title">${this.cityNameValue}</strong>`)
 
-    new mapboxgl.Marker({ color: "#2E9EAD" })
-      .setLngLat([this.lngValue, this.latValue])
-      .setPopup(popup)
-      .addTo(this.map)
+    if (this.rankValue > 0) {
+      // Marker avec élément DOM personnalisé.
+      // anchor: "bottom" → la pointe de l'épingle pointe exactement sur la ville.
+      const markerEl = this.createRankMarkerElement(this.rankValue, this.cityNameValue)
+      new mapboxgl.Marker({ element: markerEl, anchor: "bottom" })
+        .setLngLat([this.lngValue, this.latValue])
+        .setPopup(popup)
+        .addTo(this.map)
+    } else {
+      // Fallback : marqueur Mapbox standard quand on ne connaît pas le rang
+      // (ex : ville consultée directement via /maps/:id sans ?rank=).
+      new mapboxgl.Marker({ color: "#2E9EAD" })
+        .setLngLat([this.lngValue, this.latValue])
+        .setPopup(popup)
+        .addTo(this.map)
+    }
+  }
+
+  // Construit le DOM du marqueur personnalisé. Structure et classes identiques
+  // à results_map_controller.js#createMarkerElement pour que le CSS soit partagé
+  // (.results-marker / .results-marker__pin / .results-marker__rank / .results-marker__label).
+  createRankMarkerElement(rank, cityName) {
+    const color = RANK_COLORS[rank - 1] || "#757575"
+
+    const el = document.createElement("div")
+    el.className = `results-marker results-marker--rank-${rank}`
+    el.innerHTML = `
+      <div class="results-marker__pin" style="background:${color}">
+        <span class="results-marker__rank">${rank}</span>
+      </div>
+      <span class="results-marker__label">${cityName}</span>
+    `
+    return el
+  }
+
+  // ── Marqueurs des 4 autres villes du top 5 ────────────────────────────────
+  //
+  // Pourquoi cette méthode ?
+  // Sur la vue show on centre la carte sur une seule ville (zoom 13), mais
+  // on veut que les 4 autres villes du classement restent disponibles : dès
+  // que l'utilisateur dézoome pour voir plus largement la France/la région,
+  // leurs marqueurs apparaissent naturellement (Mapbox n'affiche que ce qui
+  // est dans le viewport).
+  //
+  // Les marqueurs reprennent exactement le style de la carte des 5 résultats
+  // (même pastille colorée, même chiffre, même label) pour préserver la
+  // continuité visuelle — un #2 sur la carte générale reste un #2 ici.
+  addOtherRankedMarkers() {
+    this.otherCitiesValue.forEach((city) => {
+      const el = this.createRankMarkerElement(city.rank, city.nom_com)
+
+      // anchor: "bottom" → la pointe de l'épingle touche précisément les coordonnées.
+      new mapboxgl.Marker({ element: el, anchor: "bottom" })
+        .setLngLat([city.longitude, city.latitude])
+        .setPopup(
+          new mapboxgl.Popup({ offset: 30, closeButton: false })
+            .setHTML(this.otherCityPopupHtml(city))
+        )
+        .addTo(this.map)
+    })
+  }
+
+  // Popup identique à celle de la carte des 5 résultats : rang, nom, localisation,
+  // et lien pour ouvrir la carte dédiée de cette autre ville (avec le même filtre
+  // de kinds + research_id pour préserver le contexte de recherche).
+  otherCityPopupHtml(city) {
+    const color = RANK_COLORS[city.rank - 1] || "#757575"
+
+    // URLSearchParams échappe automatiquement les valeurs — pas de risque
+    // d'injection via kinds ou research_id.
+    const params = new URLSearchParams()
+    params.set("rank", city.rank)
+    if (this.poiKindsValue.length) params.set("kinds", this.poiKindsValue.join(","))
+    if (this.researchIdValue) params.set("research_id", this.researchIdValue)
+    const href = `/maps/${city.id}?${params.toString()}`
+
+    // Localisation optionnelle (département · région) — même rendu que
+    // results_map_controller.js#cityPopupHtml pour la cohérence visuelle.
+    const locParts = [city.nom_dep, city.nom_reg].filter(Boolean)
+    const location = locParts.length
+      ? `<p class="map-popup__location">${locParts.join(" · ")}</p>`
+      : ""
+
+    return `
+      <div class="map-popup map-popup--result">
+        <div class="map-popup__rank-badge" style="background:${color}">${city.rank}</div>
+        <h3 class="map-popup__title">${city.nom_com}</h3>
+        ${location}
+        <a href="${href}" class="map-popup__cta">
+          Voir les points d'intérêt →
+        </a>
+      </div>
+    `
   }
 
   // ── Pastilles des critères essentiels (vue show uniquement) ───────────────

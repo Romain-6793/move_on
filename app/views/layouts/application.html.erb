@@ -3,9 +3,15 @@
   <head>
     <title>Move On – Trouvez la ville qui vous correspond</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Move On">
+    <meta property="og:title" content="Move On – Trouvez la ville qui vous correspond">
+    <meta property="og:description" 
+    content="En 3 étapes simples, trouvez la ville idéale pour vous installer selon vos critères">
+    <meta property="og:image" content="<%= image_url('rectangle_logo_og.png') %>">
+    <meta property="og:url" content="https://www.moveonfrance.me">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%#
       Favicons Move On – stratégie multi-format :
       - SVG  : navigateurs modernes (Chrome 80+, Firefox, Safari 13+) — vectoriel, toujours net
@@ -30,20 +36,16 @@
   <body>
     <%# Lien d'accessibilité pour sauter la navigation (utilisateurs clavier/lecteurs d'écran) %>
     <%= link_to "Aller au contenu principal", "#main-content", class: "visually-hidden-focusable" %>
-
     <header>
       <%= render "shared/navbar" %>
     </header>
-
     <main id="main-content">
       <%# Les flashes sont affichés avant le contenu de la page pour être vus immédiatement %>
       <%= render "shared/flashes" %>
       <%= yield %>
     </main>
-
     <%# Footer commun à toutes les pages %>
     <%= render "shared/footer" %>
-
     <%= render "shared/chatbot_widget" %>
     <%# Modale de confirmation Move On — remplace le window.confirm natif du navigateur.
         Placée ici pour être disponible sur toutes les pages sans duplication. %>

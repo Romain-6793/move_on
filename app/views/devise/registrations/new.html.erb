@@ -6,7 +6,7 @@
     <%# En-tête : logo bicolore Move On + titre + barre verte décorative %>
     <div class="devise-header">
       <%= link_to root_path, class: "devise-logo" do %>
-        <span class="move">Move</span> <span class="on">On</span>
+        <%= image_tag "square_logo.svg", class: "nav-logo-icon", alt: "Move On" %>
       <% end %>
       <h1 class="devise-title">Créer un compte</h1>
       <p class="devise-subtitle">Rejoignez Move On et trouvez votre ville idéale.</p>

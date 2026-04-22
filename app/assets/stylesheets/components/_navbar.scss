@@ -39,7 +39,7 @@
     transition: transform 0.2s;
 
     &:hover {
-      transform: scale(1.06);
+      transform: translate(50px, 50px) scale(2);
     }
   }
 

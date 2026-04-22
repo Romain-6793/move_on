@@ -9,7 +9,7 @@
   // Grille principale : colonne marque (large) + 2 colonnes de liens
   .footer-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 48px;
     max-width: 1000px;
     margin: 0 auto 40px;
@@ -19,9 +19,9 @@
   // du logo SVG (texte converti en chemins, police d'origine non identifiable autrement).
   // Les couleurs sont adaptées au fond sombre : blue-primary remplace blue-dark (meilleur contraste).
   .footer-brand-name {
-    font-family: "Fredoka", "Nunito", sans-serif;
+    font-family: "Poppins", "Helvetica", "Fredoka", "Nunito", sans-serif;
     font-size: 1.6rem;
-    font-weight: 700;
+    font-weight: 500;
     line-height: 1;
     letter-spacing: 0.5px;
     margin-bottom: 6px;

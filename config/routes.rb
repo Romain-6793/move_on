@@ -15,7 +15,6 @@ Rails.application.routes.draw do
 resources :users, only: [] do
   member do
     get 'profile', to: 'users#show'
-    get 'profile/edit', to: 'users#edit'
     patch 'profile', to: 'users#update'
     delete 'profile', to: 'users#destroy'
   end

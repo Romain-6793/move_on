@@ -171,7 +171,7 @@ else
     hash[clean_insee] = city.id
   end
 
-  poi_file = Rails.root.join('db', 'POI200426.csv')
+  poi_file = Rails.root.join('db', 'POI2204.csv')
   poi_count = 0
   poi_errors = 0
 

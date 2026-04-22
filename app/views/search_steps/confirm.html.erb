@@ -87,18 +87,29 @@
             <i class="fas <%= meta[:icon] %>" aria-hidden="true"></i>
             <%= meta[:label] %>
           </p>
-          <ul class="wizard-confirm-criteria-list">
+          <%#
+            Grille 2 colonnes : chaque critère est présenté sous forme d'une
+            mini-carte reprenant le visuel des étapes 2 et 3 (bandeau coloré +
+            icône + titre) pour garder une cohérence visuelle sur tout le wizard.
+          %>
+          <ul class="wizard-confirm-criteria-grid">
             <% selected.each do |criterion| %>
-              <li style="--card-color: <%= criterion[:color] %>">
-                <i class="fas <%= criterion[:icon] %>"
-                   style="color: <%= criterion[:color] %>"
-                   aria-hidden="true"></i>
-                <%= criterion[:title] %>
-                <% if criterion[:key] == 'education' && (@research.education_levels || []).any? %>
-                  <span class="wizard-confirm-education-levels">
-                    (<%= (@research.education_levels || []).join(', ') %>)
-                  </span>
-                <% end %>
+              <li class="wizard-confirm-criterion-card"
+                  style="--card-color: <%= criterion[:color] %>">
+                <span class="wizard-confirm-criterion-band" aria-hidden="true"></span>
+                <div class="wizard-confirm-criterion-body">
+                  <i class="fas <%= criterion[:icon] %> wizard-confirm-criterion-icon"
+                     style="color: <%= criterion[:color] %>"
+                     aria-hidden="true"></i>
+                  <div class="wizard-confirm-criterion-text">
+                    <p class="wizard-confirm-criterion-title"><%= criterion[:title] %></p>
+                    <% if criterion[:key] == 'education' && (@research.education_levels || []).any? %>
+                      <p class="wizard-confirm-education-levels">
+                        <%= (@research.education_levels || []).join(', ') %>
+                      </p>
+                    <% end %>
+                  </div>
+                </div>
               </li>
             <% end %>
           </ul>

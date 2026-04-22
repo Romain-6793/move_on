@@ -11,18 +11,16 @@
   <%# Liens de navigation centraux – visibles pour tous les visiteurs %>
   <div class="nav-links">
     <% if user_signed_in? %>
-      <%# Connecté : recherche via le wizard multi-étapes (SearchStepsController), carte, profil %>
+      <%# Connecté : profil + lancement d'un nouveau wizard de recherche %>
       <%= link_to "Mon profil",          profile_user_path(current_user), class: "nav-link-item" %>
       <%#
         new_research_wizard_path = GET /recherche/nouveau
         Ce lien démarre toujours un nouveau wizard (vide la session wizard).
       %>
       <%= link_to "Nouvelle recherche", new_research_wizard_path, class: "nav-link-item" %>
-      <%= link_to "Trouver sur la carte", maps_path,              class: "nav-link-item" %>
     <% else %>
       <%# Visiteur : recherche via le wizard Wicked invité (même parcours que l'utilisateur connecté) %>
       <%= link_to "Nouvelle recherche",  new_guest_wizard_path,   class: "nav-link-item" %>
-      <%= link_to "Trouver sur la carte", maps_path,              class: "nav-link-item" %>
     <% end %>
   </div>
   <%# Actions droite : contenu différent selon l'état de session Devise %>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!--
+    Favicon Move On – pin de localisation
+    Symbolise "trouver sa ville idéale en France".
+    Fond vert arrondi (--green-primary), pin blanc avec point vert foncé.
+    Pensé pour rester lisible à 16x16px et 32x32px.
+  -->
+
+  <!-- Fond carré arrondi : couleur verte principale de la charte Move On -->
+  <rect width="32" height="32" rx="6" fill="#7CB342"/>
+
+  <!--
+    Corps du pin : forme en goutte d'eau (teardrop).
+    Chemin dessiné manuellement pour tenir dans 32x32 :
+    - démarre en haut au centre
+    - descend en arc sur les côtés (simulant l'arrondi du pin)
+    - se termine en pointe vers le bas (le "pointeur" de localisation)
+  -->
+  <path
+    d="M16 4
+       C10.5 4 6 8.5 6 14
+       C6 18.5 10 22.5 14.5 26.5
+       L16 28
+       L17.5 26.5
+       C22 22.5 26 18.5 26 14
+       C26 8.5 21.5 4 16 4 Z"
+    fill="white"
+  />
+
+  <!--
+    Point intérieur du pin : cercle vert foncé centré sur la "tête" du pin.
+    Représente le point précis sur la carte – l'endroit qu'on choisit.
+  -->
+  <circle cx="16" cy="14" r="4.5" fill="#558B2F"/>
+</svg>

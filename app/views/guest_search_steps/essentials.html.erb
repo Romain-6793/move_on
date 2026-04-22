@@ -1,0 +1,130 @@
+<%#
+  Wizard invité – Étape 2 : Critères essentiels
+  ───────────────────────────────────────────────
+  Identique à search_steps/essentials.html.erb, mais :
+    - utilise @guest_search (GuestSearch) au lieu de @research
+    - les champs sont nommés guest_search[...] pour le contrôleur invité
+%>
+<% wizard_criteria = [
+  { key: 'real_estate',         title: 'Bons plans immobiliers',  icon: 'fa-house',           color: '#8D6E63' },
+  { key: 'transport_network',   title: 'Qualité des transports',  icon: 'fa-train',           color: '#2E9EAD' },
+  { key: 'health',              title: 'Accès aux soins',         icon: 'fa-stethoscope',     color: '#F48FB1' },
+  { key: 'commercial_life',     title: 'Vie commerciale',         icon: 'fa-store',           color: '#FFB74D' },
+  { key: 'cultural_heritage',   title: 'Culture et patrimoine',   icon: 'fa-landmark',        color: '#9575CD' },
+  { key: 'education',           title: 'Éducation',               icon: 'fa-graduation-cap',  color: '#0288D1' },
+  { key: 'leisures_and_sports', title: 'Sports et loisirs',       icon: 'fa-dumbbell',        color: '#E57373' },
+] %>
+
+<div class="search-wizard-page search-background">
+  <%= render 'search_steps/progress_bar',
+        current_step: 2,
+        total_steps:  4,
+        step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+
+  <div class="wizard-card"
+       data-controller="wizard-essentials"
+       data-wizard-essentials-limit-value="3">
+    <div class="wizard-card-header">
+      <h1 class="wizard-card-title">
+        <i class="fas fa-star wizard-title-icon" aria-hidden="true"></i>
+        Critères essentiels
+      </h1>
+      <p class="wizard-card-subtitle">
+        Choisissez <strong>jusqu'à 3 critères</strong> qui sont absolument indispensables
+        pour vous. Ce seront les critères les plus valorisés dans le calcul.
+      </p>
+      <div class="wizard-essentials-counter">
+        <span data-wizard-essentials-target="count">
+          <%= wizard_criteria.count { |c| @guest_search.send(c[:key]) == 3 } %>
+        </span>/3 critères essentiels sélectionnés
+      </div>
+      <div class="wizard-limit-alert" data-wizard-essentials-target="limitAlert" hidden>
+        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+        Limite de 3 critères essentiels atteinte. Décochez-en un pour en sélectionner un autre.
+      </div>
+    </div>
+
+    <%= form_with url: wizard_path, method: :patch, html: { class: 'wizard-form' } do |f| %>
+      <div class="wizard-criteria-grid">
+        <% wizard_criteria.each do |criterion| %>
+          <% is_essential = @guest_search.send(criterion[:key]) == 3 %>
+          <div class="wizard-criterion-card"
+               style="--card-color: <%= criterion[:color] %>"
+               data-wizard-essentials-target="card"
+               data-criterion="<%= criterion[:key] %>">
+            <div class="wizard-criterion-band"></div>
+            <div class="wizard-criterion-body">
+              <div class="wizard-criterion-header">
+                <i class="fas <%= criterion[:icon] %> wizard-criterion-icon"
+                   style="color: <%= criterion[:color] %>"
+                   aria-hidden="true"></i>
+                <p class="wizard-criterion-title"><%= criterion[:title] %></p>
+              </div>
+
+              <%# Bloc spécifique Éducation : choix des niveaux scolaires %>
+              <% if criterion[:key] == 'education' %>
+                <div class="wizard-education-block"
+                     data-wizard-essentials-target="educationBlock">
+                  <p class="wizard-education-label">Niveaux scolaires souhaités</p>
+                  <div class="wizard-education-tags"
+                       data-wizard-essentials-target="educationTagsDisplay">
+                  </div>
+                  <div class="wizard-education-controls">
+                    <select data-wizard-essentials-target="educationSelect"
+                            class="wizard-education-select">
+                      <option value="">Choisir un niveau…</option>
+                      <option value="Petite enfance" <%= 'disabled' if (@guest_search.education_levels || []).include?('Petite enfance') %>>Petite enfance (crèches, EAJE)</option>
+                      <option value="Premier degré"  <%= 'disabled' if (@guest_search.education_levels || []).include?('Premier degré') %>>Premier degré (écoles maternelles et élémentaires)</option>
+                      <option value="Second degré"   <%= 'disabled' if (@guest_search.education_levels || []).include?('Second degré') %>>Second degré (collèges et lycées)</option>
+                    </select>
+                    <button type="button"
+                            class="wizard-education-add-btn"
+                            data-action="click->wizard-essentials#addEducationTag">
+                      <i class="fas fa-plus" aria-hidden="true"></i>
+                      Ajouter
+                    </button>
+                  </div>
+                  <%# Champ caché JSON — rempli par Stimulus, soumis avec le formulaire %>
+                  <input type="hidden"
+                         name="guest_search[education_levels]"
+                         value="<%= (@guest_search.education_levels || []).to_json %>"
+                         data-wizard-essentials-target="educationHidden">
+                </div>
+              <% end %>
+            </div>
+
+            <div class="wizard-criterion-footer">
+              <label class="wizard-checkbox-label <%= 'wizard-checkbox-disabled' if criterion[:key] == 'education' && (@guest_search.education_levels || []).empty? %>">
+                <input type="checkbox"
+                       class="wizard-criterion-checkbox"
+                       data-action="change->wizard-essentials#toggleEssential"
+                       data-criterion="<%= criterion[:key] %>"
+                       <%= 'checked' if is_essential %>
+                       <%= 'disabled' if criterion[:key] == 'education' && (@guest_search.education_levels || []).empty? %>
+                       data-wizard-essentials-target="<%= 'educationCheckbox' if criterion[:key] == 'education' %>">
+                <span class="wizard-checkbox-text">Essentiel pour moi</span>
+              </label>
+            </div>
+
+            <input type="hidden"
+                   name="guest_search[<%= criterion[:key] %>]"
+                   value="<%= is_essential ? 3 : 0 %>"
+                   data-wizard-essentials-target="hiddenField"
+                   data-criterion="<%= criterion[:key] %>">
+          </div>
+        <% end %>
+      </div>
+
+      <div class="wizard-nav">
+        <%= link_to wizard_path(:details), class: "btn-wizard-prev" do %>
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+          Précédent
+        <% end %>
+        <button type="submit" class="btn-wizard-next">
+          Suivant
+          <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    <% end %>
+  </div>
+</div>

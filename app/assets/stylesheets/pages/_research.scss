@@ -2,6 +2,10 @@
 // On utilise des CSS custom properties (var(--xxx)) pour les couleurs dynamiques
 // injectées via style inline (--card-color, --tag-color) depuis la vue ERB.
 
+.search-background {
+  position: relative;
+}
+
 // ─── Mise en page générale ─────────────────────────────────────────────────
 
 .research-form-page {
@@ -245,10 +249,12 @@
 
 // ─── Grille des cartes de critères ─────────────────────────────────────────
 
-// auto-fill : remplit le maximum de colonnes, rétrécit jusqu'à 175px
+// auto-fill : remplit le maximum de colonnes.
+// 220px correspond à la même taille min que .wizard-criteria-grid (étapes wizard) :
+// les cards guest et les cards wizard sont ainsi visuellement identiques.
 .criterion-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 14px;
   margin-bottom: 24px;
 
@@ -302,6 +308,18 @@
     color: var(--gray-800);
     margin-bottom: 8px;
     line-height: 1.35;
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+  }
+
+  // Icône Font Awesome (fa-house, fa-train, etc.) dans le titre de la carte.
+  // Elle hérite de la couleur du critère (--card-color) pour la cohérence avec le bandeau haut.
+  .criterion-icon {
+    font-size: 1em;          // proportionnel au texte du titre
+    color: var(--card-color, var(--gray-600));
+    flex-shrink: 0;
+    margin-top: 2px;         // légère compensation d'alignement baseline vs cap-height
   }
 
   .criterion-card-info-btn {
@@ -578,6 +596,7 @@
   }
 
   .criterion-cards-grid {
+    // Sur mobile les cards passent en 2 colonnes (comme le wizard sur tablette)
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 

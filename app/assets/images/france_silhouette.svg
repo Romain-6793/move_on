@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 480" fill="currentColor">
+  <!--
+    Silhouette simplifiée de la France métropolitaine.
+    Utilisée comme watermark à très faible opacité (0.04–0.06) en arrière-plan
+    des pages de recherche.
+
+    Le contour suit approximativement (dans l'ordre horaire depuis le nord-est) :
+      1. Frontière allemande / Alsace (haut-droit)
+      2. Frontière suisse / Jura
+      3. Côte méditerranéenne (angle SE) avec Côte d'Azur
+      4. Frontière espagnole / Pyrénées
+      5. Golfe de Gascogne (côte atlantique SO)
+      6. Presqu'île bretonne (saillie O) et côte normande
+      7. Côte de la Manche (N) et frontière belge (retour NE)
+  -->
+  <path d="
+    M 310,18
+    C 325,22 345,38 360,58
+    C 372,74 378,96 374,118
+    L 370,148
+    C 376,172 382,198 376,224
+    C 368,252 348,274 332,295
+    C 316,316 295,336 278,355
+    C 262,372 238,386 218,394
+    C 196,402 168,404 148,395
+    C 128,386 106,370  90,352
+    C 72,334  58,308  44,280
+    C 28,246  14,208  10,172
+    C 6,138   12,106  22,80
+    C 18,68   8,54   12,40
+    C 18,24   40,14  60,10
+    C 80,4   106,8  124,18
+    C 140,8  162,4  182,12
+    C 202,4  228,8  248,18
+    C 268,10 292,12 310,18
+    Z
+    M 24,112
+    C 14,106  4,110   2,120
+    C 0,132   8,144  20,148
+    C 34,152  46,140  42,126
+    C 40,118  32,116  24,112
+    Z
+  "/>
+</svg>

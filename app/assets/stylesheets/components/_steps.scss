@@ -32,7 +32,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 24px;
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -41,7 +41,7 @@
   background: var(--white-main);
   border-radius: 20px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  padding: 36px 28px;
+  padding: 68px 38px;
   text-align: center;
   transition: transform 0.25s;
 

@@ -42,3 +42,4 @@
 .DS_Store
 
 .cursorignore
+db/communes_fr.geojson

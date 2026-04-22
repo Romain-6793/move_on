@@ -11,7 +11,7 @@
     <%# Onglets de navigation – seul "Mon profil" est actif pour l'instant %>
     <nav class="profile-tabs" aria-label="Navigation du profil">
       <a href="#" class="profile-tab profile-tab--active">Mon profil</a>
-      <a href="<%= new_research_path %>" class="profile-tab">Nouvelle recherche</a>
+      <a href="<%= new_research_wizard_path %>" class="profile-tab">Nouvelle recherche</a>
       <a href="<%= maps_path %>" class="profile-tab">Trouver sur la carte</a>
     </nav>
 
@@ -37,7 +37,7 @@
         <div class="search-empty">
           <i class="fa-solid fa-magnifying-glass search-empty-icon"></i>
           <p class="search-empty-text">Vous n'avez pas encore de recherche sauvegardée.</p>
-          <%= link_to "Créer ma première recherche", new_research_path, class: "btn profile-btn" %>
+          <%= link_to "Créer ma première recherche", new_research_wizard_path, class: "btn profile-btn" %>
         </div>
       <% end %>
     </section>

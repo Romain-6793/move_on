@@ -52,7 +52,10 @@ export default class extends Controller {
     // transmis dans les liens des popups pour que le prochain maps#show puisse
     // recharger le contexte et, à son tour, afficher les 4 autres villes.
     // Vide pour les visiteurs (le fallback se fait via session[:guest_search_id]).
-    researchId: { type: String, default: "" }
+    researchId: { type: String, default: "" },
+    // pinUrl : URL de l'image custom utilisée comme marqueur fallback (rank inconnu).
+    // Passée depuis la vue ERB via asset_path pour bénéficier du fingerprinting Assets.
+    pinUrl: { type: String, default: "" }
   }
 
   // ── Labels FR par kind — affichés au survol des pastilles essentielles ────
@@ -182,9 +185,25 @@ export default class extends Controller {
         .setLngLat([this.lngValue, this.latValue])
         .setPopup(popup)
         .addTo(this.map)
+    } else if (this.pinUrlValue) {
+      // Fallback avec image custom : un élément DOM dont le background est le pin Move On.
+      // anchor: "bottom" → la pointe de l'image touche exactement les coordonnées.
+      const markerEl = document.createElement("div")
+      markerEl.style.cssText = [
+        "width: 40px",
+        "height: 40px",
+        `background-image: url('${this.pinUrlValue}')`,
+        "background-size: contain",
+        "background-repeat: no-repeat",
+        "background-position: center bottom",
+        "cursor: pointer"
+      ].join(";")
+      new mapboxgl.Marker({ element: markerEl, anchor: "bottom" })
+        .setLngLat([this.lngValue, this.latValue])
+        .setPopup(popup)
+        .addTo(this.map)
     } else {
-      // Fallback : marqueur Mapbox standard quand on ne connaît pas le rang
-      // (ex : ville consultée directement via /maps/:id sans ?rank=).
+      // Dernier fallback : marqueur Mapbox standard si pas d'image disponible.
       new mapboxgl.Marker({ color: "#2E9EAD" })
         .setLngLat([this.lngValue, this.latValue])
         .setPopup(popup)

@@ -35,9 +35,9 @@
       </section>
     </div>
     <%# Lien retour — history.back() permet de revenir à la page précédente (résultats ou carte résultats) %>
-    <a href="javascript:history.back()" class="map-page__back-link">
+    <button type="button" onclick="history.back()" class="map-page__back-link">
       ← Retour
-    </a>
+    </button>
   </div>
   <%#
     Conteneur Mapbox — piloté par map_controller.js.
@@ -73,6 +73,7 @@
     data-map-zoom-value="13"
     data-map-city-name-value="<%= @city.nom_com %>"
     data-map-rank-value="<%= @city_rank || 0 %>"
+    data-map-pin-url-value="<%= asset_path('pin_move_on.png') %>"
     data-map-geolocate-value="false"
     data-map-other-cities-value="<%= @other_cities_data.to_json %>"
     data-map-poi-kinds-value="<%= @poi_kinds.to_json %>"

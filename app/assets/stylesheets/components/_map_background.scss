@@ -4,13 +4,14 @@
 
   &::before {
     content: "";
-    position: absolute;
+    position: fixed;
     inset: 0;
     background-image: url('/assets/map-background.png');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.15; // opacité uniquement sur l'image
+    background-attachment: fixed;
+    opacity: 0.10; // opacité uniquement sur l'image
     z-index: 0;
   }
 

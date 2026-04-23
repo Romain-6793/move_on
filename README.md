@@ -1,5 +1,102 @@
-Rails app generated with [lewagon/rails-templates](https://github.com/lewagon/rails-templates), created by the [Le Wagon coding bootcamp](https://www.lewagon.com) team.
+# Move On 🏡
 
+**Move On** est une application web Rails qui aide les particuliers à trouver la ville idéale pour s'installer en France, en fonction de leurs critères personnels (transports, santé, éducation, immobilier, cadre de vie, etc.).
+
+🌐 **Production** : [https://www.moveonfrance.me](https://www.moveonfrance.me)
+
+---
+
+## Fonctionnalités
+
+- **Wizard de recherche en 4 étapes** — critères essentiels, priorités, filtres géographiques (côte, montagne, densité, région)
+- **Classement des 5 meilleures villes** — score composite calculé en SQL via `CityRankerService`
+- **Carte interactive Mapbox** — affichage des villes classées, points d'intérêt (POI) filtrés par critère
+- **Mode visiteur** — recherche sans inscription via `GuestSearch` (session)
+- **Export PDF** — fiche de résultats téléchargeable (WickedPDF)
+- **Urban Assist** — chatbot IA (RubyLLM / OpenAI) pour explorer les villes en langage naturel
+- **Authentification** — Devise (inscription, connexion, reset de mot de passe)
+- **Autorisations** — Pundit (chaque utilisateur n'accède qu'à ses propres données)
+
+---
+
+## Stack technique
+
+| Couche | Technologie |
+|---|---|
+| Framework | Ruby on Rails 7.1 |
+| Base de données | PostgreSQL |
+| Authentification | Devise |
+| Autorisations | Pundit |
+| Wizard multi-étapes | Wicked |
+| Carte | Mapbox GL JS v3.11 |
+| Frontend | Stimulus, Turbo, Bootstrap |
+| PDF | WickedPDF + wkhtmltopdf |
+| IA / chatbot | RubyLLM (OpenAI) |
+| Jobs asynchrones | Solid Queue |
+| Recherche | pg_search |
+| Stockage fichiers | Active Storage |
+
+---
+
+## Installation locale
+
+### Prérequis
+
+- Ruby 3.x
+- PostgreSQL
+- wkhtmltopdf (pour l'export PDF)
+
+### Setup
+
+```bash
+bundle install
+rails db:create db:migrate
+rails db:seed          # optionnel — données de démonstration
+rails server
+```
+
+### Variables d'environnement
+
+Créer un fichier `.env` ou configurer les credentials Rails (`rails credentials:edit`) :
+
+```
+MAPBOX_API_KEY=pk.xxx...
+OPENAI_API_KEY=sk-xxx...
+```
+
+---
+
+## Architecture
+
+```
+app/
+├── controllers/
+│   ├── search_steps_controller.rb       # Wizard recherche (utilisateurs)
+│   ├── guest_search_steps_controller.rb # Wizard recherche (visiteurs)
+│   ├── researches_controller.rb         # Résultats, édition, export PDF
+│   ├── maps_controller.rb               # Cartes Mapbox
+│   ├── messages_controller.rb           # Chatbot SSE streaming
+│   └── chats_controller.rb
+├── models/
+│   ├── city.rb                          # ~36 000 communes françaises
+│   ├── research.rb                      # Recherche utilisateur
+│   ├── guest_search.rb                  # Recherche visiteur (session)
+│   ├── user.rb
+│   └── chat.rb / message.rb
+├── services/
+│   ├── city_ranker_service.rb           # Score composite SQL
+│   ├── city_image_fetcher_service.rb    # Images Wikipedia (avec cache)
+│   └── urban_assist/
+│       ├── send_message.rb              # Orchestration LLM + SSE
+│       └── cities_tool.rb              # Outil RubyLLM pour le chatbot
+└── policies/                            # Pundit
+```
+
+---
+
+## Base de données — champs CSV source
+
+La base de données est construite à partir du fichier `BD_MOVE_ON_20260415.csv`.
 
 # fichier CSV BD_MOVE_ON_20260415.csv
 

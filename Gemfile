@@ -82,6 +82,8 @@ gem "redcarpet", "~> 3.6"
 gem "wicked_pdf"
 gem "wkhtmltopdf-binary"
 
+gem "aws-sdk-s3", require: false
+
 group :development, :test do
   gem "dotenv-rails"
   # Faker génère des données réalistes pour les seeds (noms, textes, nombres…)

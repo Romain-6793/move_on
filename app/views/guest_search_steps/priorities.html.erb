@@ -21,11 +21,13 @@
 <% essential_criteria     = wizard_criteria.select { |c| @guest_search.send(c[:key]).to_i == 3 } %>
 <% non_essential_criteria = wizard_criteria.reject { |c| @guest_search.send(c[:key]).to_i == 3 } %>
 <% education_has_levels = (@guest_search.education_levels || []).any? %>
-<div class="search-wizard-page search-background">
-  <%= render 'search_steps/progress_bar',
+<div class="search-wizard-page search-background map-background">
+  <%# Barre de progression partagée avec le wizard utilisateur connecté %>
+  <div class="wizard-card mb-4"><%= render 'search_steps/progress_bar',
         current_step: 3,
         total_steps:  4,
         step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+  </div>
   <div class="wizard-card"
        data-controller="wizard-priorities">
     <div class="wizard-card-header">

@@ -11,7 +11,7 @@
     - Étape courante   → var(--blue-dark)     #0288D1
     - Étape future     → var(--gray-300)      #E0E0E0
 %>
-<div class="wizard-progress" aria-label="Progression du formulaire">
+<div class="wizard-progress my-4" aria-label="Progression du formulaire">
   <% step_labels.each_with_index do |label, i| %>
     <% step_number = i + 1 %>
     <%#
@@ -23,28 +23,25 @@
     <% state = if step_number < current_step then 'completed'
                 elsif step_number == current_step then 'current'
                 else 'upcoming' end %>
-
-    <%# Trait de connexion entre les pastilles (pas avant la première) %>
-    <% if i > 0 %>
-      <div class="wizard-progress-line wizard-progress-line--<%= step_number <= current_step ? 'done' : 'todo' %>"></div>
-    <% end %>
-
-    <div class="wizard-progress-step wizard-progress-step--<%= state %>"
+      <%# Trait de connexion entre les pastilles (pas avant la première) %>
+      <% if i > 0 %>
+        <div class="wizard-progress-line wizard-progress-line--<%= step_number <= current_step ? 'done' : 'todo' %>"></div>
+      <% end %>
+      <div class="wizard-progress-step wizard-progress-step--<%= state %>"
          aria-current="<%= 'step' if state == 'current' %>">
-      <div class="wizard-progress-dot">
-        <% if state == 'completed' %>
-          <%# Coche pour les étapes terminées — icône Font Awesome %>
-          <i class="fas fa-check" aria-hidden="true"></i>
-        <% else %>
-          <%= step_number %>
-        <% end %>
+        <div class="wizard-progress-dot">
+          <% if state == 'completed' %>
+            <%# Coche pour les étapes terminées — icône Font Awesome %>
+            <i class="fas fa-check" aria-hidden="true"></i>
+          <% else %>
+            <%= step_number %>
+          <% end %>
+        </div>
+        <span class="wizard-progress-label"><%= label %></span>
       </div>
-      <span class="wizard-progress-label"><%= label %></span>
-    </div>
-  <% end %>
-</div>
-
-<%# Texte "Étape N sur N" accessible aux lecteurs d'écran et visible sur mobile %>
-<p class="wizard-step-counter" aria-live="polite">
-  Étape <%= current_step %> sur <%= total_steps %>
-</p>
+    <% end %>
+  </div>
+  <%# Texte "Étape N sur N" accessible aux lecteurs d'écran et visible sur mobile %>
+  <p class="wizard-step-counter visually-hidden" aria-live="polite">
+    Étape <%= current_step %> sur <%= total_steps %>
+  </p>

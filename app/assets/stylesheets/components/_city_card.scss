@@ -340,9 +340,13 @@
   padding-bottom: 80px;
 }
 
-.results-page.container {
+// Wrapper interne centré : dissocie le fond pleine largeur (sur .results-page)
+// du contenu contraint. Ainsi map-background couvre 100 % de la largeur,
+// tandis que le contenu reste à 80 % max 1700px.
+.results-page-inner {
   width: 80%;
   max-width: 1700px;
+  margin: 0 auto;
 }
 
 // En-tête de la page résultats : titre + sous-titre à gauche, bouton carte à droite

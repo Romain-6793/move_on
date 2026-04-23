@@ -13,20 +13,24 @@ module ApplicationHelper
                      "Plus le prix est accessible et le marché actif, plus la note est élevée.",
     'transport_network' => "Score calculé à partir de la densité de transports en commun " \
                            "(gares, arrêts de bus, tramways) référencés dans les données OpenStreetMap.",
-    'health' => "Score basé sur la présence de professionnels de santé, hôpitaux, " \
+    'health' => "Score basé sur la présence de professionnels de santé, hôpitaux, (données APL/data.gouv) " \
                 "pharmacies et établissements médicaux dans la commune.",
     'commercial_life' => "Score reflétant la vitalité commerciale : nombre de commerces " \
                          "de proximité, marchés, boutiques et services référencés.",
     'cultural_heritage' => "Score basé sur les lieux culturels (musées, théâtres, cinémas) " \
                            "et le patrimoine historique recensé dans la commune.",
-    'education' => "Score calculé à partir du nombre d'établissements scolaires disponibles " \
-                   "pour les niveaux que vous avez sélectionnés (crèches, écoles, collèges, lycées).",
     'leisures_and_sports' => "Score basé sur les équipements sportifs, parcs, salles de sport " \
                              "et lieux de loisirs recensés dans la commune.",
     'outdoor_living' => "Score reflétant la qualité de vie au grand air : espaces verts, " \
                         "proximité de la nature, sentiers de randonnée.",
-    'sunshine' => "Score basé sur le nombre d'heures d'ensoleillement annuel moyen " \
-                  "de la commune (données météo)."
+    'sunshine' => "Score basé sur le nombre de jours de pluie annuels moyens
+                  de la commune (données météo).",
+    'job_market' => "Score basé sur le différentiel de la ville ayant le plus faible taux de chômage avec 
+                     celle ayant le plus fort taux de chômage (donnée INSEE 2024)",            
+    'near_big_city' => "Score basé sur la taille de l'unité urbaine de la ville. À partir d'une taille de 6
+                       (donnée INSEE) on considère que la ville est inclue dans l'aire d'une métropole",
+    'education' => "Score calculé à partir du nombre d'établissements scolaires disponibles " \
+                   "pour les niveaux que vous avez sélectionnés (crèches, écoles, collèges, lycées)."
   }.freeze
 
   # Retourne la description d'un critère donné, ou une chaîne vide si clé inconnue.

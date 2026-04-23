@@ -73,7 +73,7 @@ export default class extends Controller {
   static POI_COLORS = {
     sport: "#7CB342", // --green-primary
     culture: "#4FC3F7", // --blue-primary
-    nature: "#558B2F", // --green-dark
+    loisirs: "#558B2F", // --green-dark
     commerce: "#FFCA28", // --yellow-accent
     transport: "#0288D1", // --blue-dark
     education: "#8D6E63", // --brown-primary

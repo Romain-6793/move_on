@@ -17,7 +17,8 @@ class NormalizePoiKinds < ActiveRecord::Migration[7.1]
   # Mettre à jour si de nouveaux types de POI sont importés.
   NORMALIZATION = {
     "Equipements culturels et socioculturels" => "culture",
-    "Equipements de loisirs"                 => "sport"
+    "Equipements de loisirs"                 => "loisir",
+    "Equipements sportifs"                   => "sport"
   }.freeze
 
   def up

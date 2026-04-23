@@ -27,11 +27,13 @@
   { key: 'near_big_city',       title: 'Proche d\'une métropole', icon: 'fa-city',            color: '#FF8A65' },
   { key: 'education',           title: 'Éducation',               icon: 'fa-graduation-cap',  color: '#0288D1' },
 ] %>
-<div class="search-wizard-page search-background">
-  <%= render 'progress_bar',
+<div class="search-wizard-page search-background map-background">
+  <%# Barre de progression partagée avec le wizard utilisateur connecté %>
+  <div class="wizard-card mb-4"><%= render 'search_steps/progress_bar',
         current_step: 2,
         total_steps:  4,
         step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+  </div>
   <div class="wizard-card"
        data-controller="wizard-essentials"
        data-wizard-essentials-limit-value="3">

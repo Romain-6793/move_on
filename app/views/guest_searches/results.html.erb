@@ -1,36 +1,40 @@
 <%# Page de résultats pour un visiteur anonyme (GuestSearch). %>
 <%# search-background : silhouette SVG de la France en watermark discret (opacity 0.05) %>
-<div class="results-page container search-background">
-  <div class="results-page-header">
-    <div class="results-page-header__text">
-      <h1 class="results-page-title">
-        <%= @guest_search.research_name.presence || "Vos résultats" %>
-      </h1>
-      <p class="results-page-subtitle">
-        Les 5 villes qui correspondent le mieux à vos critères
-      </p>
+<%# map-background pleine largeur : pas de container sur ce div, le fond couvre tout l'écran %>
+<div class="results-page search-background map-background">
+  <%# results-page-inner centre et contraint le contenu (80%, max 1700px) %>
+  <div class="results-page-inner">
+    <div class="results-page-header">
+      <div class="results-page-header__text">
+        <h1 class="results-page-title">
+          <%= @guest_search.research_name.presence || "Vos résultats" %>
+        </h1>
+        <p class="results-page-subtitle">
+          Les 5 villes qui correspondent le mieux à vos critères
+        </p>
+      </div>
+      <%#
+        Bouton "Afficher sur la carte" : maps#results lira la GuestSearch depuis la session
+        (session[:guest_search_id]) — pas besoin de passer l'id en paramètre ici.
+      %>
+      <%= link_to results_maps_path, class: "results-page__map-cta" do %>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+        </svg>
+        Afficher sur la carte
+      <% end %>
     </div>
-    <%#
-      Bouton "Afficher sur la carte" : maps#results lira la GuestSearch depuis la session
-      (session[:guest_search_id]) — pas besoin de passer l'id en paramètre ici.
-    %>
-    <%= link_to results_maps_path, class: "results-page__map-cta" do %>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-      </svg>
-      Afficher sur la carte
-    <% end %>
-  </div>
-  <div class="disclaimer">
-    <p>ATTENTION</p>
-    <p>Nos scores sont globalement fiables mais certaines données sont encore manquantes, 
-      c'est pourquoi vous pouvez voir des "?" après certaines jauges. Ou des scores bas sur des données 
-      que nous avons partiellement agrégées (notamment concernant la culture, les sports et la santé).</p>
-  </div>
-  <div class="city-cards-grid">
-    <% @ranked_cities.each_with_index do |city, i| %>
-      <%= render 'shared/city_card', city: city, index: i + 1, search: @guest_search %>
-    <% end %>
+    <div class="disclaimer">
+      <p>ATTENTION</p>
+      <p>Nos scores sont globalement fiables mais certaines données sont encore manquantes,
+        c'est pourquoi vous pouvez voir des "?" après certaines jauges. Ou des scores bas sur des données
+        que nous avons partiellement agrégées (notamment concernant la culture, les sports et la santé).</p>
+    </div>
+    <div class="city-cards-grid">
+      <% @ranked_cities.each_with_index do |city, i| %>
+        <%= render 'shared/city_card', city: city, index: i + 1, search: @guest_search %>
+      <% end %>
+    </div>
   </div>
 </div>

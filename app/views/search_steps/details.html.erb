@@ -11,12 +11,13 @@
     - L'affichage dynamique de la valeur du slider de population
     - La synchronisation des boutons radio → champs cachés coast/mountain/no_filters
 %>
-<div class="search-wizard-page search-background">
-  <%# Barre de progression en haut du wizard %>
-  <%= render 'progress_bar',
+<div class="search-wizard-page search-background map-background">
+  <%# Barre de progression partagée avec le wizard utilisateur connecté %>
+  <div class="wizard-card mb-4"><%= render 'search_steps/progress_bar',
         current_step: 1,
         total_steps:  4,
         step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+  </div>
   <div class="wizard-card" data-controller="wizard-details">
     <div class="wizard-card-header">
       <h1 class="wizard-card-title">
@@ -125,6 +126,8 @@
           <span>Toutes tailles</span>
           <span>250 000 hab.</span>
         </div>
+        <p class="wizard-field-hint mt-2">*Nous ne dépassons pas 250 000 habitants car 
+          nos grandes villes sont découpées en arrondissements.</p>
       </div>
       <%# ── D) Filtre par région ─────────────────────────────────── %>
       <%#

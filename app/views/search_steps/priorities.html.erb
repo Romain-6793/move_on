@@ -32,16 +32,18 @@
 <% non_essential_criteria = wizard_criteria.reject { |c| @research.send(c[:key]).to_i == 3 } %>
 <%# État initial des niveaux d'éducation : détermine si la checkbox est active au rendu %>
 <% education_has_levels = (@research.education_levels || []).any? %>
-<div class="search-wizard-page search-background">
-  <%= render 'progress_bar',
-        current_step: 3,
-        total_steps:  4,
-        step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+<div class="search-wizard-page search-background map-background">
   <%#
     data-controller connecte le contrôleur Stimulus "wizard-priorities"
     à toute la carte. Il intercepte les changements de checkboxes et gère
     la synchronisation entre les deux grilles.
   %>
+  <%# Barre de progression partagée avec le wizard utilisateur connecté %>
+  <div class="wizard-card mb-4"><%= render 'search_steps/progress_bar',
+        current_step: 3,
+        total_steps:  4,
+        step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+  </div>
   <div class="wizard-card"
        data-controller="wizard-priorities">
     <div class="wizard-card-header">

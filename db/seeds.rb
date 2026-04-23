@@ -149,7 +149,8 @@ puts "\n\n✅ Seeds terminées : #{City.count} communes importées (#{errors} er
 # Ce mapping doit être mis à jour si de nouveaux types sont importés.
 POI_KIND_NORMALIZATION = {
   "Equipements culturels et socioculturels" => "culture",
-  "Equipements de loisirs"                 => "sport"
+  "Equipements de loisirs"                 => "loisir",
+  "Equipements sportifs" => "sport"
   # Ajouter ici les autres types au fur et à mesure de leur import :
   # "Equipements de santé"   => "health",
   # "Equipements de transport" => "transport",

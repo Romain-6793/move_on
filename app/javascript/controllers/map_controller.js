@@ -71,16 +71,18 @@ export default class extends Controller {
     health: "Santé"
   }
 
-  // ── Couleurs par kind de POI — cohérentes avec la palette Move On ──────────
-  // On définit les couleurs ici pour les réutiliser dans la légende ET dans les layers.
+  // ── Couleurs par kind de POI — cohérentes avec la légende de maps/show.html.erb ──
+  // Les 3 kinds réellement affichés (sport, loisir, culture) reprennent exactement
+  // les couleurs de la légende pour que marqueurs et légende soient identiques.
+  // Attention : le kind en base est "loisir" (sans 's') — voir migration NormalizePoiKinds.
   static POI_COLORS = {
-    sport: "#7CB342", // --green-primary
-    culture: "#4FC3F7", // --blue-primary
-    loisirs: "#558B2F", // --green-dark
+    sport: "#EF5350",   // rouge — Équipements sportifs
+    loisir: "#E57373",  // rouge clair — Équipements de loisirs
+    culture: "#9575CD", // violet — Équipements culturels et socioculturels
     commerce: "#FFCA28", // --yellow-accent
     transport: "#0288D1", // --blue-dark
     education: "#8D6E63", // --brown-primary
-    health: "#2E9EAD"  // --blue-teal
+    health: "#2E9EAD"   // --blue-teal
   }
 
   connect() {
@@ -311,8 +313,8 @@ export default class extends Controller {
       const angle = (index / kinds.length) * 2 * Math.PI - Math.PI / 2
       // Correction de la longitude par cos(lat) pour éviter que le cercle
       // soit écrasé aux latitudes élevées (projection Web Mercator).
-      const lng   = center.lng + (radius * Math.cos(angle)) / Math.cos(center.lat * Math.PI / 180)
-      const lat   = center.lat + radius * Math.sin(angle)
+      const lng = center.lng + (radius * Math.cos(angle)) / Math.cos(center.lat * Math.PI / 180)
+      const lat = center.lat + radius * Math.sin(angle)
 
       const color = this.constructor.POI_COLORS[kind] || "#757575"
       const label = this.constructor.POI_LABELS[kind] || kind
@@ -469,12 +471,13 @@ export default class extends Controller {
       filter: ["!", ["has", "point_count"]], // exclut les clusters
       paint: {
         "circle-radius": 7,
-        // match compare la propriété "kind" à une liste de cas, avec un fallback gris
+        // match compare la propriété "kind" à une liste de cas, avec un fallback gris.
+        // Les couleurs sont synchronisées avec static POI_COLORS ET la légende de maps/show.html.erb.
         "circle-color": [
           "match", ["get", "kind"],
-          "sport", "#7CB342",
-          "culture", "#4FC3F7",
-          "nature", "#558B2F",
+          "sport", "#EF5350",  // rouge — Équipements sportifs
+          "loisir", "#E57373",  // rouge clair — Équipements de loisirs
+          "culture", "#9575CD",  // violet — Équipements culturels et socioculturels
           "commerce", "#FFCA28",
           "transport", "#0288D1",
           "education", "#8D6E63",
@@ -528,11 +531,11 @@ export default class extends Controller {
           <li>
             Transports : <strong>${props.transport_network_score}</strong>
             ${props.transport_network_caption
-              ? `<div class="map-popup__hint">${props.transport_network_caption}</div>`
-              : ""}
+        ? `<div class="map-popup__hint">${props.transport_network_caption}</div>`
+        : ""}
             ${props.transport_component_train != null
-              ? `<div class="map-popup__breakdown">Train ×4 : ${props.transport_component_train} · Métro ×3 : ${props.transport_component_metro} · Tram ×2 : ${props.transport_component_tram} · Bus : ${props.transport_component_bus}</div>`
-              : ""}
+        ? `<div class="map-popup__breakdown">Train ×4 : ${props.transport_component_train} · Métro ×3 : ${props.transport_component_metro} · Tram ×2 : ${props.transport_component_tram} · Bus : ${props.transport_component_bus}</div>`
+        : ""}
           </li>
           <li>Éducation : ${props.education_score}</li>
           <li>Santé : ${props.health_score}</li>
@@ -544,7 +547,7 @@ export default class extends Controller {
 
   poiPopupHtml(props) {
     const colors = {
-      sport: "#7CB342", culture: "#4FC3F7", nature: "#558B2F",
+      sport: "#EF5350", culture: "#9575CD", loisir: "#E57373", nature: "#558B2F",
       commerce: "#FFCA28", transport: "#0288D1", education: "#8D6E63", health: "#2E9EAD"
     }
     const color = colors[props.kind] || "#757575"

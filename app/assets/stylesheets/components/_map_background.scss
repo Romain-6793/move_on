@@ -11,8 +11,11 @@
     background-repeat: no-repeat;
     background-position: center;
     background-attachment: fixed;
-    opacity: 0.10; // opacité uniquement sur l'image
+    opacity: 0.15; // opacité uniquement sur l'image
     z-index: 0;
+    // Le pseudo-élément couvre tout le viewport (inset: 0) et intercepterait
+    // les clics sur tous les éléments sous-jacents (footer, liens…) sans ça.
+    pointer-events: none;
   }
 
   // Le contenu reste au-dessus et opaque
@@ -20,4 +23,8 @@
     position: relative;
     z-index: 1;
   }
+}
+
+.map-background.home-bg::before {
+  opacity: 0.10;
 }

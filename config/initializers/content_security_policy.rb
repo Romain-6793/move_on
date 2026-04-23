@@ -30,6 +30,13 @@ Rails.application.configure do
   # Le nonce est injecté automatiquement par Rails dans les balises <script>
   # générées par les helpers (importmap, etc.), ce qui permet d'autoriser
   # les scripts inline légitimes sans recourir à unsafe_inline.
-  config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
+  #
+  # Fallback SecureRandom : request.session.id peut être nil lors de la toute
+  # première requête (avant que le cookie de session soit posé). Sans fallback,
+  # le nonce serait une chaîne vide rejetée par le navigateur, empêchant le
+  # chargement de Turbo et silenciant notamment le lien "Se déconnecter".
+  config.content_security_policy_nonce_generator = ->(request) {
+    request.session.id&.to_s || SecureRandom.base64(16)
+  }
   config.content_security_policy_nonce_directives = %w[script-src]
 end

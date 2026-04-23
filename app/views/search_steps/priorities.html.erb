@@ -38,12 +38,14 @@
     à toute la carte. Il intercepte les changements de checkboxes et gère
     la synchronisation entre les deux grilles.
   %>
-  <div class="wizard-card"
-       data-controller="wizard-priorities">
-    <%= render 'progress_bar',
+  <%# Barre de progression partagée avec le wizard utilisateur connecté %>
+  <div class="wizard-card mb-4"><%= render 'search_steps/progress_bar',
         current_step: 3,
         total_steps:  4,
         step_labels:  ['Votre projet', 'Critères essentiels', 'Priorités', 'Récapitulatif'] %>
+  </div>
+  <div class="wizard-card"
+       data-controller="wizard-priorities">
     <div class="wizard-card-header">
       <h1 class="wizard-card-title">
         <i class="fas fa-sliders-h wizard-title-icon" aria-hidden="true"></i>

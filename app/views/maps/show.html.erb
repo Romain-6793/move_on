@@ -35,7 +35,7 @@
       </section>
     </div>
     <%# Lien retour — history.back() permet de revenir à la page précédente (résultats ou carte résultats) %>
-    <button type="button" onclick="history.back()" class="btn-hero-primary">
+    <button type="button" data-controller="back" data-action="click->back#back" class="btn-hero-primary">
       ← Retour
     </button>
   </div>

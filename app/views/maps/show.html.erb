@@ -12,7 +12,7 @@
       <%= [@city.nom_dep, @city.nom_reg].compact.join(" · ") %>
     </p>
     <%# Lien retour — history.back() permet de revenir à la page précédente (résultats ou carte résultats) %>
-    <button type="button" data-controller="back" data-action="click->back#back" class="map-page__back-link">
+    <button type="button" data-controller="back" data-action="click->back#back" class="map-page__back-link btn-hero-primary">
       ← Retour
     </button>
     <%# Légende POI %>

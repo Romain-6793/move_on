@@ -198,7 +198,7 @@ else
   poi_file = Rails.root.join('db', 'POI_VF.csv')
   
   unless File.exist?(poi_file)
-    abort("� Fichier POI_VF.csv introuvable dans db/. Veuillez le placer dans le dossier db/ avant de lancer la seed.")
+    abort("  Fichier POI_VF.csv introuvable dans db/. Veuillez le placer dans le dossier db/ avant de lancer la seed.")
   end
   
   puts "📂 Utilisation du fichier local : #{poi_file}"

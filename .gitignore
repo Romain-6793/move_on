@@ -43,3 +43,4 @@
 
 .cursorignore
 db/communes_fr.geojson
+db/POI_VF.csv

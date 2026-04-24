@@ -32,7 +32,7 @@
       form_with avec une URL manuelle (wizard_path = URL de l'étape courante).
       method: :patch car Wicked utilise PATCH pour avancer dans le wizard.
     %>
-    <%= form_with url: wizard_path, method: :patch, html: { class: 'wizard-form' } do |f| %>
+    <%= form_with url: wizard_path, method: :patch, html: { class: 'wizard-form' }, data: { turbo: false } do |f| %>
       <%# ── A) Nom de la recherche ───────────────────────────────── %>
       <div class="wizard-field-group">
         <label for="research_research_name" class="wizard-field-label">
@@ -52,6 +52,11 @@
                class="wizard-text-input"
                required
                autocomplete="off">
+        <% if @research.errors[:research_name].any? %>
+          <p style="color: #E53935; font-size: 0.875rem; margin-top: 0.5rem;">
+            ⚠️ <%= @research.errors[:research_name].first %>
+          </p>
+        <% end %>
         <p class="wizard-field-hint">Ce nom vous permettra de retrouver et comparer vos recherches.</p>
       </div>
       <%# ── B) Filtres géographiques ─────────────────────────────── %>

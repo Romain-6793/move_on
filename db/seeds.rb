@@ -167,7 +167,7 @@ puts "\n\n✅ Seeds terminées : #{City.count} communes importées (#{errors} er
 # mais le reste de l'app (map_controller.js, MapsController) attend des identifiants
 # courts en anglais pour les couleurs et les filtres de recherche.
 # Ce mapping doit être mis à jour si de nouveaux types sont importés.
-POI_KIND_NORMALIZATION = {
+
 POI_KIND_NORMALIZATION = {
   "Equipements culturels et socioculturels" => "culture",
   "Equipements sportifs"                   => "sport",

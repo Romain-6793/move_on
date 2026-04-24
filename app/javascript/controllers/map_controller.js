@@ -74,13 +74,13 @@ export default class extends Controller {
   // ── Couleurs par kind de POI — cohérentes avec la palette Move On ──────────
   // On définit les couleurs ici pour les réutiliser dans la légende ET dans les layers.
   static POI_COLORS = {
-    sport: "#7CB342", // --green-primary
-    culture: "#4FC3F7", // --blue-primary
-    loisirs: "#558B2F", // --green-dark
-    commerce: "#FFCA28", // --yellow-accent
-    transport: "#0288D1", // --blue-dark
-    education: "#8D6E63", // --brown-primary
-    health: "#2E9EAD"  // --blue-teal
+    sport: "#E57373",  // rouge — Équipements sportifs
+    culture: "#9575CD",  // violet — Équipements culturels et socioculturels
+    nature: "#558B2F",
+    commerce: "#FFCA28",
+    transport: "#2E9EAD",
+    education: "#0288D1",
+    health: "#F48FB1",
   }
 
   connect() {
@@ -314,8 +314,8 @@ export default class extends Controller {
       const angle = (index / kinds.length) * 2 * Math.PI - Math.PI / 2
       // Correction de la longitude par cos(lat) pour éviter que le cercle
       // soit écrasé aux latitudes élevées (projection Web Mercator).
-      const lng   = center.lng + (radius * Math.cos(angle)) / Math.cos(center.lat * Math.PI / 180)
-      const lat   = center.lat + radius * Math.sin(angle)
+      const lng = center.lng + (radius * Math.cos(angle)) / Math.cos(center.lat * Math.PI / 180)
+      const lat = center.lat + radius * Math.sin(angle)
 
       const color = this.constructor.POI_COLORS[kind] || "#757575"
       const label = this.constructor.POI_LABELS[kind] || kind
@@ -342,21 +342,21 @@ export default class extends Controller {
     try {
       const inseeCode = this.inseeValue.toString().padStart(5, '0')
       const response = await fetch(`https://apicarto.ign.fr/api/cadastre/commune?code_insee=${inseeCode}`)
-      
+
       if (!response.ok) {
         console.warn(`[MapController] Impossible de charger les limites pour INSEE ${inseeCode}`)
         return
       }
 
       const data = await response.json()
-      
+
       if (data.features && data.features.length > 0) {
         // Ajoute la source GeoJSON des limites communales
         this.map.addSource('commune-boundary', {
           type: 'geojson',
           data: data
         })
-        
+
         // Remplissage semi-transparent
         this.map.addLayer({
           id: 'commune-fill',
@@ -367,7 +367,7 @@ export default class extends Controller {
             'fill-opacity': 0.08
           }
         })
-        
+
         // Contour de la commune
         this.map.addLayer({
           id: 'commune-outline',
@@ -379,7 +379,7 @@ export default class extends Controller {
             'line-opacity': 0.7
           }
         })
-        
+
         console.log(`[MapController] Limites communales chargées pour ${inseeCode}`)
       }
     } catch (error) {
@@ -527,13 +527,13 @@ export default class extends Controller {
         // match compare la propriété "kind" à une liste de cas, avec un fallback gris
         "circle-color": [
           "match", ["get", "kind"],
-          "sport", "#7CB342",
-          "culture", "#4FC3F7",
+          "sport", "#E57373",  // rouge — Équipements sportifs
+          "culture", "#9575CD",  // violet — Équipements culturels et socioculturels
           "nature", "#558B2F",
           "commerce", "#FFCA28",
-          "transport", "#0288D1",
-          "education", "#8D6E63",
-          "health", "#2E9EAD",
+          "transport", "#2E9EAD",
+          "education", "#0288D1",
+          "health", "#F48FB1",
           "#757575" // fallback gris si kind inconnu
         ],
         "circle-stroke-width": 1.5,
@@ -583,11 +583,11 @@ export default class extends Controller {
           <li>
             Transports : <strong>${props.transport_network_score}</strong>
             ${props.transport_network_caption
-              ? `<div class="map-popup__hint">${props.transport_network_caption}</div>`
-              : ""}
+        ? `<div class="map-popup__hint">${props.transport_network_caption}</div>`
+        : ""}
             ${props.transport_component_train != null
-              ? `<div class="map-popup__breakdown">Train ×4 : ${props.transport_component_train} · Métro ×3 : ${props.transport_component_metro} · Tram ×2 : ${props.transport_component_tram} · Bus : ${props.transport_component_bus}</div>`
-              : ""}
+        ? `<div class="map-popup__breakdown">Train ×4 : ${props.transport_component_train} · Métro ×3 : ${props.transport_component_metro} · Tram ×2 : ${props.transport_component_tram} · Bus : ${props.transport_component_bus}</div>`
+        : ""}
           </li>
           <li>Éducation : ${props.education_score}</li>
           <li>Santé : ${props.health_score}</li>
@@ -599,8 +599,8 @@ export default class extends Controller {
 
   poiPopupHtml(props) {
     const colors = {
-      sport: "#7CB342", culture: "#4FC3F7", nature: "#558B2F",
-      commerce: "#FFCA28", transport: "#0288D1", education: "#8D6E63", health: "#2E9EAD"
+      sport: "#E57373", culture: "#9575CD", nature: "#558B2F",
+      commerce: "#FFCA28", transport: "#2E9EAD", education: "#0288D1", health: "#F48FB1"
     }
     const color = colors[props.kind] || "#757575"
     const publicBadge = props.public ? "Public" : "Privé"

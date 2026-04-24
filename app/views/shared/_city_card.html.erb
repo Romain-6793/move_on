@@ -98,35 +98,13 @@
       </div>
     <% end %>
   </div>
-  <%#
-    Calcule les kinds de POI correspondant aux critères "essentiels" (valeur = 3)
-    de la recherche. Seuls les critères ayant un kind de POI associé sont retenus
-    (ex : real_estate n'a pas de POI dédié → exclu du mapping).
-    Ces kinds sont passés en query param à maps#show pour filtrer l'affichage.
-  %>
-  <% poi_kind_mapping = {
-       transport_network:   "transport",
-       cultural_heritage:   "culture",
-       health:              "health",
-       commercial_life:     "commerce",
-       leisures_and_sports: "sport",
-       education:           "education"
-     }
-     essential_kinds = poi_kind_mapping.filter_map do |key, kind|
-       kind if search.respond_to?(key) && search.public_send(key).to_i == 3
-     end
-     #
-     # On propage le rang (index) à maps#show via le query param ?rank=
-     # pour que la carte ville-unique puisse afficher le même marqueur coloré
-     # + numéroté que sur la carte des 5 résultats.
-     map_query_params = {}
-     map_query_params[:kinds] = essential_kinds.join(",") if essential_kinds.any?
-     city_map_url = map_path(city.id, map_query_params) %>
+  <%# Lien vers la carte de la ville - affiche TOUS les POI sans filtrage %>
+  <% city_map_url = map_path(city.id) %>
 
   <%# ── Actions ──────────────────────────────────────────────────────── %>
   <div class="city-card__actions">
     <%# Bouton "Trouver sur la carte" – ouvre la carte centrée sur cette ville
-        avec uniquement les POIs des critères essentiels du user (?kinds=…) %>
+        avec tous les POIs disponibles (sport + culture) %>
     <%= link_to "Trouver sur la carte",
             city_map_url,
             class: "city-card__map-btn" %>

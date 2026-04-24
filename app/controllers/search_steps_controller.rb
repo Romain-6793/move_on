@@ -45,6 +45,15 @@ class SearchStepsController < ApplicationController
       @research.assign_attributes(details_params)
       @research.user ||= current_user   # association user déjà initialisée par build, mais sécurité
       authorize @research, :update?
+      
+      # Vérifie l'unicité du nom avant de sauvegarder
+      if @research.research_name.present? && 
+         current_user.researches.where.not(id: @research.id).exists?(research_name: @research.research_name)
+        @research.errors.add(:research_name, "existe déjà. Veuillez choisir un autre nom.")
+        @regions = City.distinct.order(:nom_reg).pluck(:nom_reg).compact
+        return render_wizard
+      end
+      
       @research.save(validate: false)   # sauvegarde partielle : le nom peut encore être vide
       session[:wizard_research_id] = @research.id
 

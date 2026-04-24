@@ -134,7 +134,7 @@ class MapsController < ApplicationController
     end
 
     @ranked_cities = CityRankerService.new(search).top_cities
-    @poi_kinds     = selected_poi_kinds(search)
+    @poi_kinds     = []  # Vide : on affiche tous les POI
     @search_name   = search.research_name.presence || "Vos résultats"
 
     # Données minimales des 5 villes sérialisées pour le controller Stimulus (inline JSON).

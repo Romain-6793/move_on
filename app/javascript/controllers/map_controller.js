@@ -48,11 +48,11 @@ export default class extends Controller {
     // poiKinds : critères essentiels sélectionnés — propagés dans les liens
     // des popups des autres villes pour conserver le filtre ?kinds=…
     poiKinds: { type: Array, default: [] },
-    // researchId : identifiant de la recherche utilisateur (connecté uniquement),
-    // transmis dans les liens des popups pour que le prochain maps#show puisse
-    // recharger le contexte et, à son tour, afficher les 4 autres villes.
-    // Vide pour les visiteurs (le fallback se fait via session[:guest_search_id]).
-    researchId: { type: String, default: "" },
+    // researchId : identifiant de la recherche, propagé dans les popups
+    // pour préserver le contexte de navigation.
+    researchId: String,
+    // insee : code INSEE de la commune pour charger les limites administratives
+    insee: String,
     // pinUrl : URL de l'image custom utilisée comme marqueur fallback (rank inconnu).
     // Passée depuis la vue ERB via asset_path pour bénéficier du fingerprinting Assets.
     pinUrl: { type: String, default: "" }
@@ -71,18 +71,16 @@ export default class extends Controller {
     health: "Santé"
   }
 
-  // ── Couleurs par kind de POI — cohérentes avec la légende de maps/show.html.erb ──
-  // Les 3 kinds réellement affichés (sport, loisir, culture) reprennent exactement
-  // les couleurs de la légende pour que marqueurs et légende soient identiques.
-  // Attention : le kind en base est "loisir" (sans 's') — voir migration NormalizePoiKinds.
+  // ── Couleurs par kind de POI — cohérentes avec la palette Move On ──────────
+  // On définit les couleurs ici pour les réutiliser dans la légende ET dans les layers.
   static POI_COLORS = {
-    sport: "#EF5350",   // rouge — Équipements sportifs
-    loisir: "#E57373",  // rouge clair — Équipements de loisirs
-    culture: "#9575CD", // violet — Équipements culturels et socioculturels
+    sport: "#7CB342", // --green-primary
+    culture: "#4FC3F7", // --blue-primary
+    loisirs: "#558B2F", // --green-dark
     commerce: "#FFCA28", // --yellow-accent
     transport: "#0288D1", // --blue-dark
     education: "#8D6E63", // --brown-primary
-    health: "#2E9EAD"   // --blue-teal
+    health: "#2E9EAD"  // --blue-teal
   }
 
   connect() {
@@ -130,6 +128,9 @@ export default class extends Controller {
       // Pastilles des critères essentiels — matérialisent les 3 critères "must-have"
       // du user directement sur la carte, quel que soit l'état des données POI.
       if (this.essentialKindsValue.length > 0) this.addEssentialDots()
+
+      // Charge les limites communales si un code INSEE est fourni
+      if (this.inseeValue) this.loadCommuneBoundary()
 
       if (this.poisValue.length > 0) {
         // Vue show : les POIs ont été pré-filtrés et sérialisés côté serveur (maps#show).
@@ -313,8 +314,8 @@ export default class extends Controller {
       const angle = (index / kinds.length) * 2 * Math.PI - Math.PI / 2
       // Correction de la longitude par cos(lat) pour éviter que le cercle
       // soit écrasé aux latitudes élevées (projection Web Mercator).
-      const lng = center.lng + (radius * Math.cos(angle)) / Math.cos(center.lat * Math.PI / 180)
-      const lat = center.lat + radius * Math.sin(angle)
+      const lng   = center.lng + (radius * Math.cos(angle)) / Math.cos(center.lat * Math.PI / 180)
+      const lat   = center.lat + radius * Math.sin(angle)
 
       const color = this.constructor.POI_COLORS[kind] || "#757575"
       const label = this.constructor.POI_LABELS[kind] || kind
@@ -332,6 +333,58 @@ export default class extends Controller {
         .setLngLat([lng, lat])
         .addTo(this.map)
     })
+  }
+
+  // ── Chargement des limites communales via API IGN
+  // ────────────────────────────────────────────────────────────────────────────
+
+  async loadCommuneBoundary() {
+    try {
+      const inseeCode = this.inseeValue.toString().padStart(5, '0')
+      const response = await fetch(`https://apicarto.ign.fr/api/cadastre/commune?code_insee=${inseeCode}`)
+      
+      if (!response.ok) {
+        console.warn(`[MapController] Impossible de charger les limites pour INSEE ${inseeCode}`)
+        return
+      }
+
+      const data = await response.json()
+      
+      if (data.features && data.features.length > 0) {
+        // Ajoute la source GeoJSON des limites communales
+        this.map.addSource('commune-boundary', {
+          type: 'geojson',
+          data: data
+        })
+        
+        // Remplissage semi-transparent
+        this.map.addLayer({
+          id: 'commune-fill',
+          type: 'fill',
+          source: 'commune-boundary',
+          paint: {
+            'fill-color': '#2E9EAD',
+            'fill-opacity': 0.08
+          }
+        })
+        
+        // Contour de la commune
+        this.map.addLayer({
+          id: 'commune-outline',
+          type: 'line',
+          source: 'commune-boundary',
+          paint: {
+            'line-color': '#2E9EAD',
+            'line-width': 2.5,
+            'line-opacity': 0.7
+          }
+        })
+        
+        console.log(`[MapController] Limites communales chargées pour ${inseeCode}`)
+      }
+    } catch (error) {
+      console.error('[MapController] Erreur lors du chargement des limites communales:', error)
+    }
   }
 
   // ── Layer VILLES ──────────────────────────────────────────────────────────
@@ -471,13 +524,12 @@ export default class extends Controller {
       filter: ["!", ["has", "point_count"]], // exclut les clusters
       paint: {
         "circle-radius": 7,
-        // match compare la propriété "kind" à une liste de cas, avec un fallback gris.
-        // Les couleurs sont synchronisées avec static POI_COLORS ET la légende de maps/show.html.erb.
+        // match compare la propriété "kind" à une liste de cas, avec un fallback gris
         "circle-color": [
           "match", ["get", "kind"],
-          "sport", "#EF5350",  // rouge — Équipements sportifs
-          "loisir", "#E57373",  // rouge clair — Équipements de loisirs
-          "culture", "#9575CD",  // violet — Équipements culturels et socioculturels
+          "sport", "#7CB342",
+          "culture", "#4FC3F7",
+          "nature", "#558B2F",
           "commerce", "#FFCA28",
           "transport", "#0288D1",
           "education", "#8D6E63",
@@ -531,11 +583,11 @@ export default class extends Controller {
           <li>
             Transports : <strong>${props.transport_network_score}</strong>
             ${props.transport_network_caption
-        ? `<div class="map-popup__hint">${props.transport_network_caption}</div>`
-        : ""}
+              ? `<div class="map-popup__hint">${props.transport_network_caption}</div>`
+              : ""}
             ${props.transport_component_train != null
-        ? `<div class="map-popup__breakdown">Train ×4 : ${props.transport_component_train} · Métro ×3 : ${props.transport_component_metro} · Tram ×2 : ${props.transport_component_tram} · Bus : ${props.transport_component_bus}</div>`
-        : ""}
+              ? `<div class="map-popup__breakdown">Train ×4 : ${props.transport_component_train} · Métro ×3 : ${props.transport_component_metro} · Tram ×2 : ${props.transport_component_tram} · Bus : ${props.transport_component_bus}</div>`
+              : ""}
           </li>
           <li>Éducation : ${props.education_score}</li>
           <li>Santé : ${props.health_score}</li>
@@ -547,7 +599,7 @@ export default class extends Controller {
 
   poiPopupHtml(props) {
     const colors = {
-      sport: "#EF5350", culture: "#9575CD", loisir: "#E57373", nature: "#558B2F",
+      sport: "#7CB342", culture: "#4FC3F7", nature: "#558B2F",
       commerce: "#FFCA28", transport: "#0288D1", education: "#8D6E63", health: "#2E9EAD"
     }
     const color = colors[props.kind] || "#757575"

@@ -11,8 +11,6 @@ City.destroy_all
 puts "📊 Import des communes depuis BD_MOVE_ON_20260417.csv..."
 
 csv_file = Rails.root.join('db', 'BD_MOVE_ON_20260417.csv')
-count = 0
-errors = 0
 
 # Fonction pour corriger l'encodage des caractères (UTF-8 mal interprété comme Latin-1)
 def fix_encoding(text)
@@ -38,9 +36,15 @@ def parse_int(value)
   value.to_i
 end
 
+batch_size = 5000  # Augmenté pour maximiser la performance
+cities_batch = []
+count = 0
+errors = 0
+start_time = Time.now
+
 CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
   begin
-    City.create!(
+    cities_batch << {
       # Identifiants
       insee: row['insee'],
       code_posta: row['code_posta'],
@@ -74,7 +78,6 @@ CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
       count_coll: parse_int(row['count_coll']),
       count_lyce: parse_int(row['count_lyce']),
       nb_creche: parse_int(row['nb_creche']),
-
 
       # Économie
       rev_median: parse_int(row['rev_median']),
@@ -131,26 +134,44 @@ CSV.foreach(csv_file, headers: true, encoding: 'UTF-8') do |row|
       real_estate_score: parse_float(row['score_immo']),
       outdoor_living_score: parse_float(row['score_grand_air']),
       sunshine_score: parse_float(row['score_pluviometrie']),
-    )
+      created_at: Time.current,
+      updated_at: Time.current
+    }
 
-    count += 1
-    print "\r  ✓ #{count} communes importées..." if count % 1000 == 0
+    # Insertion par batch
+    if cities_batch.size >= batch_size
+      City.insert_all(cities_batch)
+      count += cities_batch.size
+      cities_batch = []
+      
+      elapsed = Time.now - start_time
+      rate = count / elapsed
+      print "\r✓ #{count} communes importées (#{rate.round(0)} communes/sec)..."
+    end
   rescue => e
     errors += 1
-    puts "\n  ⚠️  Erreur pour #{row['nom_com']} (#{row['insee']}): #{e.message}"
+    puts "\n⚠️  Erreur pour #{row['nom_com']} (#{row['insee']}): #{e.message}"
   end
 end
 
-puts "\n\n✅ Seeds terminées : #{City.count} communes importées (#{errors} erreurs)"
+# Insertion du dernier batch
+if cities_batch.any?
+  City.insert_all(cities_batch)
+  count += cities_batch.size
+end
+
+elapsed = Time.now - start_time
+puts "\n\n✅ Seeds terminées : #{City.count} communes importées (#{errors} erreurs) en #{elapsed.round(1)}s (#{(count / elapsed).round(0)} communes/sec)"
 
 # Normalisation des kinds de POI : le CSV BPE24 utilise des libellés français longs,
 # mais le reste de l'app (map_controller.js, MapsController) attend des identifiants
 # courts en anglais pour les couleurs et les filtres de recherche.
 # Ce mapping doit être mis à jour si de nouveaux types sont importés.
 POI_KIND_NORMALIZATION = {
+POI_KIND_NORMALIZATION = {
   "Equipements culturels et socioculturels" => "culture",
-  "Equipements de loisirs"                 => "loisir",
-  "Equipements sportifs" => "sport"
+  "Equipements sportifs"                   => "sport",
+  "Equipements de loisirs"                 => "sport"
   # Ajouter ici les autres types au fur et à mesure de leur import :
   # "Equipements de santé"   => "health",
   # "Equipements de transport" => "transport",
@@ -160,63 +181,79 @@ POI_KIND_NORMALIZATION = {
 }.freeze
 
 puts "📍 Import des Points d'Intérêt (POI)..."
-print "❓ Souhaitez-vous importer les Points d'Intérêt (POI.csv) ? Cela peut prendre du temps. (y/n) : "
+print "❓ Souhaitez-vous importer les Points d'Intérêt (POI_VF.csv) ? Cela peut prendre du temps. (y/n) : "
 reponse = STDIN.gets.chomp.downcase
 if reponse != 'y' && reponse != 'o'
   puts "🚫 Import annulé par l'utilisateur."
 else
-  puts "🚀 Lancement de l'import..."
-  # On prépare le cache en nettoyant les clés (on enlève les espaces et on force 5 chiffres)
+  puts "🚀 Lancement de l'import optimisé..."
+  
+  # Cache des cities
   cities_cache = City.all.each_with_object({}) do |city, hash|
     clean_insee = city.insee.to_s.strip.rjust(5, '0')
     hash[clean_insee] = city.id
   end
 
-  poi_file = Rails.root.join('db', 'POI220426.csv')
+  # Utilisation du fichier local uniquement
+  poi_file = Rails.root.join('db', 'POI_VF.csv')
+  
+  unless File.exist?(poi_file)
+    abort("� Fichier POI_VF.csv introuvable dans db/. Veuillez le placer dans le dossier db/ avant de lancer la seed.")
+  end
+  
+  puts "📂 Utilisation du fichier local : #{poi_file}"
+  batch_size = 5000  # Insère 5000 POI à la fois pour maximiser la performance
+  poi_batch = []
   poi_count = 0
   poi_errors = 0
+  
+  start_time = Time.now
 
-  # On utilise "bom|utf-8" pour supprimer les caractères invisibles de début de fichier
   CSV.foreach(poi_file, headers: true, col_sep: ';', encoding: 'bom|utf-8') do |row|
     begin
-      # On cherche la colonne INSEE de manière flexible (au cas où le nom varie)
-      raw_insee = row['#Code_commune_INSEE'] || row.to_h.values.last # secours sur la dernière colonne
-
+      raw_insee = row['#Code_commune_INSEE'] || row.to_h.values.last
       insee_csv = raw_insee.to_s.strip.rjust(5, '0')
       city_id = cities_cache[insee_csv]
 
       if city_id
-        # Utilisation de .send pour bypasser les problèmes de mapping si nécessaire
-        poi = PointOfInterest.new(
+        poi_batch << {
           city_id:     city_id,
           name:        row['NOMRS'] || "Sans nom",
           latitude:    row['LATITUDE'].to_s.gsub(',', '.').to_f,
           longitude:   row['LONGITUDE'].to_s.gsub(',', '.').to_f,
           postal_code: row['CODPOS'],
           category:    row['BPE24_varmod.LIB_MOD'],
-          # On normalise le kind vers un identifiant court anglais pour la cohérence
-          # avec map_controller.js et les filtres de recherche.
           kind:        POI_KIND_NORMALIZATION.fetch(row['BPE24_varmod.LIB_MOD.1'], row['BPE24_varmod.LIB_MOD.1']),
-          public:      true
-        )
-
-        if poi.save
-          poi_count += 1
-        else
-          # Affiche pourquoi le POI est refusé par le modèle (ex: validations)
-          puts "❌ Erreur validation : #{poi.errors.full_messages}" if poi_errors < 5
-          poi_errors += 1
+          public:      true,
+          created_at:  Time.current,
+          updated_at:  Time.current
+        }
+        
+        # Insertion par batch pour performance maximale
+        if poi_batch.size >= batch_size
+          PointOfInterest.insert_all(poi_batch)
+          poi_count += poi_batch.size
+          poi_batch = []
+          
+          elapsed = Time.now - start_time
+          rate = poi_count / elapsed
+          print "\r✓ #{poi_count} POI importés (#{rate.round(0)} POI/sec)..."
         end
       else
         poi_errors += 1
       end
     rescue => e
-      puts "❌ Erreur système : #{e.message}" if poi_errors < 5
+      puts "\n❌ Erreur système : #{e.message}" if poi_errors < 5
       poi_errors += 1
     end
-
-    print "\rProgression : #{poi_count + poi_errors}..." if ((poi_count + poi_errors) % 500).zero?
   end
 
-  puts "\n\n✅ Résultat : #{poi_count} créés / #{poi_errors} échoués."
+  # Insertion du dernier batch
+  if poi_batch.any?
+    PointOfInterest.insert_all(poi_batch)
+    poi_count += poi_batch.size
+  end
+
+  elapsed = Time.now - start_time
+  puts "\n\n✅ Résultat : #{poi_count} créés / #{poi_errors} échoués en #{elapsed.round(1)}s (#{(poi_count / elapsed).round(0)} POI/sec)"
 end
